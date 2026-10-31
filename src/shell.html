@@ -74,6 +74,8 @@ button { cursor: pointer; }
 .main { min-width: 0; display: flex; flex-direction: column; }
 .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; gap: 12px; align-items: center; }
 .top .crumb { font-weight: 600; color: var(--muted); font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.modsel { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 600; font-size: .88rem; max-width: 46vw; min-width: 0; }
+.module.current { border-color: var(--azure); box-shadow: 0 0 0 1px var(--azure); }
 .search { margin-left: auto; position: relative; flex: 0 1 320px; min-width: 0; }
 .search input { width: 100%; padding: 8px 12px 8px 34px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
 .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 2; }
@@ -298,6 +300,10 @@ table.t.num td:not(:first-child) { font-family: var(--f-mono); font-size: .86rem
   <div class="main">
     <header class="top">
       <span class="crumb" id="crumb">Module 1 · Normal blood and marrow cells</span>
+      <select id="modSel" class="modsel" aria-label="Module">
+        <option value="m1">Module 1 · Normal cells</option>
+        <option value="m2">Module 2 · Red cells</option>
+      </select>
       <div class="search">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
         <input id="q" type="search" placeholder="Search cells, lessons, facts" aria-label="Search" autocomplete="off">
