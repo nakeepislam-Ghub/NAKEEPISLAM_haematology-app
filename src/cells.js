@@ -364,6 +364,13 @@ function drawCell(cell, opts = {}) {
   }
   s += `</g></g>`;
   s += granDots(true);
+  if (d.satellites) {
+    for (let i = 0; i < d.satellites; i++) {
+      const t = (i / d.satellites) * 6.28 + rand() * 0.3, rr = (1 + rand() * 0.4) * pxPerUm, dd = R * 1.02 + rr * 0.9;
+      s += `<path d="${blob({ cx: C0 + Math.cos(t) * dd, cy: C0 + Math.sin(t) * dd, r: rr, sx: 1.15, sy: 0.85, rot: rand() * 180, wobble: 0.14 }, rand)}" fill="#cdb0d8"/>`;
+      for (let g = 0; g < 4; g++) s += `<circle cx="${f1(C0 + Math.cos(t) * dd + (rand() - 0.5) * rr)}" cy="${f1(C0 + Math.sin(t) * dd + (rand() - 0.5) * rr)}" r="${f1(0.18 * pxPerUm + 0.4)}" fill="#6d2f78" opacity="0.85"/>`;
+    }
+  }
   s += vignette(id);
   if (d.auer) {
     const rx = R * (d.sx || 1) * 0.8, ry = R * (d.sy || 1) * 0.8;

@@ -1,7 +1,7 @@
 import pathlib, json
 src = pathlib.Path("src")
 shell = (src/"shell.html").read_text()
-js = "\n".join((src/f).read_text() for f in ["data.js","m2-data.js","m3-data.js","photos.js","photos-ui.js","cells.js","rbc.js","app.js"])
+js = "\n".join((src/f).read_text() for f in ["data.js","m2-data.js","m3-data.js","m4-data.js","photos.js","photos-ui.js","cells.js","rbc.js","plt.js","app.js"])
 # Artifact preview: page fragment, the host adds the document skeleton (not committed).
 preview = pathlib.Path("build"); preview.mkdir(exist_ok=True)
 (preview/"artifact.html").write_text(shell + "\n<script>\n" + js + "\n</script>\n")

@@ -1,10 +1,10 @@
-/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, photos.js, photos-ui.js, cells.js and rbc.js. */
+/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, m4-data.js, photos.js, photos-ui.js, cells.js, rbc.js and plt.js. */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const cellById = Object.fromEntries(CELLS.concat(M2_CELLS, M2_NUCLEATED, M3_CELLS).map((c) => [c.id, c]));
+const cellById = Object.fromEntries(CELLS.concat(M2_CELLS, M2_NUCLEATED, M3_CELLS, M4_CELLS).map((c) => [c.id, c]));
 const svgCache = {};
-const renderCell = (c) => (c.kind || c.perls ? drawMorph(c) : drawCell(c));
+const renderCell = (c) => (c.plt ? drawPlt(c) : c.kind || c.perls ? drawMorph(c) : drawCell(c));
 const cellSVG = (id) => (svgCache[id] ||= renderCell(cellById[id]));
 
 const M1_LESSON_CELLS = {
@@ -66,6 +66,22 @@ const CALCS = {
       else icc = "MDS (if cytopenia and dysplasia are present)";
       return `<b>WHO-HAEM5:</b> ${who}<br><b>ICC 2022:</b> ${icc}<br><span class="muted">Teaching aid. TP53 status, del(5q), SF3B1, fibrosis, prior therapy and CMML criteria also change the category.</span>`;
     } },
+  fourts: { title: "4Ts score for HIT", inputs: [
+      ["t1", "Thrombocytopenia", 2, 1, [[2, "Fall over 50% and nadir 20 or more"], [1, "Fall 30–50% or nadir 10–19"], [0, "Fall under 30% or nadir under 10"]]],
+      ["t2", "Timing of the fall", 2, 1, [[2, "Day 5–10, or day 1 with heparin in last 30 days"], [1, "Probably day 5–10, after day 10, or day 1 with heparin 30–100 days ago"], [0, "Under 4 days with no recent heparin"]]],
+      ["t3", "Thrombosis or sequelae", 0, 1, [[2, "New thrombosis, skin necrosis, or reaction to heparin bolus"], [1, "Progressive or recurrent thrombosis, red skin lesions, suspected thrombosis"], [0, "None"]]],
+      ["t4", "Other cause for low platelets", 2, 1, [[2, "None apparent"], [1, "Possible"], [0, "Definite"]]]],
+    run: ({ t1, t2, t3, t4 }) => { const n = t1 + t2 + t3 + t4; return `4Ts score <b>${n} of 8</b>: ${n <= 3 ? "low probability. HIT is very unlikely; testing is usually not needed." : n <= 5 ? "intermediate probability. Stop heparin, start a non-heparin anticoagulant, send anti-PF4 assay." : "high probability. Stop heparin, start a non-heparin anticoagulant, send anti-PF4 and functional assays."}`; } },
+  dic: { title: "ISTH overt DIC score", inputs: [
+      ["d1", "Platelets (×10⁹/L)", 1, 1, [[0, "Over 100"], [1, "50–100"], [2, "Under 50"]]],
+      ["d2", "D-dimer (fibrin marker)", 2, 1, [[0, "No increase"], [2, "Moderate increase"], [3, "Strong increase"]]],
+      ["d3", "PT prolongation", 1, 1, [[0, "Under 3 s"], [1, "3–6 s"], [2, "Over 6 s"]]],
+      ["d4", "Fibrinogen", 0, 1, [[0, "Over 1 g/L"], [1, "Under 1 g/L"]]]],
+    run: ({ d1, d2, d3, d4 }) => { const n = d1 + d2 + d3 + d4; return `Score <b>${n}</b>: ${n >= 5 ? "compatible with overt DIC. Repeat daily and treat the cause." : "suggestive of non-overt DIC. Repeat in 1–2 days."}<br><span class="muted">Use only when an underlying cause of DIC is present.</span>`; } },
+  plasmic: { title: "PLASMIC score (TTP)", inputs: [["pl1", "Platelets under 30 × 10⁹/L", 1, 1, YN], ["pl2", "Haemolysis (retics over 2.5%, absent haptoglobin, or indirect bilirubin over 34 µmol/L)", 1, 1, YN], ["pl3", "No active cancer", 1, 1, YN], ["pl4", "No solid organ or stem cell transplant", 1, 1, YN], ["pl5", "MCV under 90 fL", 1, 1, YN], ["pl6", "INR under 1.5", 1, 1, YN], ["pl7", "Creatinine under 177 µmol/L (2.0 mg/dL)", 0, 1, YN]],
+    run: (v) => { const n = Object.values(v).reduce((a, b) => a + b, 0); return `PLASMIC score <b>${n} of 7</b>: ${n >= 6 ? "high risk of severe ADAMTS13 deficiency. Start plasma exchange." : n === 5 ? "intermediate risk. Discuss urgently; consider plasma exchange while ADAMTS13 is pending." : "low risk. Look for another cause of TMA."}`; } },
+  rosner: { title: "Mixing study (Rosner index)", inputs: [["rp", "Patient APTT (s)", 62, 0.1], ["rn", "Normal pooled plasma APTT (s)", 30, 0.1], ["rm", "1:1 mix APTT (s)", 33, 0.1]],
+    run: ({ rp, rn, rm }) => { if (!(rp > 0)) return null; const ri = ((rm - rn) / rp) * 100; return `Rosner index <b>${ri.toFixed(1)}</b>: ${ri > 15 ? "suggests an inhibitor (lupus anticoagulant, heparin or a factor inhibitor)." : ri < 11 ? "suggests a factor deficiency (correction)." : "borderline; repeat with incubation and check for heparin."}<br><span class="muted">Cut-offs vary between laboratories (often 11–15). Incubate 2 h at 37 °C if FVIII inhibitor is suspected.</span>`; } },
   cmml: { title: "CMML criteria (WHO-HAEM5)", inputs: [["cw", "WBC (×10⁹/L)", 15, 0.1], ["cm", "Monocytes (×10⁹/L)", 3.2, 0.1], ["cpb", "Blood blasts + promonocytes (%)", 2, 1], ["cbm", "Marrow blasts + promonocytes (%)", 6, 1], ["cba", "BCR::ABL1 or MPN criteria met", 0, 1, YN]],
     run: ({ cw, cm, cpb, cbm, cba }) => {
       if (!(cw > 0)) return null;
@@ -89,12 +105,18 @@ const MODS = {
     hero: ["m2-sphero", "m2-sickle", "m2-target"], tagline: "From the anaemia algorithm to marrow failure",
     trees: M2_TREES, checklist: M2_CHECKLIST,
     calcs: ["retic", "mentzer", "tsat", "absolute"], anims: [["globin", "Globin switching"], ["odc", "Oxygen dissociation curve"]] },
+  m4: { id: "m4", n: 4, lessons: M4_LESSONS, lessonCells: M4_LESSON_CELLS,
+    cells: M4_CELLS.concat(M4_SHARED.map((k) => ({ ...cellById[k], lineage: k === "megakaryocyte" ? "Marrow" : "Red cells", group: k === "megakaryocyte" ? "Marrow" : "Red cells" }))),
+    facts: M4_FACTS, quiz: M4_QUIZ, cases: M4_CASES,
+    hero: ["m4-plt-giant", "m4-satellite", "m4-plt-clump"], tagline: "From the platelet plug to anticoagulant reversal",
+    trees: M4_TREES, checklist: M4_CHECKLIST,
+    calcs: ["fourts", "dic", "plasmic", "rosner"], anims: [["cascade", "Coagulation cascade"]] },
   m3: { id: "m3", n: 3, lessons: M3_LESSONS, lessonCells: M3_LESSON_CELLS, cells: M3_CELLS, facts: M3_FACTS, quiz: M3_QUIZ, cases: M3_CASES,
     hero: ["m3-faggot", "m3-hairy", "m3-flower"], tagline: "From reactive changes to WHO-HAEM5 and ICC 2022",
     trees: M3_TREES, checklist: M3_CHECKLIST,
     calcs: ["blastcat", "matutes", "cmml", "absolute"], anims: [["flow", "Flow cytometry: CD45 vs SSC"], ["tree", "Haematopoiesis"]] }
 };
-["m2", "m3"].forEach((id) => (MODULES.find((m) => m.id === id).ready = true));
+["m2", "m3", "m4"].forEach((id) => (MODULES.find((m) => m.id === id).ready = true));
 
 /* Per-viewer progress, kept in this browser only. */
 const store = {
@@ -196,7 +218,7 @@ ${MODULES.map((m) => `
 <div class="section-h"><h2>Module ${MOD.n} at a glance</h2></div>
 <div class="quick">
   <a href="#learn"><b>${MOD.lessons.length} lessons</b><span>${esc(MOD.tagline)}</span></a>
-  <a href="#atlas"><b>${MOD.cells.length} images in the atlas</b><span>${MOD.id === "m1" ? "Features, sizes and look-alikes" : MOD.id === "m2" ? "Red cell shapes, inclusions and marrow clues" : "Blasts, Auer rods, lymphoma, plasma and T cells"}</span></a>
+  <a href="#atlas"><b>${MOD.cells.length} images in the atlas</b><span>${MOD.id === "m1" ? "Features, sizes and look-alikes" : MOD.id === "m2" ? "Red cell shapes, inclusions and marrow clues" : MOD.id === "m3" ? "Blasts, Auer rods, lymphoma, plasma and T cells" : "Platelet size, clumps, satellitism and fragments"}</span></a>
   <a href="#practice"><b>${cardTotal} flashcards</b><span>${cardPct}% marked as known</span></a>
   <a href="#practice" data-tab="quiz"><b>${MOD.quiz.length} MCQs</b><span>${state.quizBest == null ? "Not attempted yet" : `Best score ${state.quizBest} of ${MOD.quiz.length}`}</span></a>
   <a href="#cases"><b>${MOD.cases.length} case studies</b><span>${casesHere} completed</span></a>
@@ -242,8 +264,8 @@ function viewAtlas() {
   const groups = ["All", ...new Set(MOD.cells.map(lineageOf))];
   const list = MOD.cells.filter((c) => state.atlasFilter === "All" || lineageOf(c) === state.atlasFilter);
   return `
-<h1>${MOD.id === "m1" ? "Cell atlas" : MOD.id === "m2" ? "Red cell morphology atlas" : "White cell and leukaemia atlas"}</h1>
-<p class="muted" style="max-width:66ch">${MOD.id === "m1" ? "Openly licensed photomicrographs and original to-scale drawings of Romanowsky-stained cells against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : MOD.id === "m3" ? "Openly licensed photomicrographs and original drawings of reactive, dysplastic and neoplastic white cells: blasts, Auer rods, APL, lymphoma cells, plasma cells and T cells. Tap a picture for what it is, where it is seen, and a reporting tip." : "Openly licensed photomicrographs and original drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
+<h1>${{ m1: "Cell atlas", m2: "Red cell morphology atlas", m3: "White cell and leukaemia atlas", m4: "Platelet atlas" }[MOD.id]}</h1>
+<p class="muted" style="max-width:66ch">${MOD.id === "m1" ? "Openly licensed photomicrographs and original to-scale drawings of Romanowsky-stained cells against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : MOD.id === "m4" ? "Original schematic drawings of platelets on the blood film: normal and low counts, clumps and satellitism, large, giant and grey platelets, with the marrow and red cell clues that go with platelet disorders. Tap a picture for what it is, where it is seen, and a reporting tip." : MOD.id === "m3" ? "Openly licensed photomicrographs and original drawings of reactive, dysplastic and neoplastic white cells: blasts, Auer rods, APL, lymphoma cells, plasma cells and T cells. Tap a picture for what it is, where it is seen, and a reporting tip." : "Openly licensed photomicrographs and original drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
 <div class="filters">${groups.map((g) => `<button class="chip" data-filter="${g}" aria-pressed="${g === state.atlasFilter}">${g}</button>`).join("")}</div>
 <div class="atlas">${list.map((c) => `<button data-cell="${c.id}"><div class="figure">${cellPic(c.id)}</div><b>${esc(c.name)}</b><small>${esc(lineageOf(c))}${c.size ? " · " + esc(c.size) : ""}</small></button>`).join("")}</div>
 <p class="note" style="margin-top:18px">${ATLAS_PHOTO_NOTE}</p>
@@ -581,6 +603,7 @@ function viewAnimations() {
   if (state.animTab === "odc") body = odcHTML();
   if (state.animTab === "globin") body = globinHTML();
   if (state.animTab === "flow") body = flowHTML();
+  if (state.animTab === "cascade") body = cascadeHTML();
   return `<h1>Animations</h1>
 <div class="seg" role="group" aria-label="Animation" style="margin:14px 0 18px">${tabs.map(([k, t]) => `<button data-atab="${k}" aria-pressed="${state.animTab === k}">${t}</button>`).join("")}</div>${body}`;
 }
@@ -634,6 +657,35 @@ function flowHTML() {
   </div></div>`;
 }
 
+/* Coagulation cascade: tap factors to make them deficient and see the screening tests change. */
+let cascadeOff = new Set();
+function cascadeHTML() {
+  const N = Object.fromEntries(CASCADE.nodes.map((n) => [n.id, n]));
+  const col = { aptt: "#2f6fb0", pt: "#b93a60", common: "#4a3891", none: "#23714f" };
+  let g = `<text x="70" y="16" text-anchor="middle" style="font-weight:700;fill:#2f6fb0">Intrinsic (APTT)</text><text x="430" y="70" text-anchor="middle" style="font-weight:700;fill:#b93a60">Extrinsic (PT)</text><text x="160" y="268" text-anchor="end" style="font-weight:700;fill:#4a3891">Common</text>`;
+  CASCADE.edges.forEach(([a, b]) => { const A = N[a], B = N[b]; g += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${cascadeOff.has(a) ? "#c9bfc9" : "#8a7f8f"}" stroke-width="2.5" ${cascadeOff.has(a) ? 'stroke-dasharray="5 4"' : ""}/>`; });
+  g += `<text x="300" y="404" text-anchor="middle" style="fill:var(--muted)">Fibrin clot (cross-linked by XIIIa)</text>`;
+  CASCADE.nodes.forEach((n) => {
+    const off = cascadeOff.has(n.id), w = n.label ? 92 : 56;
+    g += `<g data-cf="${n.id}" tabindex="0" role="button" aria-pressed="${off}" aria-label="Factor ${n.label || n.id}" style="cursor:pointer"><rect x="${n.x - w / 2}" y="${n.y - 17}" width="${w}" height="34" rx="${n.co ? 17 : 6}" fill="${off ? "#fff" : col[n.p]}" stroke="${col[n.p]}" stroke-width="2.5" ${off ? 'stroke-dasharray="4 3"' : ""}/><text x="${n.x}" y="${n.y + 5}" text-anchor="middle" style="font-weight:700;fill:${off ? col[n.p] : "#fff"}">${n.label || n.id}</text></g>`;
+  });
+  const has = (ids) => ids.some((k) => cascadeOff.has(k));
+  const pt = has(["VII", "X", "V", "II", "I"]), aptt = has(["XII", "XI", "IX", "VIII", "X", "V", "II", "I"]), tt = has(["I"]);
+  const res = (name, long) => `<div class="row" style="justify-content:space-between"><span>${name}</span><span class="tag ${long ? "" : "ok"}">${long ? "Prolonged" : "Normal"}</span></div>`;
+  const notes = [...cascadeOff].map((k) => `<li><b>${N[k].label || "F" + k}:</b> ${esc(CASCADE.notes[k])}</li>`).join("");
+  return `<div class="anim">
+  <div class="seg" role="group" aria-label="Preset">${CASCADE.presets.map(([t, ids]) => `<button data-cpre="${t}" aria-pressed="${ids.length === cascadeOff.size && ids.every((k) => cascadeOff.has(k))}">${t}</button>`).join("")}</div>
+  <div class="odc">
+    <div class="svgwrap" style="padding:8px"><svg viewBox="0 0 540 420" role="img" aria-label="Coagulation cascade" style="min-width:0">${g}</svg></div>
+    <div class="card stack">
+      <p style="margin:0">Tap any factor to make it deficient, or choose a preset. The screening tests update.</p>
+      <div class="stack" style="gap:8px">${res("Prothrombin time (PT)", pt)}${res("APTT", aptt)}${res("Thrombin time (TT)", tt)}</div>
+      ${notes ? `<ul style="margin:0;padding-left:18px">${notes}</ul>` : `<p class="muted" style="margin:0">All factors present: normal screen.</p>`}
+      <p class="note" style="margin:0">The classical cascade explains laboratory tests; in the body, coagulation follows the cell-based model (see lesson 1). Rounded boxes are cofactors.</p>
+    </div>
+  </div></div>`;
+}
+
 /* Slides */
 function buildSlides(L) {
   const slides = [];
@@ -676,9 +728,9 @@ function viewAbout() {
 <ul>${Object.values(SOURCES).map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
 <p>Reference ranges differ between laboratories, analysers and populations. Always use your own laboratory's ranges for reporting.</p>
 ${photoCreditsHTML()}
-<h2 style="margin-top:22px">Coming next</h2>
-<ul>${MODULES.filter((m) => !m.ready).map((m) => `<li><b>Module ${m.n}: ${esc(m.title)}.</b> ${esc(m.sub)}.</li>`).join("")}</ul>
-<p class="footer-note">Interactive Diagnostic Haematology · Modules 1 to 3 · For education only, not for clinical decision-making.</p></div>`;
+${MODULES.some((m) => !m.ready) ? `<h2 style="margin-top:22px">Coming next</h2>
+<ul>${MODULES.filter((m) => !m.ready).map((m) => `<li><b>Module ${m.n}: ${esc(m.title)}.</b> ${esc(m.sub)}.</li>`).join("")}</ul>` : ""}
+<p class="footer-note">Interactive Diagnostic Haematology · Modules 1 to 4 · For education only, not for clinical decision-making.</p></div>`;
 }
 
 function viewMore() {
@@ -711,7 +763,7 @@ function render(keepScroll) {
 /* ---------- Events ---------- */
 
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("button, a, [data-tn]");
+  const t = e.target.closest("button, a, [data-tn], [data-cf]");
   if (!t) return;
   const d = t.dataset;
   if (d.mod) { setModule(d.mod); }
@@ -749,6 +801,8 @@ document.addEventListener("click", (e) => {
   if ("treset" in d) { tr.path = ["start"]; render(true); return; }
   if ("mreset" in d) { store.set(ticksKey(), []); render(true); return; }
   if (d.flow) { flowCase = d.flow; render(true); return; }
+  if (d.cf) { cascadeOff.has(d.cf) ? cascadeOff.delete(d.cf) : cascadeOff.add(d.cf); render(true); return; }
+  if (d.cpre) { cascadeOff = new Set(CASCADE.presets.find((x) => x[0] === d.cpre)[1]); render(true); return; }
   if (d.fgate) { flowGate = flowGate === d.fgate ? null : d.fgate; render(true); return; }
   if (d.atab) { state.animTab = d.atab; clearInterval(mat.timer); mat.timer = null; render(true); return; }
   if (d.mline) { mat.line = d.mline; mat.i = 0; clearInterval(mat.timer); mat.timer = null; render(true); return; }
@@ -823,6 +877,7 @@ document.addEventListener("keydown", (e) => {
     if (ni >= 0 && ni < n) { state.slideIdx = ni; const fs = document.fullscreenElement; render(true); if (fs) $("#deck").requestFullscreen?.().catch(() => {}); }
   }
   if ((e.key === "Enter" || e.key === " ") && e.target.id === "flash") { e.preventDefault(); e.target.click(); }
+  if ((e.key === "Enter" || e.key === " ") && e.target.closest("[data-cf]")) { e.preventDefault(); e.target.closest("[data-cf]").dispatchEvent(new MouseEvent("click", { bubbles: true })); }
   if ((e.key === "Enter" || e.key === " ") && e.target.closest("[data-tn]")) { e.preventDefault(); e.target.closest("[data-tn]").dispatchEvent(new MouseEvent("click", { bubbles: true })); }
 });
 let touchX = null;
