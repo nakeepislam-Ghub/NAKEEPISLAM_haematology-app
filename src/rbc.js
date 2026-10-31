@@ -132,7 +132,8 @@ function drawMorph(c) {
   let s = `<svg viewBox="0 0 200 200" class="cellsvg" role="img" aria-label="${c.name}, schematic illustration" xmlns="http://www.w3.org/2000/svg"><title>${c.name}: schematic illustration</title>`;
   if (c.perls) return s + ringSideroblast(rand);
   const f = rbcField(c.kind, rand);
-  s += `<rect width="200" height="200" fill="${f.bg}"/>` + f.body;
+  const vid = "v" + (++svgSeq);
+  s += stainDefs(vid, 7) + `<rect width="200" height="200" fill="${f.bg}"/>` + f.body + vignette(vid);
   if (c.stain) s += `<g><rect x="118" y="6" width="76" height="16" rx="3" fill="#ffffff" opacity="0.85"/><text x="156" y="17" font-size="7.5" text-anchor="middle" fill="#2c2337" font-family="sans-serif">${c.stain}</text></g>`;
   return s + scaleBar(5, PXU) + "</svg>";
 }
