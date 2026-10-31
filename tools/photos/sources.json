@@ -44,15 +44,6 @@
   "h": 960,
   "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Normal_Adult_Blood_Smear.JPG/500px-Normal_Adult_Blood_Smear.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
  },
- "myeloblast__2": {
-  "title": "File:Two myeloblasts with Auer rods.jpg",
-  "lic": "Public domain",
-  "artist": "The Armed Forces Institute of Pathology (AFIP)",
-  "page": "https://commons.wikimedia.org/wiki/File:Two_myeloblasts_with_Auer_rods.jpg",
-  "w": 352,
-  "h": 512,
-  "thumb": "https://upload.wikimedia.org/wikipedia/commons/d/db/Two_myeloblasts_with_Auer_rods.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
- },
  "promyelocyte__1": {
   "title": "File:Ww325 promyelocyte.jpg",
   "lic": "CC BY 2.0",
@@ -295,5 +286,68 @@
   "w": 216,
   "h": 224,
   "thumb": "https://upload.wikimedia.org/wikipedia/commons/c/c9/Micrograph_of_an_echinocyte_on_a_peripheral_blood_smear.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+ },
+ "myeloblast__2": {
+  "title": "File:Two myeloblasts with Auer rods.jpg",
+  "lic": "Public domain",
+  "artist": "The Armed Forces Institute of Pathology (AFIP)",
+  "page": "https://commons.wikimedia.org/wiki/File:Two_myeloblasts_with_Auer_rods.jpg",
+  "w": 352,
+  "h": 512,
+  "thumb": "https://upload.wikimedia.org/wikipedia/commons/d/db/Two_myeloblasts_with_Auer_rods.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+ },
+ "m2-microhypo": {
+  "title": "File:Iron-deficiency Anemia, Peripheral Blood Smear (4422704616).jpg",
+  "lic": "CC BY 2.0",
+  "artist": "Ed Uthman from Houston, TX, USA",
+  "page": "https://commons.wikimedia.org/wiki/File:Iron-deficiency_Anemia,_Peripheral_Blood_Smear_(4422704616).jpg",
+  "w": 1711,
+  "h": 1139,
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Iron-deficiency_Anemia%2C_Peripheral_Blood_Smear_%284422704616%29.jpg/500px-Iron-deficiency_Anemia%2C_Peripheral_Blood_Smear_%284422704616%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "m3-apl": {
+  "title": "File:AML-M3.jpg",
+  "lic": "Public domain",
+  "artist": "The Armed Forces Institute of Pathology (AFIP)",
+  "page": "https://commons.wikimedia.org/wiki/File:AML-M3.jpg",
+  "w": 722,
+  "h": 512,
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/AML-M3.jpg/500px-AML-M3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "m3-lymphoblast": {
+  "title": "File:Acute leukemia-ALL.jpg",
+  "lic": "CC BY-SA 3.0",
+  "artist": "The original uploader was VashiDonsk at English Wikipedia.",
+  "page": "https://commons.wikimedia.org/wiki/File:Acute_leukemia-ALL.jpg",
+  "w": 347,
+  "h": 395,
+  "thumb": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Acute_leukemia-ALL.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+ },
+ "m3-myeloma": {
+  "title": "File:Multiple myeloma.jpg",
+  "lic": "CC BY-SA 3.0",
+  "artist": "Dr. Roshan Nasimudeen",
+  "page": "https://commons.wikimedia.org/wiki/File:Multiple_myeloma.jpg",
+  "w": 960,
+  "h": 720,
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/Multiple_myeloma.jpg/500px-Multiple_myeloma.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+ },
+ "m3-sezary": {
+  "title": "File:Hem1SezaryCell.jpg",
+  "lic": "CC BY-SA 3.0",
+  "artist": "El*Falaf",
+  "page": "https://commons.wikimedia.org/wiki/File:Hem1SezaryCell.jpg",
+  "w": 360,
+  "h": 363,
+  "thumb": "https://upload.wikimedia.org/wikipedia/commons/7/79/Hem1SezaryCell.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+ },
+ "m3-toxic": {
+  "title": "File:Cayado con granulación tóxica.jpg",
+  "lic": "CC BY-SA 4.0",
+  "artist": "DaFerRod",
+  "page": "https://commons.wikimedia.org/wiki/File:Cayado_con_granulaci%C3%B3n_t%C3%B3xica.jpg",
+  "w": 1533,
+  "h": 1533,
+  "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Cayado_con_granulaci%C3%B3n_t%C3%B3xica.jpg/500px-Cayado_con_granulaci%C3%B3n_t%C3%B3xica.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
  }
 }

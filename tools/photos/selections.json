@@ -46,17 +46,6 @@
   ],
   "caption": "Normal adult blood film: red cells of uniform size and staining."
  },
- "myeloblast": {
-  "label": "myeloblast__2",
-  "box": [
-   0.2,
-   0.0,
-   0.85,
-   0.45
-  ],
-  "author": "Armed Forces Institute of Pathology (US)",
-  "caption": "Myeloblast from acute myeloid leukaemia, with an Auer rod. Normal myeloblasts have no Auer rods."
- },
  "promyelocyte": {
   "label": "promyelocyte__1",
   "box": [
@@ -272,5 +261,76 @@
   "label": "m2-echino",
   "author": "Mikael Häggström",
   "caption": "Echinocyte."
+ },
+ "m3-myeloblast-auer": {
+  "label": "myeloblast__2",
+  "box": [
+   0.2,
+   0.0,
+   0.85,
+   0.45
+  ],
+  "author": "Armed Forces Institute of Pathology (US)",
+  "caption": "Myeloblast with an Auer rod, acute myeloid leukaemia."
+ },
+ "m2-microhypo": {
+  "label": "m2-microhypo",
+  "box": [
+   0.0,
+   0.1,
+   0.5,
+   0.9
+  ],
+  "author": "Ed Uthman",
+  "caption": "Iron deficiency anaemia: small, pale red cells with wide central pallor and pencil cells."
+ },
+ "m3-apl": {
+  "label": "m3-apl",
+  "box": [
+   0.0,
+   0.0,
+   0.7,
+   1.0
+  ],
+  "author": "Armed Forces Institute of Pathology (US)",
+  "caption": "Acute promyelocytic leukaemia: hypergranular abnormal promyelocytes."
+ },
+ "m3-lymphoblast": {
+  "label": "m3-lymphoblast",
+  "box": [
+   0.0,
+   0.15,
+   1.0,
+   0.85
+  ],
+  "caption": "Lymphoblasts in acute lymphoblastic leukaemia.",
+  "author": "VashiDonsk (English Wikipedia)"
+ },
+ "m3-myeloma": {
+  "label": "m3-myeloma",
+  "box": [
+   0.0,
+   0.3,
+   0.45,
+   0.75
+  ],
+  "author": "Dr Roshan Nasimudeen",
+  "caption": "Multiple myeloma: increased plasma cells in a bone marrow aspirate."
+ },
+ "m3-sezary": {
+  "label": "m3-sezary",
+  "author": "El*Falaf",
+  "caption": "Sézary cell with a convoluted (cerebriform) nucleus."
+ },
+ "m3-toxic": {
+  "label": "m3-toxic",
+  "box": [
+   0.45,
+   0.3,
+   0.95,
+   0.8
+  ],
+  "author": "DaFerRod",
+  "caption": "Band neutrophil with toxic granulation."
  }
 }
