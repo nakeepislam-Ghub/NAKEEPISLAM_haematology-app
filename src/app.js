@@ -1,4 +1,4 @@
-/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, cells.js and rbc.js. */
+/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, photos.js, photos-ui.js, cells.js and rbc.js. */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -178,7 +178,7 @@ function viewHome() {
     <div class="row"><a class="btn primary" href="#learn" data-lesson="${cur.id}">${doneIn(MOD) ? "Continue" : "Start"} Module ${MOD.n}: ${esc(cur.title)}</a><a class="btn" href="#atlas">Open the atlas</a></div>
   </div>
   <div class="hero-cells">
-    ${MOD.hero.map((id) => `<div class="figure">${cellSVG(id)}</div>`).join("")}
+    ${MOD.hero.map((id) => `<div class="figure">${cellPic(id)}</div>`).join("")}
   </div>
 </section>
 
@@ -223,7 +223,7 @@ function viewLearn() {
       <a class="btn small" href="#slides" data-slides="${L.id}">${icon("slides")}Present as slides</a>
       <a class="btn small" href="https://www.youtube.com/results?search_query=${encodeURIComponent(L.video)}" target="_blank" rel="noopener">${icon("animations")}Find videos (online)</a>
     </div>
-    ${cells.length ? `<div class="strip">${cells.map((c) => `<button data-cell="${c}"><div class="figure">${cellSVG(c)}</div><span>${esc(cellById[c].name)}</span></button>`).join("")}</div>` : ""}
+    ${cells.length ? `<div class="strip">${cells.map((c) => `<button data-cell="${c}"><div class="figure">${cellPic(c)}</div><span>${esc(cellById[c].name)}</span></button>`).join("")}</div>` : ""}
     ${body}
     <div class="keypoints"><h3>Key points</h3><ul>${L.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
     <div class="row">
@@ -243,10 +243,10 @@ function viewAtlas() {
   const list = MOD.cells.filter((c) => state.atlasFilter === "All" || lineageOf(c) === state.atlasFilter);
   return `
 <h1>${MOD.id === "m1" ? "Cell atlas" : MOD.id === "m2" ? "Red cell morphology atlas" : "White cell and leukaemia atlas"}</h1>
-<p class="muted" style="max-width:66ch">${MOD.id === "m1" ? "Original schematic drawings of Romanowsky-stained cells, drawn to scale against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : MOD.id === "m3" ? "Original schematic drawings of reactive, dysplastic and neoplastic white cells: blasts, Auer rods, APL, lymphoma cells, plasma cells and T cells. Tap a picture for what it is, where it is seen, and a reporting tip." : "Original schematic drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
+<p class="muted" style="max-width:66ch">${MOD.id === "m1" ? "Openly licensed photomicrographs and original to-scale drawings of Romanowsky-stained cells against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : MOD.id === "m3" ? "Openly licensed photomicrographs and original drawings of reactive, dysplastic and neoplastic white cells: blasts, Auer rods, APL, lymphoma cells, plasma cells and T cells. Tap a picture for what it is, where it is seen, and a reporting tip." : "Openly licensed photomicrographs and original drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
 <div class="filters">${groups.map((g) => `<button class="chip" data-filter="${g}" aria-pressed="${g === state.atlasFilter}">${g}</button>`).join("")}</div>
-<div class="atlas">${list.map((c) => `<button data-cell="${c.id}"><div class="figure">${cellSVG(c.id)}</div><b>${esc(c.name)}</b><small>${esc(lineageOf(c))}${c.size ? " · " + esc(c.size) : ""}</small></button>`).join("")}</div>
-<p class="note" style="margin-top:18px">Compare these drawings with the photographs in Bain's Blood Cells and the Color Atlas of Hematology in your library.</p>
+<div class="atlas">${list.map((c) => `<button data-cell="${c.id}"><div class="figure">${cellPic(c.id)}</div><b>${esc(c.name)}</b><small>${esc(lineageOf(c))}${c.size ? " · " + esc(c.size) : ""}</small></button>`).join("")}</div>
+<p class="note" style="margin-top:18px">${ATLAS_PHOTO_NOTE}</p>
 <div class="card" style="margin-top:14px;max-width:720px"><h3 style="margin-top:0">Photo atlases online</h3><p class="muted" style="margin-top:0">Free to view on their own websites (internet needed). Their images are owned by the publishers and are not copied into this app.</p><ul style="margin:0">${EXT_ATLASES.map(([t, u, d]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>: ${esc(d)}</li>`).join("")}</ul></div>`;
 }
 
@@ -257,7 +257,8 @@ function openCell(id) {
   bg.innerHTML = `<div class="drawer" role="dialog" aria-modal="true" aria-label="${esc(c.name)}">
     <div class="row" style="justify-content:space-between"><span class="tag az">${esc(lineageOf(c))}</span><button class="btn small" data-close>Close</button></div>
     <h2 style="margin-top:12px">${esc(c.name)}</h2>
-    <div class="figure">${renderCell(c)}</div>
+    ${photoFigure(id)}
+    <figure class="pic-fig${PHOTOS[id] ? " small" : ""}"><div class="figure">${renderCell(c)}</div><figcaption>${PHOTOS[id] ? "Original drawing of the same cell, to scale." : "Original drawing. No openly licensed photo of good enough quality was found for this cell yet."}</figcaption></figure>
     ${c.what ? `<dl class="kv">
       <dt>What it is</dt><dd>${esc(c.what)}</dd>
       <dt>Seen in</dt><dd>${esc(c.seen)}</dd>
@@ -272,7 +273,8 @@ function openCell(id) {
       <dt>Normal numbers</dt><dd>${esc(c.normal)}</dd>
       <dt>Look-alikes</dt><dd>${esc(c.mimic)}</dd>
     </dl>`}
-    <p class="note">Schematic illustration, not a photomicrograph. The scale bar is drawn to the same scale as the cells; normal red cells are about 7.5 µm across.</p>
+    <p class="note">In the drawing, the scale bar is to the same scale as the cells; normal red cells are about 7.5 µm across. Photo magnification varies.</p>
+    ${readingHTML(c)}
   </div>`;
   const close = () => { bg.remove(); document.removeEventListener("keydown", onKey); };
   const onKey = (e) => { if (e.key === "Escape") close(); };
@@ -310,7 +312,7 @@ function flashHTML() {
   const total = state.deck === "cells" ? MOD.cells.length : state.deck === "facts" ? MOD.facts.length : MOD.cells.length + MOD.facts.length;
   const knownHere = deckIds(state.deck).filter((k) => state.known.has(k)).length;
   const front = c.kind === "cell"
-    ? `<span class="label">${MOD.id === "m1" ? "Identify this cell" : "Name this finding"}</span><div class="figure">${cellSVG(c.cell)}</div>`
+    ? `<span class="label">${MOD.id === "m1" ? "Identify this cell" : "Name this finding"}</span><div class="figure">${cellPic(c.cell, { credit: true })}</div>`
     : `<span class="label">Question</span><div class="q">${esc(c.q)}</div>`;
   const back = c.kind === "cell"
     ? `<span class="label">Answer</span><div class="q">${esc(c.a)}</div><p>${esc(c.sub)}</p><p class="muted">${esc(cellById[c.cell].mimic || cellById[c.cell].seen)}</p>`
@@ -643,7 +645,7 @@ function buildSlides(L) {
     slides.push(`<div class="slide"><span class="kicker">${esc(L.title)}</span><h3>${h}</h3>${rest}</div>`);
   });
   const cells = MOD.lessonCells[L.id] || [];
-  if (cells.length) slides.push(`<div class="slide"><span class="kicker">Morphology</span><h3>Cells in this lesson</h3><div class="cells">${cells.map((c) => `<div><div class="figure">${cellSVG(c)}</div><small>${esc(cellById[c].name)}</small></div>`).join("")}</div></div>`);
+  if (cells.length) slides.push(`<div class="slide"><span class="kicker">Morphology</span><h3>Cells in this lesson</h3><div class="cells">${cells.map((c) => `<div><div class="figure">${cellPic(c, { credit: true })}</div><small>${esc(cellById[c].name)}</small></div>`).join("")}</div></div>`);
   slides.push(`<div class="slide"><span class="kicker">Summary</span><h3>Key points</h3><ul>${L.points.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`);
   return slides;
 }
@@ -670,9 +672,10 @@ function viewAbout() {
 </ul>
 <p>After the first visit, lessons, atlas, flashcards, quiz, cases, workups, animations and slides all work without internet. Video links need a connection. Your progress is stored on your own device.</p>
 <h2 style="margin-top:22px">Content and copyright</h2>
-<p>All text in this app is original teaching material written for it. The cell pictures are original schematic drawings, not copies of textbook figures or photographs. Facts and reference ranges were checked against the books below, which you should read for full detail and real photomicrographs.</p>
+<p>All text in this app is original teaching material written for it. Textbook figures and photographs are not reproduced, because they are under copyright. The cell photographs are openly licensed images from Wikimedia Commons (CC0, public domain, CC BY or CC BY-SA; credits below), and the drawings are original. Facts and reference ranges were checked against the books below, which you should read for full detail and more photomicrographs.</p>
 <ul>${Object.values(SOURCES).map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
 <p>Reference ranges differ between laboratories, analysers and populations. Always use your own laboratory's ranges for reporting.</p>
+${photoCreditsHTML()}
 <h2 style="margin-top:22px">Coming next</h2>
 <ul>${MODULES.filter((m) => !m.ready).map((m) => `<li><b>Module ${m.n}: ${esc(m.title)}.</b> ${esc(m.sub)}.</li>`).join("")}</ul>
 <p class="footer-note">Interactive Diagnostic Haematology · Modules 1 to 3 · For education only, not for clinical decision-making.</p></div>`;
@@ -780,7 +783,7 @@ document.addEventListener("click", (e) => {
   const tn = e.target.closest("[data-tn]");
   if (tn) {
     const n = TNODES.find((x) => x.id === tn.dataset.tn);
-    $("#treeInfo").innerHTML = `<div class="row" style="align-items:flex-start;gap:14px">${n.cell ? `<div class="figure" style="width:110px;flex:none">${cellSVG(n.cell)}</div>` : ""}<div style="flex:1;min-width:0"><b>${n.t}</b><p style="margin-bottom:0">${n.info}</p></div></div>`;
+    $("#treeInfo").innerHTML = `<div class="row" style="align-items:flex-start;gap:14px">${n.cell ? `<div class="figure" style="width:110px;flex:none">${cellPic(n.cell)}</div>` : ""}<div style="flex:1;min-width:0"><b>${n.t}</b><p style="margin-bottom:0">${n.info}</p></div></div>`;
     return;
   }
   if (t.id === "odcreset") { $("#ph").value = 7.4; $("#tp").value = 37; $("#bpg").value = 5; $("#hbf").checked = false; drawODC(); return; }

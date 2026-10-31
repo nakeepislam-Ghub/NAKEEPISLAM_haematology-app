@@ -1,0 +1,276 @@
+{
+ "basophilic-normoblast": {
+  "label": "basophilic-normoblast",
+  "box": [
+   0.52,
+   0.22,
+   0.92,
+   0.72
+  ],
+  "author": "Bobjgalindo",
+  "caption": "Basophilic normoblast in a bone marrow aspirate."
+ },
+ "polychromatic-normoblast": {
+  "label": "polychromatic-normoblast__0",
+  "author": "El*Falaf",
+  "caption": "Polychromatic normoblast."
+ },
+ "orthochromatic-normoblast": {
+  "label": "orthochromatic-normoblast",
+  "box": [
+   0.2,
+   0.0,
+   0.85,
+   0.65
+  ],
+  "author": "Bobjgalindo",
+  "caption": "Orthochromatic normoblast in a bone marrow aspirate."
+ },
+ "reticulocyte": {
+  "label": "reticulocyte",
+  "box": [
+   0.5,
+   0.0,
+   1.0,
+   1.0
+  ],
+  "caption": "Supravital stain: reticulocytes show blue-staining reticulum (RNA)."
+ },
+ "rbc": {
+  "label": "rbc",
+  "box": [
+   0.55,
+   0.0,
+   1.0,
+   0.45
+  ],
+  "caption": "Normal adult blood film: red cells of uniform size and staining."
+ },
+ "myeloblast": {
+  "label": "myeloblast__2",
+  "box": [
+   0.2,
+   0.0,
+   0.85,
+   0.45
+  ],
+  "author": "Armed Forces Institute of Pathology (US)",
+  "caption": "Myeloblast from acute myeloid leukaemia, with an Auer rod. Normal myeloblasts have no Auer rods."
+ },
+ "promyelocyte": {
+  "label": "promyelocyte__1",
+  "box": [
+   0.52,
+   0.2,
+   0.88,
+   0.62
+  ],
+  "author": "isis325",
+  "caption": "Promyelocyte with abundant azurophilic granules."
+ },
+ "myelocyte": {
+  "label": "myelocyte__0",
+  "author": "El*Falaf"
+ },
+ "metamyelocyte": {
+  "label": "metamyelocyte",
+  "author": "El*Falaf"
+ },
+ "band": {
+  "label": "band__0",
+  "box": [
+   0.3,
+   0.05,
+   0.85,
+   0.95
+  ],
+  "author": "Ajay Kumar Chaurasiya",
+  "caption": "Band neutrophil in a Wright-stained blood film."
+ },
+ "neutrophil": {
+  "label": "neutrophil",
+  "author": "El*Falaf"
+ },
+ "eosinophil": {
+  "label": "eosinophil",
+  "author": "El*Falaf"
+ },
+ "basophil": {
+  "label": "basophil",
+  "author": "El*Falaf"
+ },
+ "monocyte": {
+  "label": "monocyte",
+  "author": "El*Falaf"
+ },
+ "small-lymphocyte": {
+  "label": "small-lymphocyte",
+  "author": "El*Falaf"
+ },
+ "megakaryocyte": {
+  "label": "megakaryocyte",
+  "box": [
+   0.05,
+   0.1,
+   0.5,
+   0.8
+  ],
+  "author": "Simon Caulton",
+  "caption": "Megakaryocyte in a bone marrow aspirate."
+ },
+ "platelet": {
+  "label": "platelet",
+  "box": [
+   0.15,
+   0.15,
+   0.85,
+   0.75
+  ],
+  "author": "Tommaso Leonardi (Tleonardi)",
+  "caption": "Clumped platelets, May-Grünwald-Giemsa stain."
+ },
+ "mast-cell": {
+  "label": "mast-cell",
+  "box": [
+   0.35,
+   0.0,
+   0.85,
+   0.6
+  ],
+  "author": "Ed Uthman",
+  "caption": "Mast cell in a bone marrow aspirate, Wright stain."
+ },
+ "m2-normal": {
+  "label": "rbc",
+  "box": [
+   0.55,
+   0.0,
+   1.0,
+   0.45
+  ],
+  "caption": "Normal adult blood film."
+ },
+ "m2-sphero": {
+  "label": "m2-sphero",
+  "box": [
+   0.2,
+   0.05,
+   0.8,
+   0.95
+  ],
+  "author": "Joan-Lluis Vives-Corrons et al.",
+  "caption": "Hereditary spherocytosis, MGG stain: small dense cells without central pallor."
+ },
+ "m2-target": {
+  "label": "m2-target",
+  "box": [
+   0.2,
+   0.1,
+   0.8,
+   0.7
+  ],
+  "author": "Ed Uthman",
+  "caption": "Target cells (codocytes)."
+ },
+ "m2-schisto": {
+  "label": "m2-schisto",
+  "author": "Mikael Häggström",
+  "caption": "Schistocytes (red cell fragments), Wright-Giemsa stain."
+ },
+ "m2-sickle": {
+  "label": "m2-sickle",
+  "box": [
+   0.25,
+   0.0,
+   0.75,
+   1.0
+  ],
+  "author": "Ed Uthman",
+  "caption": "Sickle cell anaemia: sickled cells and target cells."
+ },
+ "m2-acantho": {
+  "label": "m2-acantho",
+  "box": [
+   0.2,
+   0.2,
+   0.8,
+   0.75
+  ],
+  "author": "S Bhimji",
+  "caption": "Acanthocytes."
+ },
+ "m2-hj": {
+  "label": "m2-hj",
+  "box": [
+   0.05,
+   0.5,
+   0.6,
+   1.0
+  ],
+  "author": "El*Falaf",
+  "caption": "Howell–Jolly body in a red cell (lower left), next to a neutrophil."
+ },
+ "m2-pappen": {
+  "label": "m2-pappen",
+  "box": [
+   0.0,
+   0.1,
+   0.48,
+   0.75
+  ],
+  "author": "Paulo Henrique Orlandi Mourão",
+  "caption": "Pappenheimer bodies, May-Grünwald-Giemsa stain."
+ },
+ "m2-megaloblast": {
+  "label": "m2-megaloblast",
+  "box": [
+   0.5,
+   0.0,
+   1.0,
+   0.5
+  ],
+  "author": "Makysm",
+  "caption": "Megaloblastic erythroid precursors in a bone marrow aspirate."
+ },
+ "m2-ringsidero": {
+  "label": "m2-ringsidero",
+  "box": [
+   0.25,
+   0.0,
+   0.85,
+   0.75
+  ],
+  "author": "Paulo Henrique Orlandi Mourão",
+  "caption": "Ring sideroblasts, Perls (Prussian blue) stain."
+ },
+ "m2-hyperseg": {
+  "label": "m2-hyperseg",
+  "author": "Ed Uthman",
+  "caption": "Hypersegmented neutrophil."
+ },
+ "m2-poly": {
+  "label": "m2-poly",
+  "author": "Mikael Häggström",
+  "caption": "Polychromatic red cell (top right): larger and blue-grey, a reticulocyte on a Romanowsky stain."
+ },
+ "m2-tear": {
+  "label": "m2-tear",
+  "author": "Mikael Häggström",
+  "caption": "Teardrop cell (dacrocyte)."
+ },
+ "m2-stipple": {
+  "label": "m2-stipple",
+  "author": "Mikael Häggström",
+  "caption": "Basophilic stippling in a red cell."
+ },
+ "m2-ellipto": {
+  "label": "m2-ellipto",
+  "author": "Mikael Häggström",
+  "caption": "Elliptocyte."
+ },
+ "m2-echino": {
+  "label": "m2-echino",
+  "author": "Mikael Häggström",
+  "caption": "Echinocyte."
+ }
+}

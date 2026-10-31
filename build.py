@@ -1,7 +1,7 @@
 import pathlib, json
 src = pathlib.Path("src")
 shell = (src/"shell.html").read_text()
-js = "\n".join((src/f).read_text() for f in ["data.js","m2-data.js","m3-data.js","cells.js","rbc.js","app.js"])
+js = "\n".join((src/f).read_text() for f in ["data.js","m2-data.js","m3-data.js","photos.js","photos-ui.js","cells.js","rbc.js","app.js"])
 # Artifact preview: page fragment, the host adds the document skeleton (not committed).
 preview = pathlib.Path("build"); preview.mkdir(exist_ok=True)
 (preview/"artifact.html").write_text(shell + "\n<script>\n" + js + "\n</script>\n")
@@ -27,7 +27,7 @@ sw_reg = """<script>if('serviceWorker' in navigator){addEventListener('load',()=
   "start_url":"./","scope":"./","display":"standalone","background_color":"#faf7f9","theme_color":"#4a3891",
   "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png"},
            {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}, indent=2))
-(out/"sw.js").write_text("""const CACHE = 'idh-v4';
+(out/"sw.js").write_text("""const CACHE = 'idh-v6';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k))))); self.clients.claim(); });
