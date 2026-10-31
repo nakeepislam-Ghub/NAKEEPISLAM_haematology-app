@@ -1,0 +1,1969 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4a3891">
+<meta name="description" content="Interactive haematology learning for Clinical Pathology postgraduates.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Interactive Diagnostic Haematology</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: app frame with a left rail on wide screens and a bottom tab bar on phones.
+   Palette taken from a Romanowsky-stained film: methylene azure, eosin, glass. */
+:root {
+  --bg: #faf7f9;
+  --surface: #ffffff;
+  --sunk: #f2edf3;
+  --ink: #221b2c;
+  --muted: #675d74;
+  --line: #e4dce8;
+  --azure: #4a3891;
+  --azure-soft: #ebe6f7;
+  --eosin: #b93a60;
+  --eosin-soft: #fae6ec;
+  --ok: #23714f;
+  --ok-soft: #e1f2e9;
+  --bad: #a83232;
+  --bad-soft: #fbe5e5;
+  --slide: #f7f0f2;
+  --shadow: 0 1px 2px rgba(34,27,44,.06), 0 6px 20px rgba(34,27,44,.06);
+  --f-display: "Spectral", Georgia, "Times New Roman", serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #14111a; --surface: #1d1925; --sunk: #241f2e; --ink: #ece7f3; --muted: #a79eb5; --line: #342d40;
+  --azure: #b0a2ef; --azure-soft: #2c2645; --eosin: #f08aa7; --eosin-soft: #3d2030;
+  --ok: #6fd1a2; --ok-soft: #173326; --bad: #f19494; --bad-soft: #3d1d1d; --slide: #ece3e7;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #14111a; --surface: #1d1925; --sunk: #241f2e; --ink: #ece7f3; --muted: #a79eb5; --line: #342d40;
+  --azure: #b0a2ef; --azure-soft: #2c2645; --eosin: #f08aa7; --eosin-soft: #3d2030;
+  --ok: #6fd1a2; --ok-soft: #173326; --bad: #f19494; --bad-soft: #3d1d1d; --slide: #ece3e7;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3); color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); }
+h2 { font-size: 1.45rem; }
+h3 { font-size: 1.18rem; margin-top: 1.6em; margin-bottom: .4em; }
+p { margin: .6em 0; }
+a { color: var(--azure); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--azure); outline-offset: 2px; border-radius: 4px; }
+.label { font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.num, .mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* Frame */
+.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100%; }
+.rail { position: sticky; top: env(safe-area-inset-top, 0px); height: calc(100vh - env(safe-area-inset-top, 0px)); overflow-y: auto; border-right: 1px solid var(--line); background: var(--surface); padding: 20px 14px; display: flex; flex-direction: column; gap: 18px; padding-left: max(14px, env(safe-area-inset-left, 0px)); }
+.brand { display: flex; gap: 10px; align-items: center; text-decoration: none; color: var(--ink); }
+.brand svg { flex: none; }
+.brand b { font-family: var(--f-display); font-size: 1.02rem; line-height: 1.15; display: block; }
+.brand small { color: var(--muted); font-size: .78rem; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: .95rem; }
+.nav a svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav a:hover { background: var(--sunk); }
+.nav a[aria-current="page"] { background: var(--azure-soft); color: var(--azure); }
+.rail-foot { margin-top: auto; font-size: .8rem; color: var(--muted); display: flex; flex-direction: column; gap: 8px; }
+.netpill { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 600; }
+.netpill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.netpill.off::before { background: var(--eosin); }
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; gap: 12px; align-items: center; }
+.top .crumb { font-weight: 600; color: var(--muted); font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.search { margin-left: auto; position: relative; flex: 0 1 320px; min-width: 0; }
+.search input { width: 100%; padding: 8px 12px 8px 34px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 2; }
+.results { position: absolute; right: 0; top: calc(100% + 6px); width: min(420px, calc(100vw - 32px)); max-height: 60vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 6px; }
+.results a { display: block; padding: 8px 10px; border-radius: 6px; text-decoration: none; color: var(--ink); }
+.results a:hover, .results a:focus { background: var(--sunk); }
+.results small { display: block; color: var(--muted); font-size: .8rem; }
+.page { padding-block: 24px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1180px; width: 100%; }
+.tabs-mobile { display: none; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .rail { display: none; }
+  .tabs-mobile { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+  .tabs-mobile a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px 7px; font-size: .7rem; font-weight: 600; color: var(--muted); text-decoration: none; }
+  .tabs-mobile a svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tabs-mobile a[aria-current="page"] { color: var(--azure); }
+  .top .crumb { display: none; }
+  .search { flex: 1 1 auto; margin-left: 0; }
+  .page { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Shared pieces */
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; text-decoration: none; color: var(--ink); }
+.btn:hover { border-color: var(--azure); }
+.btn svg { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.btn.primary { background: var(--azure); border-color: var(--azure); color: var(--surface); }
+.btn.small { padding: 5px 11px; font-size: .88rem; }
+.btn[disabled] { opacity: .45; cursor: default; }
+.chip { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .88rem; font-weight: 600; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; }
+.muted { color: var(--muted); }
+.tag { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; background: var(--eosin-soft); color: var(--eosin); }
+.tag.az { background: var(--azure-soft); color: var(--azure); }
+.tag.ok { background: var(--ok-soft); color: var(--ok); }
+.bar { height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--azure); border-radius: 3px; }
+.tablewrap { overflow-x: auto; margin: .8em 0; }
+table.t { border-collapse: collapse; width: 100%; font-size: .93rem; min-width: 460px; }
+table.t th { text-align: left; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--line); padding: 6px 10px; }
+table.t td { border-bottom: 1px solid var(--line); padding: 7px 10px; vertical-align: top; }
+table.t.num td:not(:first-child) { font-family: var(--f-mono); font-size: .86rem; white-space: nowrap; }
+.cellsvg { display: block; width: 100%; height: auto; border-radius: 8px; }
+.figure { background: var(--slide); border-radius: 10px; overflow: hidden; }
+
+/* Home */
+.hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; align-items: center; margin-bottom: 30px; }
+.hero p.lede { font-size: 1.12rem; color: var(--muted); max-width: 54ch; }
+.hero-cells { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hero-cells .figure:nth-child(2) { transform: translateY(18px); }
+.modules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.module { position: relative; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--ink); }
+.module .n { font-family: var(--f-display); font-size: 2rem; color: var(--azure); line-height: 1; }
+.module.locked { background: var(--sunk); }
+.module.locked .n { color: var(--muted); }
+.module h3 { margin: 0; }
+.quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.quick a { display: flex; flex-direction: column; gap: 2px; padding: 14px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); text-decoration: none; color: var(--ink); }
+.quick a b { font-size: 1rem; }
+.quick a span { color: var(--muted); font-size: .86rem; }
+.quick a:hover { border-color: var(--azure); }
+.section-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 30px 0 12px; flex-wrap: wrap; }
+
+/* Learn */
+.learn { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: start; }
+.toc { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 4px; }
+.toc button { text-align: left; border: 0; background: none; padding: 9px 10px; border-radius: 8px; display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
+.toc button:hover { background: var(--sunk); }
+.toc button[aria-current="true"] { background: var(--azure-soft); color: var(--azure); font-weight: 600; }
+.toc .tick { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line); margin-top: 3px; display: grid; place-items: center; font-size: .7rem; }
+.toc .tick.done { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.reader { max-width: 72ch; min-width: 0; }
+.reader .meta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; color: var(--muted); font-size: .9rem; margin: 8px 0 18px; }
+.reader ul, .reader ol { padding-left: 1.3em; }
+.reader li { margin: .3em 0; }
+.keypoints { background: var(--azure-soft); border-radius: var(--r); padding: 16px 18px; margin: 26px 0 14px; }
+.keypoints h3 { margin: 0 0 6px; font-size: 1.05rem; color: var(--azure); }
+.keypoints ul { margin: 0; }
+.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin: 18px 0; }
+.strip button { border: 0; padding: 0; background: none; text-align: left; font-size: .8rem; color: var(--muted); }
+.strip button span { display: block; margin-top: 4px; line-height: 1.25; }
+.sources { font-size: .88rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; margin-top: 20px; }
+.sources ul { padding-left: 1.1em; margin: 4px 0; }
+.pager { display: flex; justify-content: space-between; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .learn { grid-template-columns: minmax(0, 1fr); }
+  .toc { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 6px; }
+  .toc button { flex: none; max-width: 210px; }
+}
+
+/* Atlas */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 18px; }
+.atlas { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+.atlas button { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 8px 8px 10px; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+.atlas button:hover { border-color: var(--azure); }
+.atlas b { font-size: .92rem; line-height: 1.25; padding: 0 2px; }
+.atlas small { color: var(--muted); font-size: .78rem; padding: 0 2px; }
+.drawer-bg { position: fixed; inset: 0; background: rgba(20,14,28,.45); z-index: 40; display: flex; justify-content: flex-end; }
+.drawer { width: min(560px, 100%); height: 100%; overflow-y: auto; background: var(--surface); padding: 22px; padding-top: calc(22px + env(safe-area-inset-top, 0px)); padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); padding-right: max(22px, env(safe-area-inset-right, 0px)); box-shadow: var(--shadow); }
+.drawer .figure { max-width: 380px; margin: 14px 0; }
+.kv { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 8px 14px; margin: 12px 0; font-size: .95rem; }
+.kv dt { color: var(--muted); font-weight: 600; font-size: .85rem; }
+.kv dd { margin: 0; }
+.note { font-size: .82rem; color: var(--muted); }
+
+/* Practice */
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; padding: 3px; background: var(--surface); gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--azure); color: var(--surface); }
+.flash { perspective: 1200px; max-width: 560px; margin: 18px 0; }
+.flash-inner { position: relative; min-height: 340px; transition: transform .5s; transform-style: preserve-3d; cursor: pointer; }
+.flash-inner.flipped { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; justify-content: center; gap: 10px; box-shadow: var(--shadow); }
+.face.back { transform: rotateY(180deg); background: var(--azure-soft); }
+.face .q { font-family: var(--f-display); font-size: 1.35rem; line-height: 1.3; }
+.face .figure { width: 210px; max-width: 100%; align-self: center; }
+@media (prefers-reduced-motion: reduce) { .flash-inner { transition: none; } }
+.quiz { max-width: 680px; }
+.opts { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+.opt { text-align: left; padding: 12px 14px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); display: grid; grid-template-columns: 26px 1fr; gap: 8px; }
+.opt:hover:not([disabled]) { border-color: var(--azure); }
+.opt .letter { font-family: var(--f-mono); font-weight: 600; color: var(--muted); }
+.opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt[disabled] { cursor: default; }
+.explain { border-left: 3px solid var(--azure); padding: 6px 14px; background: var(--sunk); border-radius: 0 8px 8px 0; }
+
+/* Cases */
+.cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.cases button { text-align: left; display: flex; flex-direction: column; gap: 8px; }
+.cases button:hover { border-color: var(--azure); }
+.casedata { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 14px 0; }
+.casedata div { background: var(--sunk); border-radius: 8px; padding: 8px 10px; }
+.casedata small { display: block; color: var(--muted); font-size: .76rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.casedata b { font-family: var(--f-mono); font-size: .92rem; }
+.step { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+
+/* Workups */
+.tree { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
+.trail { display: flex; flex-wrap: wrap; gap: 6px; font-size: .85rem; }
+.trail span { background: var(--sunk); padding: 3px 9px; border-radius: 999px; color: var(--muted); }
+.endbox { border: 2px solid var(--eosin); border-radius: var(--r); padding: 16px; background: var(--eosin-soft); }
+.endbox h3 { margin: 0 0 6px; color: var(--eosin); }
+.checklist { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; max-width: 700px; }
+.checklist label { display: grid; grid-template-columns: 26px 1fr; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); cursor: pointer; }
+.checklist input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--ok); }
+.checklist input:checked + div { color: var(--muted); }
+.checklist input:checked + div b { text-decoration: line-through; }
+.calcs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: .84rem; font-weight: 600; color: var(--muted); }
+.field input, .field select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); font-family: var(--f-mono); width: 100%; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.out { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--azure-soft); }
+.out b { font-family: var(--f-mono); }
+
+/* Animations */
+.anim { display: flex; flex-direction: column; gap: 12px; }
+.svgwrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.svgwrap svg { display: block; min-width: 640px; width: 100%; height: auto; }
+.svgwrap text { fill: var(--ink); font-family: var(--f-body); }
+.tnode circle { transition: opacity .4s, transform .4s; }
+.tnode { cursor: pointer; }
+.tnode.hidden, .tedge.hidden { opacity: 0; }
+.tnode, .tedge { transition: opacity .45s; }
+.tedge { stroke: var(--muted); stroke-width: 1.6; fill: none; }
+.mat { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 22px; align-items: start; }
+.mat .stage { position: relative; aspect-ratio: 1; max-width: 100%; }
+.mat .stage > div { position: absolute; inset: 0; transition: opacity .6s; }
+.slider { width: 100%; accent-color: var(--azure); }
+.ticks { display: flex; justify-content: space-between; font-size: .72rem; color: var(--muted); gap: 4px; }
+.ticks span { flex: 1; text-align: center; min-width: 0; }
+.odc { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.odc svg { width: 100%; height: auto; display: block; }
+.odc .axis { stroke: var(--muted); }
+.odc .grid { stroke: var(--line); }
+.odc text { fill: var(--muted); font-size: 11px; font-family: var(--f-body); }
+@media (max-width: 760px) { .mat, .odc { grid-template-columns: minmax(0, 1fr); } }
+
+/* Slides */
+.deck { background: #120f18; border-radius: 12px; padding: 12px; }
+.slide { aspect-ratio: 16 / 9; background: #fbf8fa; color: #221b2c; border-radius: 8px; padding: clamp(14px, 4%, 44px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: clamp(.78rem, 1.6vw, 1.15rem); }
+.slide h2 { font-size: 1.9em; color: #4a3891; }
+.slide h3 { font-size: 1.3em; margin: 0; color: #4a3891; }
+.slide .kicker { color: #b93a60; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .7em; }
+.slide table.t { min-width: 0; font-size: .82em; }
+.slide table.t th, .slide table.t td { border-color: #e4dce8; color: #221b2c; }
+.slide ul { margin: 0; padding-left: 1.2em; }
+.slide .cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+.slide .cells small { display: block; font-size: .7em; color: #675d74; margin-top: 3px; }
+.slide.title { justify-content: center; background: linear-gradient(135deg, #2d2257, #4a3891 60%, #b93a60); color: #fff; }
+.slide.title h2 { color: #fff; font-size: 2.4em; }
+.slide.title p { color: #e9e3f7; }
+.deckbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 2px 0; color: #e9e3f7; flex-wrap: wrap; }
+.deckbar .btn { background: #241f2e; border-color: #3d3550; color: #ece7f3; }
+.deck:fullscreen { display: flex; flex-direction: column; justify-content: center; padding: 3vh 3vw; }
+.deck:fullscreen .slide { max-height: 86vh; width: auto; margin: 0 auto; max-width: 100%; }
+
+/* About */
+.prose { max-width: 70ch; }
+.prose li { margin: .35em 0; }
+.footer-note { font-size: .82rem; color: var(--muted); margin-top: 30px; }
+</style>
+
+<div class="app">
+  <aside class="rail" aria-label="Main navigation">
+    <a class="brand" href="#home">
+      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="#e9c9d6"/><circle cx="20" cy="20" r="18" fill="none" stroke="#b93a60" stroke-width="1.5"/><circle cx="14" cy="17" r="6" fill="#4a3891"/><circle cx="25" cy="15" r="5" fill="#4a3891"/><circle cx="22" cy="26" r="5.5" fill="#4a3891"/><path d="M17 19 L22 17 M22 18 L22 23" stroke="#4a3891" stroke-width="1.5"/></svg>
+      <span><b>Diagnostic Haematology</b><small>Interactive learning</small></span>
+    </a>
+    <nav class="nav" id="nav"></nav>
+    <div class="rail-foot">
+      <span class="netpill" id="netpill">Online</span>
+      <button class="btn small" id="installBtn" hidden>Install app</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <span class="crumb" id="crumb">Module 1 · Normal blood and marrow cells</span>
+      <div class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input id="q" type="search" placeholder="Search cells, lessons, facts" aria-label="Search" autocomplete="off">
+        <div class="results" id="results" hidden></div>
+      </div>
+    </header>
+    <main class="page" id="view" tabindex="-1"></main>
+  </div>
+  <nav class="tabs-mobile" id="tabs" aria-label="Main navigation"></nav>
+</div>
+
+<script>
+/* Module 1 content: Normal blood and marrow cells. Original text written from the
+   reference books in the project library; values are the commonly quoted adult
+   reference intervals and should be checked against the local laboratory's ranges. */
+
+const SOURCES = {
+  dl: "Dacie and Lewis Practical Haematology, 11th ed. (2011)",
+  bc: "Bain, Blood Cells: A Practical Guide, 5th ed. (2015)",
+  bmp: "Bain et al., Bone Marrow Pathology, 4th ed. (2010)",
+  hof: "Hoffbrand et al., Postgraduate Haematology, 7th ed. (2015)",
+  bmd: "Bain et al., Bone Marrow Diagnosis: An Illustrated Guide, 3rd ed. (2014)",
+  bmm: "Bone Marrow: A Practical Manual (2011)",
+  atlas: "Theml et al., Color Atlas of Hematology",
+  lhp: "Laboratory Hematology Practice (2012)",
+  hp: "Jaffe et al., Hematopathology, 2nd ed. (2017)",
+  psh: "Problem Solving in Haematology (2010)"
+};
+
+const MODULES = [
+  { id: "m1", n: 1, title: "Normal blood and marrow cells", sub: "Histology and physiology", ready: true },
+  { id: "m2", n: 2, title: "Red cell disorders", sub: "Anaemia workup, morphology, haemolysis", ready: false },
+  { id: "m3", n: 3, title: "White cell disorders and leukaemia", sub: "Immunophenotyping, WHO 5th edition and ICC 2022", ready: false },
+  { id: "m4", n: 4, title: "Haemostasis", sub: "Platelets, coagulation, thrombosis workup", ready: false }
+];
+
+const LESSONS = [
+{
+  id: "haematopoiesis",
+  title: "Haematopoiesis",
+  minutes: 12,
+  sources: ["hof", "bmp", "hp"],
+  video: "haematopoiesis stem cell hierarchy lecture",
+  body: `
+<p>Haematopoiesis is the production of all blood cells from a small pool of self-renewing haematopoietic stem cells (HSCs). In an adult, the marrow makes roughly 2.5 × 10<sup>9</sup> red cells, 2.5 × 10<sup>9</sup> platelets and 1 × 10<sup>9</sup> granulocytes per kilogram per day, and it can raise this output several-fold under stress.</p>
+<h3>Sites by age</h3>
+<table class="t"><thead><tr><th>Stage</th><th>Main site</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Weeks 3 to 8</td><td>Yolk sac (mesoblastic phase)</td><td>Primitive, nucleated megaloblastic red cells making embryonic haemoglobins (Gower 1, Gower 2, Portland)</td></tr>
+<tr><td>Week 6 to month 7</td><td>Liver, with a smaller contribution from the spleen (hepatic phase)</td><td>Definitive haematopoiesis seeded from the aorta–gonad–mesonephros (AGM) region; HbF predominates</td></tr>
+<tr><td>Month 5 onwards</td><td>Bone marrow (medullary phase)</td><td>The only normal site after birth</td></tr>
+<tr><td>Childhood</td><td>Almost all bones</td><td>Red marrow gradually replaced by fat in the long bones</td></tr>
+<tr><td>Adult</td><td>Axial skeleton: vertebrae, ribs, sternum, skull, pelvis, proximal femur and humerus</td><td>Posterior iliac crest is the standard sampling site</td></tr>
+</tbody></table>
+<p>Extramedullary haematopoiesis in an adult (liver, spleen, paravertebral masses) is always abnormal. It is seen in severe chronic haemolysis, thalassaemia major and primary myelofibrosis.</p>
+<h3>The stem cell hierarchy</h3>
+<p>The classical model places the HSC at the top. It gives rise to multipotent progenitors (MPP), which split into a common myeloid progenitor (CMP) and a common lymphoid progenitor (CLP). The CMP produces the megakaryocyte–erythroid progenitor (MEP) and the granulocyte–monocyte progenitor (GMP). Single-cell studies now show this is closer to a continuum: some HSCs are already biased towards megakaryocytes, and lineage choice happens earlier than the tree suggests. The tree is still the most useful frame for interpreting immunophenotypes.</p>
+<ul>
+<li><b>HSC phenotype:</b> CD34+, CD38−, CD90+, CD45RA−, lineage-negative. CD34+ cells make up about 1% to 2% of normal marrow nucleated cells.</li>
+<li><b>Colony assays:</b> CFU-GEMM (mixed), BFU-E and CFU-E (erythroid), CFU-GM, CFU-Meg.</li>
+<li><b>Niche:</b> HSCs live close to sinusoidal endothelium and perivascular stromal cells that secrete CXCL12 (SDF-1) and stem cell factor. The CXCL12–CXCR4 axis holds them in the marrow; plerixafor blocks CXCR4 to mobilise stem cells for collection.</li>
+</ul>
+<h3>Growth factors</h3>
+<table class="t"><thead><tr><th>Factor</th><th>Source</th><th>Main action</th></tr></thead><tbody>
+<tr><td>Erythropoietin (EPO)</td><td>Peritubular interstitial cells of the kidney (about 90%), liver</td><td>Survival and proliferation of CFU-E and early erythroblasts; production rises with tissue hypoxia through HIF-2α</td></tr>
+<tr><td>Thrombopoietin (TPO)</td><td>Liver, made at a constant rate</td><td>Binds MPL on platelets and megakaryocytes; free TPO level falls as platelet mass rises</td></tr>
+<tr><td>G-CSF</td><td>Macrophages, endothelium, fibroblasts</td><td>Neutrophil production and release</td></tr>
+<tr><td>GM-CSF, IL-3</td><td>T cells, macrophages</td><td>Early multilineage progenitors</td></tr>
+<tr><td>M-CSF</td><td>Stromal cells</td><td>Monocyte and macrophage lineage</td></tr>
+<tr><td>IL-5</td><td>T helper 2 cells</td><td>Eosinophils</td></tr>
+<tr><td>SCF (KIT ligand), FLT3 ligand</td><td>Stromal cells</td><td>Early progenitors, mast cells (SCF)</td></tr>
+<tr><td>IL-7</td><td>Stromal cells</td><td>Early B and T lymphopoiesis</td></tr>
+</tbody></table>
+<h3>Transcription factors to know</h3>
+<p>GATA2 and RUNX1 maintain early progenitors. GATA1 with its cofactor FOG1, and KLF1, drive erythroid and megakaryocytic differentiation. PU.1 (SPI1) and C/EBPα drive myeloid differentiation; high PU.1 favours monocytes and lower PU.1 with C/EBPα favours granulocytes. PAX5 commits B cells, and Notch signalling with GATA3 commits T cells. Many of these genes are mutated in myeloid neoplasms (RUNX1, CEBPA, GATA2), which is why they matter later in Module 3.</p>
+`,
+  points: [
+    "Yolk sac (weeks 3 to 8), then liver and spleen (week 6 to month 7), then marrow from month 5",
+    "Adult red marrow is axial: vertebrae, pelvis, ribs, sternum, skull, proximal femur and humerus",
+    "HSC: CD34+ CD38− CD90+ CD45RA−, lineage-negative",
+    "CMP gives MEP and GMP; CLP gives B, T and NK cells",
+    "EPO from the kidney responds to hypoxia via HIF; TPO from the liver is constant and cleared by platelet mass",
+    "GATA1 and KLF1 for erythroid; PU.1 and C/EBPα for myeloid; PAX5 for B cells"
+  ]
+},
+{
+  id: "erythropoiesis",
+  title: "Erythropoiesis and red cell physiology",
+  minutes: 15,
+  sources: ["dl", "hof", "bc"],
+  video: "erythropoiesis red cell maturation normoblast",
+  body: `
+<p>Committed erythroid progenitors (BFU-E, then CFU-E) give rise to the first morphologically recognisable cell, the proerythroblast. Through about four divisions over 5 to 7 days, each proerythroblast yields around 16 red cells. Erythroblasts mature in erythroblastic islands around a central macrophage, which supplies iron and engulfs the extruded nuclei.</p>
+<h3>Maturation sequence</h3>
+<table class="t"><thead><tr><th>Stage</th><th>Size</th><th>Nucleus</th><th>Cytoplasm</th></tr></thead><tbody>
+<tr><td>Proerythroblast</td><td>15–20 µm</td><td>Large, round, fine chromatin, 1–2 nucleoli</td><td>Deeply basophilic, often with a paler perinuclear zone; may show blebs</td></tr>
+<tr><td>Basophilic (early) erythroblast</td><td>12–16 µm</td><td>Coarser chromatin, nucleoli not seen</td><td>Intensely blue, from abundant ribosomes</td></tr>
+<tr><td>Polychromatic (intermediate) erythroblast</td><td>10–12 µm</td><td>Chequerboard chromatin clumping; last stage that divides</td><td>Grey-lilac as haemoglobin accumulates</td></tr>
+<tr><td>Orthochromatic (late) erythroblast</td><td>8–10 µm</td><td>Small, dense, pyknotic, then extruded</td><td>Nearly the colour of a mature red cell</td></tr>
+<tr><td>Reticulocyte</td><td>8–9 µm</td><td>None</td><td>Polychromatic on Romanowsky stain; residual RNA forms a reticulum with new methylene blue</td></tr>
+<tr><td>Red cell</td><td>7.2–7.9 µm diameter</td><td>None</td><td>Biconcave disc with central pallor about one third of the diameter</td></tr>
+</tbody></table>
+<p>Reticulocytes spend about 1 to 2 days maturing in the marrow and about 1 day in the blood. Under strong EPO drive they are released early ("shift" or stress reticulocytes) and stay longer in the circulation, which is why the reticulocyte production index corrects for this.</p>
+<h3>Haemoglobin</h3>
+<p>Each haemoglobin molecule is a tetramer of two α-like and two β-like globin chains, each carrying one haem group (protoporphyrin IX with ferrous iron). The α-globin cluster is on chromosome 16 (two α genes per chromosome, so four in total) and the β-globin cluster is on chromosome 11.</p>
+<table class="t"><thead><tr><th>Haemoglobin</th><th>Chains</th><th>Normal adult level</th></tr></thead><tbody>
+<tr><td>HbA</td><td>α<sub>2</sub>β<sub>2</sub></td><td>About 97%</td></tr>
+<tr><td>HbA<sub>2</sub></td><td>α<sub>2</sub>δ<sub>2</sub></td><td>2.2% to 3.5%</td></tr>
+<tr><td>HbF</td><td>α<sub>2</sub>γ<sub>2</sub></td><td>Under 1%; 60% to 90% at birth, falling to adult levels by about 1 year</td></tr>
+<tr><td>Gower 1, Gower 2, Portland</td><td>ζ<sub>2</sub>ε<sub>2</sub>, α<sub>2</sub>ε<sub>2</sub>, ζ<sub>2</sub>γ<sub>2</sub></td><td>Embryonic only</td></tr>
+</tbody></table>
+<h3>Oxygen delivery</h3>
+<p>The oxygen dissociation curve is sigmoid because binding is cooperative. The P<sub>50</sub> (oxygen tension at 50% saturation) is about 26.6 mmHg (3.5 kPa) in adult blood. The curve shifts right, releasing more oxygen to tissues, with acidosis (the Bohr effect), raised CO<sub>2</sub>, fever and raised 2,3-bisphosphoglycerate (2,3-BPG). HbF binds 2,3-BPG poorly, so fetal blood has a left-shifted curve (P<sub>50</sub> about 19 mmHg), which favours oxygen transfer across the placenta. Try the interactive curve in the Animations section.</p>
+<h3>Red cell metabolism</h3>
+<ul>
+<li><b>Glycolysis (Embden–Meyerhof pathway):</b> about 90% of glucose. Produces ATP for the cation pumps and membrane, and NADH for cytochrome b5 reductase, which keeps haem iron in the ferrous state. Pyruvate kinase deficiency is the commonest defect here.</li>
+<li><b>Hexose monophosphate shunt:</b> about 10% of glucose. G6PD produces NADPH, which regenerates reduced glutathione to protect against oxidant damage.</li>
+<li><b>Rapoport–Luebering shunt:</b> makes 2,3-BPG, which lowers oxygen affinity.</li>
+</ul>
+<h3>Membrane and lifespan</h3>
+<p>The membrane skeleton is a spectrin lattice tied to the lipid bilayer vertically (via ankyrin, band 3 and protein 4.2) and horizontally (via protein 4.1, actin and adducin). Vertical defects cause hereditary spherocytosis; horizontal defects cause elliptocytosis. Red cells survive about 120 days and are removed mainly by splenic and hepatic macrophages. Haem is converted to biliverdin and then unconjugated bilirubin, and the iron is recycled through ferroportin under the control of hepcidin.</p>
+`,
+  points: [
+    "Proerythroblast → basophilic → polychromatic → orthochromatic erythroblast → reticulocyte → red cell",
+    "The polychromatic erythroblast is the last stage that divides",
+    "One proerythroblast yields about 16 red cells over 5 to 7 days",
+    "HbA about 97%, HbA2 2.2–3.5%, HbF under 1% in adults",
+    "P50 about 26.6 mmHg; right shift with acidosis, CO2, fever and 2,3-BPG",
+    "Glycolysis gives ATP and NADH; the HMP shunt gives NADPH via G6PD",
+    "Red cell lifespan about 120 days"
+  ]
+},
+{
+  id: "granulopoiesis",
+  title: "Granulocytes: neutrophils, eosinophils, basophils",
+  minutes: 14,
+  sources: ["bc", "dl", "hof"],
+  video: "granulopoiesis neutrophil maturation myeloblast promyelocyte myelocyte",
+  body: `
+<p>Granulopoiesis moves from a mitotic pool (myeloblast, promyelocyte, myelocyte) to a maturation and storage pool (metamyelocyte, band, segmented neutrophil). The myelocyte is the last stage that divides. Transit from myeloblast to release takes about 10 to 14 days, and the marrow holds a reserve of neutrophils several times larger than the circulating pool.</p>
+<h3>Neutrophil maturation</h3>
+<table class="t"><thead><tr><th>Stage</th><th>Size</th><th>Key features</th></tr></thead><tbody>
+<tr><td>Myeloblast</td><td>12–20 µm</td><td>High nuclear to cytoplasmic ratio, fine open chromatin, 2–5 nucleoli. Agranular or a few azurophilic granules (WHO counts both as blasts)</td></tr>
+<tr><td>Promyelocyte</td><td>15–25 µm (the largest stage)</td><td>Many primary (azurophilic) granules, which contain MPO. Nucleus often eccentric with a visible nucleolus and a pale perinuclear Golgi zone (hof)</td></tr>
+<tr><td>Myelocyte</td><td>10–18 µm</td><td>Secondary (specific) granules appear, giving a pinkish-lilac cytoplasm. Round or oval nucleus, condensed chromatin, no nucleoli</td></tr>
+<tr><td>Metamyelocyte</td><td>10–15 µm</td><td>Nucleus indented, kidney-shaped, indentation less than half its width. No longer divides</td></tr>
+<tr><td>Band (stab) form</td><td>10–14 µm</td><td>Nucleus U- or C-shaped with roughly parallel sides and no true filament</td></tr>
+<tr><td>Segmented neutrophil</td><td>12–15 µm</td><td>2 to 5 lobes joined by thin chromatin filaments. More than 5 lobes, or over 5% of cells with 5 lobes, is hypersegmentation</td></tr>
+</tbody></table>
+<p>A female "drumstick" (the inactive X chromosome) is seen on a small proportion of neutrophils in women.</p>
+<h3>Neutrophil granules</h3>
+<ul>
+<li><b>Primary (azurophilic):</b> myeloperoxidase, neutrophil elastase, cathepsin G, defensins, proteinase 3, lysozyme.</li>
+<li><b>Secondary (specific):</b> lactoferrin, lysozyme, collagenase, haptocorrin (vitamin B<sub>12</sub> binding protein), cytochrome b<sub>558</sub>.</li>
+<li><b>Tertiary:</b> gelatinase (MMP-9).</li>
+<li><b>Secretory vesicles:</b> membrane receptors such as CD11b/CD18 that move to the surface on activation.</li>
+</ul>
+<h3>Neutrophil kinetics and function</h3>
+<p>Released neutrophils split roughly equally between a circulating pool and a marginated pool along vessel walls; adrenaline and exercise shift marginated cells into the count within minutes. Blood half-life is about 6 to 7 hours, after which they enter tissues and die there within a day or two.</p>
+<ol>
+<li><b>Rolling:</b> selectins (L-selectin on the neutrophil, E- and P-selectin on endothelium).</li>
+<li><b>Firm adhesion:</b> β2 integrins (CD11/CD18) bind ICAM-1. Absent in leucocyte adhesion deficiency type 1.</li>
+<li><b>Chemotaxis:</b> towards C5a, IL-8 (CXCL8), leukotriene B<sub>4</sub> and bacterial formyl peptides.</li>
+<li><b>Phagocytosis:</b> enhanced by opsonins, IgG (via Fc receptors) and C3b.</li>
+<li><b>Killing:</b> NADPH oxidase generates superoxide and hydrogen peroxide (the respiratory burst), and MPO turns hydrogen peroxide into hypochlorous acid. NADPH oxidase is defective in chronic granulomatous disease. Neutrophils can also release extracellular traps (NETs).</li>
+</ol>
+<h3>Eosinophils</h3>
+<p>12–17 µm, usually a bilobed nucleus, cytoplasm packed with large orange-red granules containing major basic protein, eosinophil cationic protein, eosinophil peroxidase and eosinophil-derived neurotoxin. Charcot–Leyden crystals are made of galectin-10. Production depends on IL-5. Counts are highest at night and fall after corticosteroids. They defend against helminths and drive allergic inflammation.</p>
+<h3>Basophils</h3>
+<p>10–14 µm, the least common blood leucocyte. Large dark purple-black granules often hide the nucleus. Granules contain histamine and heparin and are water-soluble, so they can wash out during staining and leave the cell looking empty. Basophils carry the high-affinity IgE receptor (FcεRI) and express CD123 and CD203c on flow cytometry, but not CD117, which separates them from mast cells. A raised basophil count is an important clue to chronic myeloid leukaemia.</p>
+`,
+  points: [
+    "Myeloblast → promyelocyte → myelocyte → metamyelocyte → band → segmented neutrophil",
+    "The myelocyte is the last dividing stage; secondary granules first appear here",
+    "Primary granules: MPO, elastase. Secondary granules: lactoferrin, haptocorrin",
+    "Neutrophil blood half-life about 6 to 7 hours; circulating and marginated pools are about equal",
+    "NADPH oxidase defect = chronic granulomatous disease; CD18 defect = LAD type 1",
+    "Eosinophils depend on IL-5; basophils are CD123+ CD203c+ and CD117−"
+  ]
+},
+{
+  id: "monocytes-lymphocytes",
+  title: "Monocytes, macrophages and lymphocytes",
+  minutes: 12,
+  sources: ["bc", "hof", "hp"],
+  video: "monocyte lymphocyte morphology peripheral blood smear",
+  body: `
+<h3>Monocytes and macrophages</h3>
+<p>Monocytes are the largest normal leucocytes in blood at 15–20 µm. The nucleus is folded, lobulated or kidney-shaped with a lacy, delicate chromatin pattern. The cytoplasm is grey-blue with a ground-glass look, fine azurophilic granules and often vacuoles. They circulate for 1 to 3 days before entering tissues.</p>
+<p>Immunophenotype: CD14, CD64, CD11b, CD33 (bright), CD36, HLA-DR. In tissue, monocyte-derived and resident macrophages include Kupffer cells (liver), alveolar macrophages, splenic red pulp macrophages, microglia and osteoclasts (formed by fusion). In the marrow, macrophages hold storage iron, which is graded on a Perls stain.</p>
+<h3>Lymphocytes</h3>
+<ul>
+<li><b>Small lymphocyte:</b> 7–10 µm, round nucleus with dense clumped chromatin, thin rim of pale blue cytoplasm.</li>
+<li><b>Large lymphocyte:</b> 12–16 µm, more abundant cytoplasm.</li>
+<li><b>Large granular lymphocyte (LGL):</b> abundant pale cytoplasm with a few coarse azurophilic granules. These are NK cells or cytotoxic CD8+ T cells and make up 10% to 15% of blood lymphocytes.</li>
+</ul>
+<table class="t"><thead><tr><th>Subset</th><th>Share of blood lymphocytes</th><th>Markers</th></tr></thead><tbody>
+<tr><td>T cells</td><td>About 60% to 80%</td><td>CD2, CD3, CD5, CD7; CD4 helper and CD8 cytotoxic (CD4:CD8 about 2:1)</td></tr>
+<tr><td>B cells</td><td>About 10% to 20%</td><td>CD19, CD20, CD22, CD79a, surface immunoglobulin with κ or λ light chain</td></tr>
+<tr><td>NK cells</td><td>About 10% to 15%</td><td>CD16, CD56, CD3 negative</td></tr>
+</tbody></table>
+<p>Young children have a higher lymphocyte count than adults, so a lymphocyte count that would be raised in an adult can be normal at age 2. Reactive lymphocytes (in viral infections) are larger, with abundant cytoplasm that is darker blue at the edge and scalloped around neighbouring red cells.</p>
+<h3>Plasma cells</h3>
+<p>The end stage of B cell differentiation. Oval cell with an eccentric nucleus, coarse "clock-face" chromatin, deeply basophilic cytoplasm and a pale perinuclear Golgi zone (hof). Normal marrow plasma cells are up to about 3% to 3.5% of nucleated cells, are polytypic and express CD38 (bright), CD138, CD19 and CD45, without CD56. Loss of CD19 and gain of CD56 point to a neoplastic population, which Module 3 covers.</p>
+<h3>Hematogones</h3>
+<p>Normal B cell precursors in the marrow. They look like small to medium blasts with scant cytoplasm and smooth chromatin, and are prominent in children, in regenerating marrow after chemotherapy and after transplant. On flow cytometry they show an orderly maturation pattern (CD34 and CD10 in early cells, then CD20 rising), unlike the arrested, uniform pattern of B lymphoblastic leukaemia.</p>
+`,
+  points: [
+    "Monocyte: largest blood leucocyte, folded nucleus, lacy chromatin, grey-blue vacuolated cytoplasm; CD14 and CD64",
+    "Blood lymphocytes: T 60–80%, B 10–20%, NK 10–15%; CD4:CD8 about 2:1",
+    "LGLs are NK or cytotoxic T cells with azurophilic granules",
+    "Plasma cells: eccentric nucleus, clock-face chromatin, hof; normal is CD19+ CD56−, up to about 3%",
+    "Hematogones show orderly maturation on flow, unlike B-ALL"
+  ]
+},
+{
+  id: "megakaryopoiesis",
+  title: "Megakaryocytes and platelets",
+  minutes: 10,
+  sources: ["bmp", "hof", "dl"],
+  video: "megakaryopoiesis platelet production proplatelet",
+  body: `
+<p>Megakaryocytes develop from the MEP (or directly from megakaryocyte-biased stem cells) under the control of thrombopoietin through its receptor MPL. Instead of dividing, the cell replicates its DNA repeatedly without cytokinesis (endomitosis), reaching 8N to 64N, most often 16N. The result is the largest cell in the marrow, 50–100 µm or more, with a single lobulated nucleus.</p>
+<h3>Stages</h3>
+<ul>
+<li><b>Megakaryoblast:</b> hard to recognise on morphology; may show cytoplasmic blebs. Identified by CD41, CD42b and CD61.</li>
+<li><b>Promegakaryocyte:</b> larger, basophilic cytoplasm, nucleus beginning to lobulate.</li>
+<li><b>Mature (granular) megakaryocyte:</b> abundant pink granular cytoplasm, highly lobulated nucleus. Fragments its cytoplasm into proplatelets that extend into marrow sinusoids.</li>
+</ul>
+<p>Each megakaryocyte releases about 1000 to 3000 platelets. Emperipolesis (other marrow cells passing through the megakaryocyte cytoplasm) is a normal finding. In a normal aspirate, megakaryocytes are not included in the differential count; instead they are assessed as present, reduced or increased, and their morphology is commented on. Small hypolobated or separated-lobe forms suggest dysplasia, which Module 3 covers.</p>
+<h3>Platelets</h3>
+<p>Platelets are anucleate discs about 1.5–3 µm across, surviving 7 to 10 days in the circulation. About one third of the platelet mass is pooled in the spleen, which is why splenomegaly lowers the count and splenectomy raises it.</p>
+<table class="t"><thead><tr><th>Structure</th><th>Contents and role</th></tr></thead><tbody>
+<tr><td>α granules</td><td>Fibrinogen, VWF, factor V, PF4, β-thromboglobulin, PDGF, P-selectin. Absent in grey platelet syndrome</td></tr>
+<tr><td>Dense (δ) granules</td><td>ADP, ATP, serotonin, calcium. Reduced in storage pool disease, Hermansky–Pudlak and Chediak–Higashi syndromes</td></tr>
+<tr><td>GPIb–IX–V</td><td>Binds VWF for adhesion at high shear. Defective in Bernard–Soulier syndrome</td></tr>
+<tr><td>GPIIb/IIIa (αIIbβ3)</td><td>Binds fibrinogen for aggregation. Defective in Glanzmann thrombasthenia</td></tr>
+<tr><td>GPVI and α2β1</td><td>Collagen receptors</td></tr>
+<tr><td>Open canalicular and dense tubular systems</td><td>Surface-connected channels for secretion; calcium store</td></tr>
+</tbody></table>
+<p>Platelet function and the coagulation cascade are covered in full in Module 4.</p>
+`,
+  points: [
+    "TPO acts via MPL; megakaryocytes undergo endomitosis to 8N–64N, usually 16N",
+    "The largest marrow cell, 50–100 µm, with a single lobulated nucleus",
+    "Each megakaryocyte releases about 1000–3000 platelets",
+    "Platelets live 7–10 days; about one third are pooled in the spleen",
+    "α granules: fibrinogen, VWF, PF4. Dense granules: ADP, serotonin, calcium",
+    "GPIb defect = Bernard–Soulier; GPIIb/IIIa defect = Glanzmann"
+  ]
+},
+{
+  id: "bone-marrow",
+  title: "Bone marrow structure and examination",
+  minutes: 15,
+  sources: ["bmp", "bmd", "bmm", "dl"],
+  video: "bone marrow aspirate trephine biopsy procedure interpretation",
+  body: `
+<h3>Structure</h3>
+<p>Haematopoietic tissue fills the spaces between bony trabeculae, supported by a stromal network of reticulin fibres, adipocytes, fibroblastic reticular cells, macrophages and a rich sinusoidal circulation. In a trephine section, the different lineages have typical locations:</p>
+<ul>
+<li><b>Granulocyte precursors</b> mature from the paratrabecular and perivascular regions towards the centre of the intertrabecular space.</li>
+<li><b>Erythroid islands</b> sit centrally, often near sinusoids, around a macrophage.</li>
+<li><b>Megakaryocytes</b> lie next to sinusoids, away from the bone surface. Paratrabecular megakaryocytes or tight clusters are abnormal.</li>
+<li><b>Lymphoid aggregates</b> can be found in normal marrow, more often in older people. They are small, well-circumscribed and not paratrabecular.</li>
+</ul>
+<h3>Cellularity</h3>
+<p>Cellularity is the proportion of the marrow space occupied by haematopoietic cells rather than fat. A rough guide is 100 minus the age in years: close to 100% at birth, about 50% to 70% in young adults and 30% to 40% or less in the elderly. Subcortical marrow is often hypocellular even in healthy people, so cellularity should be judged on intertrabecular spaces deeper in the core.</p>
+<h3>Aspirate or trephine?</h3>
+<table class="t"><thead><tr><th></th><th>Aspirate</th><th>Trephine biopsy</th></tr></thead><tbody>
+<tr><td>Best for</td><td>Cell morphology, differential count, iron stores and ring sideroblasts, flow cytometry, cytogenetics, molecular tests</td><td>Cellularity, architecture, fibrosis, focal lesions (lymphoma, metastases, granulomas), immunohistochemistry</td></tr>
+<tr><td>Limitations</td><td>Fails ("dry tap") with fibrosis or packed marrow; can be diluted with blood</td><td>Decalcification can damage DNA; results take days; cytology less fine</td></tr>
+<tr><td>Quality check</td><td>Particles present on the films; count in the trails behind particles</td><td>Core at least 1.5–2 cm long (ICSH/BSH guidance), not just cortex and cartilage</td></tr>
+</tbody></table>
+<h3>Normal adult differential count</h3>
+<p>Count at least 500 nucleated cells, ideally on two films. Typical adult ranges are below. Ranges differ between published series, so use your department's table where one exists.</p>
+<table class="t num"><thead><tr><th>Cell</th><th>% of nucleated cells</th></tr></thead><tbody>
+<tr><td>Blasts</td><td>0–3</td></tr>
+<tr><td>Promyelocytes</td><td>2–8</td></tr>
+<tr><td>Myelocytes</td><td>10–15</td></tr>
+<tr><td>Metamyelocytes</td><td>10–15</td></tr>
+<tr><td>Band and segmented neutrophils</td><td>25–40</td></tr>
+<tr><td>Eosinophils and precursors</td><td>1–6</td></tr>
+<tr><td>Basophils</td><td>0–1</td></tr>
+<tr><td>Monocytes</td><td>0–3</td></tr>
+<tr><td>Lymphocytes</td><td>5–20 (higher in children)</td></tr>
+<tr><td>Plasma cells</td><td>0–3</td></tr>
+<tr><td>Erythroblasts (all stages)</td><td>15–30</td></tr>
+<tr><td>Myeloid to erythroid (M:E) ratio</td><td>About 2:1 to 4:1</td></tr>
+</tbody></table>
+<h3>Iron stain (Perls Prussian blue)</h3>
+<p>Storage iron is assessed in macrophages within particles and graded (for example 0 to 6 in the Gale scale). Normal sideroblasts, with one to a few fine blue granules, make up about 20% to 50% of erythroblasts. A ring sideroblast has 5 or more granules covering at least one third of the nuclear circumference; ring sideroblasts are not seen in normal marrow.</p>
+<h3>Reticulin</h3>
+<p>Graded on a silver stain from MF-0 to MF-3 (European consensus, used by WHO). Normal marrow is MF-0 to MF-1: scattered linear reticulin without intersections, mainly around vessels.</p>
+`,
+  points: [
+    "Cellularity rough guide: 100 minus age; ignore subcortical spaces",
+    "Megakaryocytes near sinusoids; paratrabecular location or clusters are abnormal",
+    "Aspirate: morphology, iron, flow, genetics. Trephine: cellularity, fibrosis, focal lesions",
+    "Count at least 500 cells; M:E about 2:1 to 4:1; blasts 0–3%; plasma cells 0–3%",
+    "Ring sideroblast: 5 or more granules covering one third of the nucleus or more",
+    "Trephine core at least 1.5–2 cm; normal reticulin MF-0 to MF-1"
+  ]
+},
+{
+  id: "reference-values",
+  title: "Reference values and physiological variation",
+  minutes: 10,
+  sources: ["dl", "lhp", "psh"],
+  video: "complete blood count interpretation reference ranges",
+  body: `
+<p>Adult reference intervals for a full blood count (95% intervals, healthy adults; check your own laboratory's ranges, which depend on the analyser and population).</p>
+<table class="t num"><thead><tr><th>Parameter</th><th>Men</th><th>Women</th></tr></thead><tbody>
+<tr><td>Haemoglobin (g/L)</td><td>130–170</td><td>120–150</td></tr>
+<tr><td>Red cell count (×10<sup>12</sup>/L)</td><td>4.5–5.5</td><td>3.8–4.8</td></tr>
+<tr><td>Haematocrit (L/L)</td><td>0.40–0.50</td><td>0.36–0.46</td></tr>
+<tr><td>MCV (fL)</td><td colspan="2">83–101</td></tr>
+<tr><td>MCH (pg)</td><td colspan="2">27–32</td></tr>
+<tr><td>MCHC (g/L)</td><td colspan="2">315–345</td></tr>
+<tr><td>RDW-CV (%)</td><td colspan="2">11.6–14.0</td></tr>
+<tr><td>Reticulocytes (×10<sup>9</sup>/L)</td><td colspan="2">50–100</td></tr>
+<tr><td>White cells (×10<sup>9</sup>/L)</td><td colspan="2">4.0–10.0</td></tr>
+<tr><td>Neutrophils (×10<sup>9</sup>/L)</td><td colspan="2">2.0–7.0</td></tr>
+<tr><td>Lymphocytes (×10<sup>9</sup>/L)</td><td colspan="2">1.0–3.0</td></tr>
+<tr><td>Monocytes (×10<sup>9</sup>/L)</td><td colspan="2">0.2–1.0</td></tr>
+<tr><td>Eosinophils (×10<sup>9</sup>/L)</td><td colspan="2">0.02–0.5</td></tr>
+<tr><td>Basophils (×10<sup>9</sup>/L)</td><td colspan="2">0.02–0.1</td></tr>
+<tr><td>Platelets (×10<sup>9</sup>/L)</td><td colspan="2">150–410</td></tr>
+</tbody></table>
+<h3>Red cell indices</h3>
+<p>MCV = Hct ÷ RBC; MCH = Hb ÷ RBC; MCHC = Hb ÷ Hct. An MCHC above about 365 g/L is rarely real outside hereditary spherocytosis and should make you look for a cold agglutinin, lipaemia or another artefact first. The workups section has a decision tree for this.</p>
+<h3>Physiological variation</h3>
+<ul>
+<li><b>Newborn:</b> haemoglobin 140–220 g/L and MCV 100–120 fL at birth; white cells up to about 26 × 10<sup>9</sup>/L with neutrophilia and a few nucleated red cells in the first days.</li>
+<li><b>Infancy:</b> physiological nadir of haemoglobin at about 8 to 12 weeks in term infants (about 95–110 g/L), earlier and lower in preterm infants. Lymphocytes predominate from about 2 weeks until 4 to 5 years.</li>
+<li><b>Pregnancy:</b> plasma volume rises about 40% to 50% and red cell mass about 20% to 30%, so haemoglobin falls (anaemia is defined below 110 g/L). MCV rises slightly, neutrophils rise with a mild left shift, and gestational thrombocytopenia (usually above 70 × 10<sup>9</sup>/L) is common late in pregnancy.</li>
+<li><b>Ethnicity:</b> people with the Duffy-null (ACKR1) genotype, common in people of African and Middle Eastern ancestry, often have neutrophil counts of 1.0–1.5 × 10<sup>9</sup>/L that are normal for them.</li>
+<li><b>Altitude, smoking and exercise:</b> altitude and smoking raise haemoglobin; acute exercise and stress raise the neutrophil count by demargination.</li>
+</ul>
+<h3>Pre-analytical errors</h3>
+<p>EDTA (K<sub>2</sub> or K<sub>3</sub>) is the anticoagulant for blood counts. Samples stored for more than about 24 hours at room temperature show red cell swelling (rising MCV and haematocrit), and films made after a few hours show storage artefacts such as crenated red cells and neutrophils with lobes that look separated. Clotted samples give falsely low platelets. These are tested in the case studies.</p>
+`,
+  points: [
+    "Hb: men 130–170, women 120–150 g/L; MCV 83–101 fL; platelets 150–410 × 10⁹/L",
+    "WBC 4.0–10.0; neutrophils 2.0–7.0; lymphocytes 1.0–3.0 × 10⁹/L",
+    "MCHC above about 365 g/L: suspect cold agglutinin or lipaemia first",
+    "Infant Hb nadir at 8–12 weeks; lymphocyte predominance until 4–5 years",
+    "Pregnancy: plasma volume up 40–50%, anaemia if Hb under 110 g/L",
+    "Duffy-null neutrophil counts of 1.0–1.5 × 10⁹/L can be normal"
+  ]
+}
+];
+
+/* Atlas: each cell has descriptive text plus parameters for the drawn illustration (cells.js). */
+const CELLS = [
+{ id:"proerythroblast", name:"Proerythroblast", lineage:"Erythroid", where:"Marrow", size:"15–20 µm", sizeUm:17,
+  nucleus:"Large, round, fine chromatin, 1–2 nucleoli", cyto:"Deeply basophilic, may have a paler perinuclear zone and blebs", nc:"High",
+  normal:"About 1% of marrow nucleated cells", mimic:"Myeloblast (less blue cytoplasm, no blebs); plasmablast",
+  draw:{ r:8.5, cyto:"#3f56a6", nuc:{type:"round", r:6.3, dx:0.3}, chrom:"fine", nucleoli:2, blebs:true, halo:true } },
+{ id:"basophilic-normoblast", name:"Basophilic erythroblast", lineage:"Erythroid", where:"Marrow", size:"12–16 µm", sizeUm:14,
+  nucleus:"Round, coarser chromatin, no visible nucleolus", cyto:"Intense royal blue", nc:"High",
+  normal:"1–4% of marrow cells", mimic:"Proerythroblast (has nucleoli); plasma cell (eccentric nucleus and hof)",
+  draw:{ r:7, cyto:"#3a4fa0", nuc:{type:"round", r:4.9}, chrom:"coarse", halo:true } },
+{ id:"polychromatic-normoblast", name:"Polychromatic erythroblast", lineage:"Erythroid", where:"Marrow", size:"10–12 µm", sizeUm:11,
+  nucleus:"Round, chequerboard chromatin clumps", cyto:"Grey-lilac, haemoglobin mixing with RNA", nc:"Moderate",
+  normal:"The most numerous erythroid stage, 10–20%", mimic:"Small lymphocyte (thin rim of sky-blue cytoplasm, no chequerboard)",
+  draw:{ r:5.6, cyto:"#9f8db8", nuc:{type:"round", r:3.4}, chrom:"checker" } },
+{ id:"orthochromatic-normoblast", name:"Orthochromatic erythroblast", lineage:"Erythroid", where:"Marrow; blood in neonates and stress", size:"8–10 µm", sizeUm:9,
+  nucleus:"Small, dense, pyknotic, often eccentric", cyto:"Pink-orange, close to a mature red cell", nc:"Low",
+  normal:"2–10% of marrow cells", mimic:"Lymphocyte; a red cell with a Howell–Jolly body",
+  draw:{ r:4.6, cyto:"#d99aa0", nuc:{type:"round", r:2.1, dx:1.2, dy:-0.4}, chrom:"pyknotic" } },
+{ id:"reticulocyte", name:"Reticulocyte (polychromatic red cell)", lineage:"Erythroid", where:"Blood and marrow", size:"8–9 µm", sizeUm:8.5,
+  nucleus:"None", cyto:"Faintly blue-grey (polychromatic) on Romanowsky stain, no central pallor", nc:"None",
+  normal:"0.5–2.5% of red cells; 50–100 × 10⁹/L", mimic:"Spherocyte (smaller, dense); target cell",
+  draw:{ r:4.3, cyto:"#c39ab6", rbc:"poly" } },
+{ id:"rbc", name:"Red cell (erythrocyte)", lineage:"Erythroid", where:"Blood", size:"7.2–7.9 µm", sizeUm:7.5,
+  nucleus:"None", cyto:"Pink biconcave disc, central pallor about one third of the diameter", nc:"None",
+  normal:"4.5–5.5 × 10¹²/L in men", mimic:"Use as a size ruler: a small lymphocyte is about the same size",
+  draw:{ r:3.8, cyto:"#de8f95", rbc:"normal" } },
+{ id:"myeloblast", name:"Myeloblast", lineage:"Granulocytic", where:"Marrow", size:"12–20 µm", sizeUm:15,
+  nucleus:"Round or oval, fine open chromatin, 2–5 nucleoli", cyto:"Scant, moderately blue, agranular or a few azurophilic granules", nc:"Very high",
+  normal:"0–3% of marrow cells; absent from blood", mimic:"Lymphoblast, hematogone, proerythroblast",
+  draw:{ r:7.6, cyto:"#7d93cf", nuc:{type:"oval", r:5.9, sx:1.04, sy:0.96}, chrom:"fine", nucleoli:3, gran:{color:"#8e2c6e", n:4, s:0.25} } },
+{ id:"promyelocyte", name:"Promyelocyte", lineage:"Granulocytic", where:"Marrow", size:"15–25 µm", sizeUm:20,
+  nucleus:"Round or oval, eccentric, nucleolus often visible", cyto:"Basophilic with many coarse azurophilic (primary) granules and a pale Golgi zone", nc:"Moderate",
+  normal:"2–8% of marrow cells", mimic:"Abnormal promyelocyte of APL (bilobed nucleus, Auer rods); myelocyte",
+  draw:{ r:9.6, cyto:"#8a96cc", nuc:{type:"oval", r:5.6, dx:1.8, dy:0.4, sx:1.05, sy:0.92}, chrom:"fine", nucleoli:1, gran:{color:"#7b1f63", n:85, s:0.38, over:true}, hof:true } },
+{ id:"myelocyte", name:"Neutrophil myelocyte", lineage:"Granulocytic", where:"Marrow", size:"10–18 µm", sizeUm:14,
+  nucleus:"Round or oval, eccentric, condensed chromatin, no nucleolus", cyto:"Pinkish-lilac from specific granules; a pale Golgi zone", nc:"Moderate",
+  normal:"10–15% of marrow cells", mimic:"Promyelocyte (nucleolus, coarse azurophilic granules)",
+  draw:{ r:7.1, cyto:"#d9bfd6", nuc:{type:"oval", r:4.1, dx:1.6, dy:0.3, sx:1.1, sy:0.92}, chrom:"medium", gran:{color:"#b98cb4", n:140, s:0.16}, hof:true } },
+{ id:"metamyelocyte", name:"Neutrophil metamyelocyte", lineage:"Granulocytic", where:"Marrow", size:"10–15 µm", sizeUm:12.5,
+  nucleus:"Kidney-shaped, indentation less than half the nuclear width", cyto:"Pale pink with fine neutrophilic granules", nc:"Low to moderate",
+  normal:"10–15% of marrow cells", mimic:"Monocyte (lacy chromatin, grey-blue cytoplasm); band form",
+  draw:{ r:6.3, cyto:"#efd5df", nuc:{type:"kidney", r:3.7, indent:0.42, rot:-20}, chrom:"medium", gran:{color:"#c79bbd", n:120, s:0.14} } },
+{ id:"band", name:"Band (stab) neutrophil", lineage:"Granulocytic", where:"Blood and marrow", size:"10–14 µm", sizeUm:12,
+  nucleus:"U- or C-shaped, parallel sides, no filament", cyto:"Pale pink with fine granules", nc:"Low",
+  normal:"Under 5% of blood leucocytes (labs differ in how they define bands)", mimic:"Segmented neutrophil with an overlapping lobe",
+  draw:{ r:6.1, cyto:"#f0d6e0", nuc:{type:"band", w:1.6, arc:3.0}, chrom:"clumped", gran:{color:"#c79bbd", n:110, s:0.14} } },
+{ id:"neutrophil", name:"Segmented neutrophil", lineage:"Granulocytic", where:"Blood", size:"12–15 µm", sizeUm:13,
+  nucleus:"2–5 lobes joined by thin filaments, dense clumped chromatin", cyto:"Pale pink with fine lilac granules", nc:"Low",
+  normal:"2.0–7.0 × 10⁹/L in blood (40–75% of leucocytes)", mimic:"Band form; hypersegmented neutrophil (6+ lobes)",
+  draw:{ r:6.4, cyto:"#f1d8e2", nuc:{type:"lobes", n:3, lr:1.95, spread:2.7}, chrom:"clumped", gran:{color:"#c79bbd", n:120, s:0.13} } },
+{ id:"eosinophil", name:"Eosinophil", lineage:"Granulocytic", where:"Blood and marrow", size:"12–17 µm", sizeUm:14,
+  nucleus:"Usually bilobed", cyto:"Packed with large refractile orange-red granules", nc:"Low",
+  normal:"0.02–0.5 × 10⁹/L in blood", mimic:"Neutrophil with toxic granulation (granules smaller, purple)",
+  draw:{ r:7, cyto:"#f3cdb8", nuc:{type:"lobes", n:2, lr:1.9, spread:2.6}, chrom:"clumped", gran:{color:"#e46a3a", n:120, s:0.42} } },
+{ id:"basophil", name:"Basophil", lineage:"Granulocytic", where:"Blood and marrow", size:"10–14 µm", sizeUm:12,
+  nucleus:"Lobulated, often hidden by granules", cyto:"Large dark purple-black granules, overlying the nucleus", nc:"Low",
+  normal:"0.02–0.1 × 10⁹/L in blood", mimic:"Mast cell (round nucleus, larger, CD117+); toxic neutrophil",
+  draw:{ r:6.1, cyto:"#d8c3d9", nuc:{type:"lobes", n:2, lr:1.7, spread:2.0}, chrom:"clumped", gran:{color:"#2e1442", n:70, s:0.48, over:true} } },
+{ id:"monocyte", name:"Monocyte", lineage:"Monocytic", where:"Blood", size:"15–20 µm", sizeUm:17,
+  nucleus:"Folded, kidney-shaped or lobulated, lacy chromatin", cyto:"Grey-blue ground glass, fine azurophilic granules, vacuoles", nc:"Moderate",
+  normal:"0.2–1.0 × 10⁹/L in blood", mimic:"Reactive lymphocyte; metamyelocyte; promonocyte",
+  draw:{ r:8.4, cyto:"#b4b6d6", nuc:{type:"kidney", r:4.9, indent:0.5, rot:30, wobble:0.12}, chrom:"lacy", gran:{color:"#a35a92", n:60, s:0.1}, vac:4 } },
+{ id:"macrophage", name:"Macrophage", lineage:"Monocytic", where:"Marrow and tissues", size:"20–30 µm or more", sizeUm:26,
+  nucleus:"Oval or kidney, open chromatin", cyto:"Abundant, pale, with vacuoles and ingested debris; holds storage iron", nc:"Low",
+  normal:"Scattered in particles; centre of erythroblastic islands", mimic:"Osteoclast; tumour cells",
+  draw:{ r:12.5, cyto:"#c6c0d8", nuc:{type:"kidney", r:4.4, indent:0.3, dx:-3.5, dy:1, rot:60}, chrom:"lacy", vac:10, debris:6, irregular:0.1 } },
+{ id:"small-lymphocyte", name:"Small lymphocyte", lineage:"Lymphoid", where:"Blood and marrow", size:"7–10 µm", sizeUm:8.5,
+  nucleus:"Round, dense clumped chromatin, nucleolus not visible", cyto:"Thin rim of pale sky-blue cytoplasm", nc:"Very high",
+  normal:"1.0–3.0 × 10⁹/L in adult blood", mimic:"Orthochromatic erythroblast; CLL cell (smear cells)",
+  draw:{ r:4.4, cyto:"#8fb2e3", nuc:{type:"round", r:3.65, dx:0.3}, chrom:"clumped" } },
+{ id:"lgl", name:"Large granular lymphocyte", lineage:"Lymphoid", where:"Blood", size:"12–16 µm", sizeUm:13,
+  nucleus:"Round or slightly indented, condensed chromatin", cyto:"Abundant pale blue with a few coarse azurophilic granules", nc:"Low",
+  normal:"10–15% of blood lymphocytes (NK and cytotoxic T cells)", mimic:"Monocyte; reactive lymphocyte",
+  draw:{ r:6.6, cyto:"#a9c4e8", nuc:{type:"round", r:3.4, dx:-1.4, dy:0.5}, chrom:"clumped", gran:{color:"#8e2c6e", n:10, s:0.38} } },
+{ id:"plasma-cell", name:"Plasma cell", lineage:"Lymphoid", where:"Marrow", size:"9–20 µm", sizeUm:13,
+  nucleus:"Eccentric, round, coarse clock-face chromatin", cyto:"Deep blue with a pale perinuclear Golgi zone (hof)", nc:"Low",
+  normal:"0–3% of marrow cells", mimic:"Osteoblast (larger, hof away from the nucleus); basophilic erythroblast",
+  draw:{ r:6.4, sx:1.18, sy:0.88, cyto:"#2f4a9a", nuc:{type:"round", r:3.3, dx:3.3, dy:0.2}, chrom:"clockface", hof:true, hofStrong:true } },
+{ id:"hematogone", name:"Hematogone (B cell precursor)", lineage:"Lymphoid", where:"Marrow", size:"10–20 µm", sizeUm:11,
+  nucleus:"Round, smooth homogeneous chromatin, inconspicuous nucleolus", cyto:"Very scant, pale", nc:"Very high",
+  normal:"Prominent in children and regenerating marrow", mimic:"Lymphoblast of B-ALL; flow cytometry separates them",
+  draw:{ r:5.4, cyto:"#97afd9", nuc:{type:"round", r:4.75}, chrom:"smooth" } },
+{ id:"megakaryocyte", name:"Megakaryocyte", lineage:"Megakaryocytic", where:"Marrow", size:"50–100 µm or more", sizeUm:70,
+  nucleus:"Single, highly lobulated (polyploid)", cyto:"Abundant, pink-lilac, finely granular; budding platelets at the edge", nc:"Low",
+  normal:"Several per particle at low power; not included in the differential", mimic:"Osteoclast (separate round nuclei)",
+  draw:{ r:13.2, cyto:"#e1c3dc", nuc:{type:"mega", n:16, lr:2.6, spread:5.2}, chrom:"medium", gran:{color:"#a978a8", n:420, s:0.12}, plts:true, irregular:0.07, scale:0.18 } },
+{ id:"platelet", name:"Platelets", lineage:"Megakaryocytic", where:"Blood", size:"1.5–3 µm", sizeUm:2.5,
+  nucleus:"None", cyto:"Small lilac fragments with central purple granules (granulomere)", nc:"None",
+  normal:"150–410 × 10⁹/L", mimic:"Platelet clumps (EDTA artefact); giant platelets; stain debris",
+  draw:{ plateletField:true } },
+{ id:"osteoblast", name:"Osteoblast", lineage:"Stromal", where:"Marrow, along bone; often in clusters", size:"20–50 µm", sizeUm:30,
+  nucleus:"Eccentric, round, single nucleolus, partly extruded at times", cyto:"Abundant blue, pale zone separated from the nucleus", nc:"Low",
+  normal:"Clusters in children's aspirates", mimic:"Plasma cell (smaller, hof next to nucleus); metastatic carcinoma",
+  draw:{ r:12, sx:1.25, sy:0.82, cyto:"#5d73bd", nuc:{type:"round", r:4.4, dx:6.2}, chrom:"medium", nucleoli:1, hof:true, hofFar:true, scale:0.5 } },
+{ id:"osteoclast", name:"Osteoclast", lineage:"Stromal", where:"Marrow, on bone surface", size:"Over 100 µm", sizeUm:110,
+  nucleus:"Many separate round nuclei, each with a nucleolus", cyto:"Abundant, granular, pale pink-purple", nc:"Low",
+  normal:"Rare in adult aspirates; more in children", mimic:"Megakaryocyte (one lobulated nucleus, not separate)",
+  draw:{ r:13.6, cyto:"#d5b5d0", nuc:{type:"multi", n:10, r:1.9, spread:7.5}, chrom:"medium", nucleoli:1, gran:{color:"#a17aa8", n:300, s:0.12}, irregular:0.12, scale:0.12 } },
+{ id:"mast-cell", name:"Mast cell", lineage:"Other", where:"Marrow, often near trabeculae or vessels", size:"15–25 µm", sizeUm:18,
+  nucleus:"Round or oval, central, often hidden", cyto:"Densely packed purple-black granules; oval or spindle shape", nc:"Low",
+  normal:"Occasional; increased in lymphoplasmacytic lymphoma and aplastic anaemia", mimic:"Basophil (lobulated nucleus, smaller); systemic mastocytosis (spindle, hypogranular)",
+  draw:{ r:8.4, sx:1.2, sy:0.86, cyto:"#c9b4d4", nuc:{type:"oval", r:3.6}, chrom:"medium", gran:{color:"#3b1250", n:210, s:0.42, over:true} } }
+];
+
+/* Fact flashcards (the atlas also generates image cards). */
+const FACTS = [
+  ["Which globin genes are on chromosome 16?", "The α-globin cluster (ζ and two α genes per chromosome). The β cluster (ε, γ, δ, β) is on chromosome 11."],
+  ["What is the last dividing stage of the erythroid lineage?", "The polychromatic (intermediate) erythroblast."],
+  ["What is the last dividing stage of the neutrophil lineage?", "The myelocyte."],
+  ["Where are secondary (specific) neutrophil granules first seen?", "In the myelocyte."],
+  ["Name four contents of neutrophil primary granules.", "Myeloperoxidase, neutrophil elastase, cathepsin G, defensins (also proteinase 3 and lysozyme)."],
+  ["What is the normal adult HbA2 level?", "2.2% to 3.5%."],
+  ["What is the normal adult P50?", "About 26.6 mmHg (3.5 kPa)."],
+  ["Name four causes of a right-shifted oxygen dissociation curve.", "Acidosis, raised CO2, fever, raised 2,3-BPG."],
+  ["Why is the fetal dissociation curve left-shifted?", "HbF (α2γ2) binds 2,3-BPG poorly, so its oxygen affinity is higher; P50 about 19 mmHg."],
+  ["Which enzyme makes NADPH in the red cell?", "Glucose-6-phosphate dehydrogenase, in the hexose monophosphate shunt."],
+  ["Where is erythropoietin mainly produced?", "Peritubular interstitial cells of the renal cortex (about 90%); the rest in the liver."],
+  ["How is thrombopoietin regulated?", "It is made at a constant rate by the liver and cleared by binding MPL on platelets and megakaryocytes, so the free level falls as platelet mass rises."],
+  ["What is the phenotype of the haematopoietic stem cell?", "CD34+, CD38−, CD90+, CD45RA−, lineage-negative."],
+  ["Which axis keeps stem cells in the marrow, and which drug blocks it?", "CXCL12 (SDF-1) binding CXCR4. Plerixafor blocks CXCR4 to mobilise stem cells."],
+  ["What is the blood half-life of a neutrophil?", "About 6 to 7 hours."],
+  ["Which defect causes chronic granulomatous disease?", "Defective NADPH oxidase, so no respiratory burst."],
+  ["Which defect causes leucocyte adhesion deficiency type 1?", "Deficiency of CD18, the common β2 integrin chain."],
+  ["Which cytokine drives eosinophil production?", "IL-5."],
+  ["How do you tell a basophil from a mast cell by flow cytometry?", "Basophils are CD123+ CD203c+ and CD117−; mast cells are CD117 (bright)+ and tryptase+."],
+  ["What is the CD4:CD8 ratio in normal blood?", "About 2:1."],
+  ["What phenotype distinguishes normal plasma cells from myeloma cells?", "Normal plasma cells are CD19+ and CD56−. Myeloma cells are usually CD19− and often CD56+, and are light-chain restricted."],
+  ["What is a ring sideroblast?", "An erythroblast with 5 or more siderotic granules covering at least one third of the nuclear circumference."],
+  ["What proportion of normal erythroblasts are sideroblasts?", "About 20% to 50%."],
+  ["What is the normal adult M:E ratio?", "About 2:1 to 4:1."],
+  ["How many cells should a marrow differential count?", "At least 500 nucleated cells, ideally from two films."],
+  ["What is the minimum adequate trephine length?", "At least 1.5–2 cm of marrow (ICSH and BSH guidance)."],
+  ["Where do normal megakaryocytes lie in a trephine section?", "Next to sinusoids in the intertrabecular space, away from bone. Paratrabecular megakaryocytes or tight clusters are abnormal."],
+  ["What ploidy do most megakaryocytes reach?", "16N (range 8N to 64N), by endomitosis."],
+  ["How long do platelets survive?", "7 to 10 days."],
+  ["What fraction of platelets is pooled in the spleen?", "About one third."],
+  ["Which glycoprotein is defective in Glanzmann thrombasthenia?", "GPIIb/IIIa (αIIbβ3), the fibrinogen receptor."],
+  ["Which glycoprotein is defective in Bernard–Soulier syndrome?", "GPIb–IX–V, the VWF receptor."],
+  ["What do dense granules contain?", "ADP, ATP, serotonin and calcium."],
+  ["What is the haemoglobin cut-off for anaemia in pregnancy?", "110 g/L (WHO)."],
+  ["When is the physiological haemoglobin nadir in term infants?", "At about 8 to 12 weeks, around 95–110 g/L."],
+  ["What neutrophil count can be normal in Duffy-null individuals?", "1.0–1.5 × 10⁹/L."],
+  ["What is the formula for MCHC?", "MCHC = Hb ÷ Hct. Normal 315–345 g/L."],
+  ["How do you correct a white cell count for nucleated red cells?", "Corrected WBC = measured WBC × 100 ÷ (100 + NRBC per 100 WBC). Most modern analysers do this automatically."],
+  ["What causes EDTA-dependent pseudothrombocytopenia?", "Antibodies against a GPIIb/IIIa epitope exposed by calcium chelation, which clump platelets in vitro. Repeat in citrate or examine a film."],
+  ["What is the reticulin grade of normal marrow?", "MF-0 to MF-1."]
+];
+
+const QUIZ = [
+{ q:"A 30-year-old has a marrow aspirate with no particles, few myeloid precursors, many segmented neutrophils and an M:E ratio of 12:1. What is the most likely explanation?",
+  a:["Chronic myeloid leukaemia","Haemodilution of the aspirate with peripheral blood","Pure red cell aplasia","Reactive neutrophilia"], c:1,
+  e:"An aspirate without particles whose differential looks like blood (mature neutrophils and lymphocytes, few precursors) is haemodiluted. Interpret cellularity on the trephine and repeat the aspirate if needed." },
+{ q:"Which stage of neutrophil maturation is the last one able to divide?", a:["Promyelocyte","Myelocyte","Metamyelocyte","Band form"], c:1,
+  e:"Myeloblast, promyelocyte and myelocyte form the mitotic pool. From the metamyelocyte onwards, the cells only mature." },
+{ q:"Which finding best distinguishes an osteoclast from a megakaryocyte on an aspirate?", a:["Cell size","Granular cytoplasm","Multiple separate nuclei rather than one lobulated nucleus","Presence of nucleoli"], c:2,
+  e:"Both are giant cells with granular cytoplasm. The osteoclast has many separate round nuclei, each with a nucleolus; the megakaryocyte has one lobulated polyploid nucleus." },
+{ q:"Which of the following shifts the oxygen dissociation curve to the left?", a:["Fever","Acidosis","Raised 2,3-BPG","High HbF"], c:3,
+  e:"HbF binds 2,3-BPG poorly, which raises oxygen affinity and lowers P50 to about 19 mmHg. The other three shift the curve to the right." },
+{ q:"In a normal adult, HbA2 accounts for about:", a:["Under 1%","2.2% to 3.5%","5% to 8%","10% to 15%"], c:1,
+  e:"HbA2 (α2δ2) is 2.2% to 3.5%. A raised HbA2 is the key screening finding in β-thalassaemia trait, which Module 2 covers." },
+{ q:"A ring sideroblast is defined as an erythroblast with:", a:["Any siderotic granule","At least 3 granules anywhere in the cytoplasm","At least 5 granules covering one third or more of the nuclear rim","Granules covering the entire nuclear rim"], c:2,
+  e:"WHO and ICSH define a ring sideroblast as having 5 or more granules covering at least one third of the nuclear circumference." },
+{ q:"Which immunophenotype describes a normal haematopoietic stem cell?", a:["CD34+ CD38+ CD45RA+","CD34+ CD38− CD90+ CD45RA−","CD34− CD117+ CD38+","CD34+ CD10+ CD19+"], c:1,
+  e:"The most primitive cells are CD34+ CD38− CD90+ CD45RA− and lineage-negative. CD34+ CD10+ CD19+ describes an early B cell precursor (hematogone stage I)." },
+{ q:"A healthy 2-year-old has a lymphocyte count of 6.5 × 10⁹/L and a normal film. What is the best interpretation?", a:["Chronic lymphocytic leukaemia","Acute lymphoblastic leukaemia until proven otherwise","Normal for age","Pertussis"], c:2,
+  e:"Lymphocytes predominate in young children, and counts up to about 9–10 × 10⁹/L are within the reference range at age 2. Always use age-specific ranges." },
+{ q:"Which marker pair best separates basophils from mast cells on flow cytometry?", a:["CD117 and tryptase are positive in basophils","CD123+ CD203c+ CD117− in basophils","CD34 is positive in mast cells","CD14 is positive in basophils"], c:1,
+  e:"Basophils are CD123+ CD203c+ and CD117−. Mast cells are CD117 bright and tryptase positive." },
+{ q:"Where are megakaryocytes normally located in a trephine biopsy?", a:["Paratrabecular, along the bone","In tight clusters","Next to sinusoids in the intertrabecular space","In lymphoid aggregates"], c:2,
+  e:"Megakaryocytes release proplatelets into sinusoids, so they sit next to them. Paratrabecular megakaryocytes and tight clusters are features of myeloproliferative neoplasms." },
+{ q:"Which enzyme deficiency leaves the red cell vulnerable to oxidant damage?", a:["Pyruvate kinase","Glucose-6-phosphate dehydrogenase","Cytochrome b5 reductase","Hexokinase"], c:1,
+  e:"G6PD produces NADPH in the hexose monophosphate shunt, which keeps glutathione reduced. Cytochrome b5 reductase deficiency causes methaemoglobinaemia instead." },
+{ q:"A count of 40 × 10⁹/L platelets is reported on an EDTA sample from a well patient with no bleeding. The analyser flags platelet clumps. What is the best next step?", a:["Platelet transfusion","Bone marrow aspirate","Examine the film and repeat the count on a citrate sample","Start corticosteroids"], c:2,
+  e:"This suggests EDTA-dependent pseudothrombocytopenia. Confirm clumps on the film and recount in citrate (correcting for dilution) or from a fingerprick sample." },
+{ q:"Which growth factor is made at a constant rate and regulated mainly by its clearance?", a:["Erythropoietin","G-CSF","Thrombopoietin","IL-5"], c:2,
+  e:"The liver makes TPO constitutively. Platelets and megakaryocytes bind and remove it through MPL, so free TPO falls as platelet mass rises." },
+{ q:"What is the main cause of the fall in haemoglobin during normal pregnancy?", a:["Iron deficiency","Plasma volume expanding more than red cell mass","Haemolysis","Marrow suppression"], c:1,
+  e:"Plasma volume rises by 40–50% and red cell mass by only 20–30%, giving a dilutional fall. Iron deficiency is common too, but it is not the physiological mechanism." },
+{ q:"An analyser reports MCHC 390 g/L, MCV 112 fL and a low red cell count, and the sample was taken on a cold morning. What should you do first?", a:["Report hereditary spherocytosis","Warm the sample to 37°C and repeat","Request vitamin B12 and folate","Request haemoglobin electrophoresis"], c:1,
+  e:"Red cell agglutinates are counted as single large cells, so the red cell count falls and MCV and MCHC rise falsely. Warming disperses a cold agglutinin." },
+{ q:"Which feature of the plasma cell is described as 'clock-face'?", a:["The pattern of cytoplasmic granules","The chromatin arranged in coarse clumps around the nucleus","The shape of the Golgi zone","The arrangement of nucleoli"], c:1,
+  e:"Clumps of heterochromatin around the nuclear rim resemble the numbers on a clock face." },
+{ q:"Normal marrow cellularity in a 70-year-old is closest to:", a:["10%","30%","60%","90%"], c:1,
+  e:"Using 100 minus age as a rough guide gives about 30%. Ignore the subcortical spaces, which are often hypocellular." },
+{ q:"Which of these is a normal finding in a bone marrow aspirate?", a:["Ring sideroblasts in 10% of erythroblasts","Emperipolesis in megakaryocytes","Auer rods in promyelocytes","Paratrabecular lymphoid aggregates"], c:1,
+  e:"Emperipolesis, where marrow cells pass through megakaryocyte cytoplasm, is normal. It can be increased in some myeloproliferative neoplasms." }
+];
+
+const CASES = [
+{
+  id:"pseudo-plt",
+  title:"The surprising platelet count",
+  tag:"Pre-analytical",
+  stem:"A 46-year-old woman attends for a routine pre-operative check before a hernia repair. She has no bleeding history and no bruising. Her full blood count is otherwise normal.",
+  data:[["Hb","134 g/L"],["WBC","6.8 × 10⁹/L"],["Platelets","38 × 10⁹/L"],["MPV","Not reported"],["Analyser flag","PLT clumps?"]],
+  steps:[
+    { q:"What is your first step?", opts:["Postpone surgery and refer to haematology","Examine the blood film from the same EDTA sample","Transfuse platelets before surgery","Request a bone marrow aspirate"], c:1,
+      fb:"A low platelet count in a well patient with no bleeding history and a clump flag should be checked on the film before anything else." },
+    { q:"The film shows large platelet clumps at the feathered edge, and some neutrophils ringed by platelets. What is the most likely explanation?", opts:["Immune thrombocytopenia","EDTA-dependent pseudothrombocytopenia with platelet satellitism","Disseminated intravascular coagulation","Bernard–Soulier syndrome"], c:1,
+      fb:"EDTA exposes a cryptic GPIIb/IIIa epitope that some people's antibodies (about 0.1% of the population) recognise. Platelets clump in the tube and may stick to neutrophils (satellitism)." },
+    { q:"How do you get a reliable count?", opts:["Repeat in another EDTA tube","Repeat on a sodium citrate sample, analysed promptly and corrected for dilution","Use a serum sample","Count reticulated platelets"], c:1,
+      fb:"Citrate prevents the clumping in most cases. Multiply the count by about 1.1 to correct for the liquid anticoagulant. A fingerprick film or a sample kept at 37°C are alternatives." }
+  ],
+  teach:["Always look at the film before reporting an unexpected thrombocytopenia","EDTA pseudothrombocytopenia has no clinical significance, but missing it leads to needless transfusion or cancelled surgery","Record the finding in the patient's file so future counts are interpreted correctly"]
+},
+{
+  id:"cold-agg",
+  title:"The impossible MCHC",
+  tag:"Analyser artefact",
+  stem:"A 72-year-old man is seen with tiredness. His sample was taken in a cold clinic in winter and arrived in the laboratory two hours later.",
+  data:[["Hb","118 g/L"],["RBC","2.10 × 10¹²/L"],["Hct","0.24 L/L"],["MCV","114 fL"],["MCH","56 pg"],["MCHC","492 g/L"]],
+  steps:[
+    { q:"Which value is physiologically impossible?", opts:["Hb 118 g/L","MCV 114 fL","MCHC 492 g/L","RBC 2.10 × 10¹²/L"], c:2,
+      fb:"An MCHC above about 370 g/L cannot occur in intact red cells, because haemoglobin would crystallise. It points to an artefact in the red cell count or haematocrit." },
+    { q:"How does a cold agglutinin produce this pattern?", opts:["It lyses red cells in the tube","Agglutinated red cells are counted as single large cells, so RBC and Hct fall while Hb, measured after lysis, is correct","It interferes with haemoglobin measurement","It shrinks red cells"], c:1,
+      fb:"Haemoglobin is measured after lysis, so it stays correct. The red cell count and haematocrit fall, which makes MCH and MCHC rise falsely, and doublets raise the MCV." },
+    { q:"What is the correct action?", opts:["Report the results with a comment","Warm the sample to 37°C for 15 to 30 minutes and rerun it at once","Request a new EDTA sample at room temperature","Dilute the sample with saline"], c:1,
+      fb:"Warming disperses the agglutinates. If the problem persists, take a new sample kept at 37°C. The film shows red cell agglutinates. Then think about the cause (Module 2 covers cold agglutinin disease)." }
+  ],
+  teach:["MCHC is the best internal quality check on red cell indices","Raised MCHC: cold agglutinin, lipaemia, icterus and hereditary spherocytosis (rarely above 370 g/L)","Lipaemia falsely raises Hb; it is corrected by plasma replacement"]
+},
+{
+  id:"dilute-bm",
+  title:"An aspirate that looks like blood",
+  tag:"Marrow interpretation",
+  stem:"A 58-year-old man has a bone marrow aspirate and trephine to investigate mild pancytopenia. The operator reports that aspiration was difficult. The trephine report is pending.",
+  data:[["Particles","None seen"],["Blasts","1%"],["Myelocytes and metamyelocytes","6%"],["Segmented neutrophils","52%"],["Lymphocytes","28%"],["Erythroblasts","5%"],["M:E ratio","about 12:1"]],
+  steps:[
+    { q:"What best explains this differential count?", opts:["Pure red cell aplasia","Chronic myeloid leukaemia","Haemodilution of the aspirate with peripheral blood","Lymphoproliferative disorder"], c:2,
+      fb:"No particles, very few precursors and a differential count resembling blood means the aspirate is mostly peripheral blood. The M:E ratio cannot be interpreted." },
+    { q:"Why might the aspiration have been difficult?", opts:["Operator technique only","Marrow fibrosis or very cellular, packed marrow","Low platelet count","Anticoagulation"], c:1,
+      fb:"A dry or blood-only tap can come from technique, but it raises the possibility of fibrosis, infiltration (for example hairy cell leukaemia or metastases) or a packed marrow. The trephine is essential." },
+    { q:"What should the report say?", opts:["Normal marrow","Hypocellular marrow","Aspirate haemodiluted and not representative; interpret together with the trephine, which may need imprints","Reactive marrow"], c:2,
+      fb:"State that the aspirate is not representative. Trephine touch imprints give cytology when aspiration fails, and the reticulin stain assesses fibrosis." }
+  ],
+  teach:["Assess particles before interpreting any aspirate count","Never call a marrow hypocellular from a haemodiluted aspirate","A dry tap is a clue to fibrosis or infiltration until proven otherwise"]
+},
+{
+  id:"pregnancy",
+  title:"Blood count at 34 weeks",
+  tag:"Physiological variation",
+  stem:"A 29-year-old woman at 34 weeks of an uncomplicated pregnancy has a routine blood count. She feels well and has no bleeding.",
+  data:[["Hb","106 g/L"],["MCV","92 fL"],["WBC","13.2 × 10⁹/L"],["Neutrophils","10.1 × 10⁹/L"],["Film","Occasional myelocytes"],["Platelets","118 × 10⁹/L"]],
+  steps:[
+    { q:"How should the haemoglobin be interpreted?", opts:["Normal for pregnancy","Anaemia by WHO criteria; check iron status","Severe anaemia needing transfusion","Spurious result"], c:1,
+      fb:"Haemoglobin below 110 g/L is anaemia in pregnancy (below 105 g/L in the second trimester by UK guidance). Iron deficiency is the commonest cause, so check ferritin even with a normal MCV, since MCV rises a little in pregnancy." },
+    { q:"How should the white count be interpreted?", opts:["Leukaemoid reaction","Normal pregnancy neutrophilia with a mild left shift","Infection, start antibiotics","Chronic myeloid leukaemia"], c:1,
+      fb:"Neutrophilia with occasional myelocytes is normal in pregnancy. Clinical signs, not the count alone, decide whether infection is present." },
+    { q:"What is the most likely cause of the platelet count?", opts:["Immune thrombocytopenia","Gestational thrombocytopenia","HELLP syndrome","Thrombotic thrombocytopenic purpura"], c:1,
+      fb:"A mild fall late in pregnancy in a well woman with a normal blood pressure and a platelet count above 70 × 10⁹/L is most often gestational. Check blood pressure and liver tests to exclude pre-eclampsia and HELLP." }
+  ],
+  teach:["Use pregnancy-specific ranges","Plasma volume expands more than red cell mass","Neutrophilia with left shift and mild thrombocytopenia are expected in the third trimester"]
+}
+];
+
+/* Decision tree: unexpected or implausible full blood count results. */
+const TREE = {
+  start: { q:"Which result looks wrong?", opts:[["Platelets unexpectedly low","plt"],["MCHC above 365 g/L","mchc"],["White count raised, film shows nucleated red cells","nrbc"],["MCV and Hct rising, sample is old","old"]] },
+  plt: { q:"Is the patient well, with no bleeding, and is there a clump flag?", opts:[["Yes","plt2"],["No: bleeding or unwell","pltreal"]] },
+  plt2: { q:"Does the film show platelet clumps or satellitism?", opts:[["Yes","pltedta"],["No","pltclot"]] },
+  pltedta: { end:"EDTA-dependent pseudothrombocytopenia", detail:"Recount on a citrate sample (multiply by about 1.1) or a fingerprick film. Add a comment to the report and the patient record." },
+  pltclot: { q:"Is there a visible clot or fibrin strands in the tube?", opts:[["Yes","pltclot2"],["No","pltreal"]] },
+  pltclot2: { end:"Partially clotted sample", detail:"Reject the sample and request a new one with a clean venepuncture and prompt mixing." },
+  pltreal: { end:"Probable true thrombocytopenia", detail:"Confirm on the film, review platelet size and other cell lines, and investigate the cause (Module 4)." },
+  mchc: { q:"Is the plasma milky (lipaemic) or deeply icteric?", opts:[["Yes","lip"],["No","cold"]] },
+  lip: { end:"Interference with haemoglobin measurement", detail:"Turbidity raises Hb, so MCH and MCHC rise. Replace the plasma with an equal volume of diluent and rerun, or measure Hb by another method." },
+  cold: { q:"Does the film or the tube show red cell agglutinates?", opts:[["Yes","coldagg"],["No","hs"]] },
+  coldagg: { end:"Cold agglutinin artefact", detail:"Warm to 37°C and rerun at once. Then look for the cause: cold agglutinin disease, Mycoplasma, EBV or lymphoma." },
+  hs: { end:"Consider hereditary spherocytosis, or a sample artefact", detail:"Look for spherocytes on the film. True MCHC rarely exceeds 370 g/L. Recheck the instrument and quality control." },
+  nrbc: { q:"Does your analyser count nucleated red cells separately?", opts:[["Yes","nrbcauto"],["No","nrbccalc"]] },
+  nrbcauto: { end:"Use the analyser's corrected white count", detail:"Check that the reported WBC is the corrected value. Then interpret the NRBCs: neonate, haemolysis, hypoxia, marrow infiltration (leucoerythroblastic film)." },
+  nrbccalc: { end:"Correct the white count manually", detail:"Corrected WBC = WBC × 100 ÷ (100 + NRBC per 100 WBC). Use the calculator below." },
+  old: { q:"Was the sample stored at room temperature for more than about 24 hours?", opts:[["Yes","oldyes"],["No","oldno"]] },
+  oldyes: { end:"Storage artefact", detail:"Red cells swell, so MCV and Hct rise while MCHC falls. Films show crenation and degenerating neutrophils. Request a fresh sample." },
+  oldno: { end:"Probably a real macrocytosis", detail:"Check the film for oval macrocytes and hypersegmented neutrophils and investigate (Module 2)." }
+};
+
+const MARROW_STEPS = [
+  ["Check the request", "Read the clinical question and the blood count taken within 24 hours of the marrow. Write down what you need to answer."],
+  ["Low power: is it adequate?", "Look for particles and their cellularity. If there are no particles, say the aspirate may be haemodiluted."],
+  ["Low power: megakaryocytes", "Present, reduced or increased? Note size, lobulation and any clustering."],
+  ["Low power: abnormal cells", "Scan for clumps of non-haematopoietic cells (metastases), giant cells and granulomas."],
+  ["High power: differential", "Count at least 500 cells in the trails behind particles. Calculate the M:E ratio."],
+  ["Each lineage in turn", "Erythroid: maturation, megaloblastic or dysplastic change. Myeloid: blast %, maturation, granulation, Auer rods. Lymphoid and plasma cells: proportion and morphology."],
+  ["Iron stain", "Grade storage iron in particles, count sideroblasts and look for ring sideroblasts."],
+  ["Correlate", "Compare with the trephine (cellularity, fibrosis, focal lesions), flow cytometry and genetics."],
+  ["Write the conclusion", "Answer the clinical question in the first line. List the key findings and any recommended further tests."]
+];
+
+/* Draws schematic Romanowsky-stained cells as SVG. All drawings are original.
+   Units: one drawing unit = K px; cell parameters in data.js use these units. */
+
+const K = 7;
+const C0 = 100;
+let svgSeq = 0;
+
+function rng(seed) {
+  let a = 0;
+  for (const ch of String(seed)) a = (a * 31 + ch.charCodeAt(0)) | 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const f = amt < 0 ? 0 : 255, p = Math.abs(amt);
+  r = Math.round((f - r) * p + r); g = Math.round((f - g) * p + g); b = Math.round((f - b) * p + b);
+  return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+}
+
+const f1 = (v) => Math.round(v * 10) / 10;
+
+/* Smooth closed path through points (Catmull-Rom converted to cubic Bezier). */
+function smoothPath(pts) {
+  const n = pts.length;
+  let d = `M${f1(pts[0][0])},${f1(pts[0][1])}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += `C${f1(c1[0])},${f1(c1[1])} ${f1(c2[0])},${f1(c2[1])} ${f1(p2[0])},${f1(p2[1])}`;
+  }
+  return d + "Z";
+}
+
+function blob(o, rand) {
+  const { cx, cy, r, sx = 1, sy = 1, rot = 0, indent = 0, wobble = 0.03 } = o;
+  const N = 36, pts = [];
+  const ph1 = rand() * 6.28, ph2 = rand() * 6.28, ph3 = rand() * 6.28;
+  const ia = (rot * Math.PI) / 180;
+  for (let i = 0; i < N; i++) {
+    const t = (i / N) * Math.PI * 2;
+    let rr = r * (1 + wobble * (Math.sin(3 * t + ph1) * 0.6 + Math.sin(5 * t + ph2) * 0.3 + Math.sin(2 * t + ph3) * 0.4));
+    if (indent) {
+      let dt = Math.atan2(Math.sin(t), Math.cos(t));
+      rr *= 1 - indent * Math.exp(-(dt * dt) / (2 * 0.42 * 0.42));
+    }
+    const x = rr * Math.cos(t) * sx, y = rr * Math.sin(t) * sy;
+    pts.push([cx + x * Math.cos(ia) - y * Math.sin(ia), cy + x * Math.sin(ia) + y * Math.cos(ia)]);
+  }
+  return smoothPath(pts);
+}
+
+/* Inside test for an ellipse, used to place granules and vacuoles. */
+function inEllipse(x, y, cx, cy, rx, ry) {
+  const dx = (x - cx) / rx, dy = (y - cy) / ry;
+  return dx * dx + dy * dy <= 1;
+}
+
+function rbcShape(cx, cy, r, color, poly, id, rand) {
+  const g = `${id}g${Math.floor(rand() * 1e6)}`;
+  const inner = poly ? shade(color, 0.08) : shade(color, 0.62);
+  return `<defs><radialGradient id="${g}"><stop offset="0" stop-color="${inner}"/><stop offset="${poly ? 0.5 : 0.38}" stop-color="${poly ? color : shade(color, 0.35)}"/><stop offset="0.92" stop-color="${color}"/><stop offset="1" stop-color="${shade(color, -0.12)}"/></radialGradient></defs>` +
+    `<path d="${blob({ cx, cy, r, wobble: 0.025 }, rand)}" fill="url(#${g})"/>`;
+}
+
+function backgroundRBCs(rbcR, rand, id, avoidR) {
+  let s = "";
+  const spots = [[-0.82, -0.8], [0.86, -0.72], [-0.9, 0.78], [0.8, 0.86], [0.02, -1.05], [-1.05, 0.05], [1.05, 0.12]];
+  spots.forEach(([fx, fy], i) => {
+    const x = C0 + fx * 100 + (rand() - 0.5) * 16, y = C0 + fy * 100 + (rand() - 0.5) * 16;
+    const dist = Math.hypot(x - C0, y - C0);
+    if (dist < avoidR + rbcR * 0.4) return;
+    s += rbcShape(x, y, rbcR, "#e7b0b4", false, id + "b" + i, rand);
+  });
+  return s;
+}
+
+function chromatin(type, shapeBox, base, rand) {
+  const { x0, y0, x1, y1 } = shapeBox;
+  const w = x1 - x0, h = y1 - y0;
+  const dots = [];
+  const add = (n, rmin, rmax, col, op) => {
+    for (let i = 0; i < n; i++) {
+      dots.push(`<circle cx="${f1(x0 + rand() * w)}" cy="${f1(y0 + rand() * h)}" r="${f1((rmin + rand() * (rmax - rmin)) * K)}" fill="${col}" opacity="${op}"/>`);
+    }
+  };
+  const area = (w * h) / (K * K);
+  if (type === "fine") { add(area * 5, 0.12, 0.22, shade(base, -0.35), 0.35); add(area * 3, 0.1, 0.2, shade(base, 0.3), 0.3); }
+  else if (type === "smooth") { add(area * 2, 0.15, 0.3, shade(base, -0.2), 0.18); }
+  else if (type === "medium") { add(area * 2.6, 0.2, 0.36, shade(base, -0.4), 0.4); add(area, 0.15, 0.3, shade(base, 0.3), 0.3); }
+  else if (type === "coarse") { add(area * 1.6, 0.3, 0.55, shade(base, -0.45), 0.5); add(area, 0.2, 0.35, shade(base, 0.3), 0.35); }
+  else if (type === "clumped") { add(area * 1.2, 0.35, 0.6, shade(base, -0.5), 0.55); add(area * 0.8, 0.18, 0.3, shade(base, 0.25), 0.3); }
+  else if (type === "checker") {
+    const step = 1.15 * K;
+    for (let x = x0; x < x1; x += step) for (let y = y0; y < y1; y += step) {
+      dots.push(`<circle cx="${f1(x + (rand() - 0.5) * 3)}" cy="${f1(y + (rand() - 0.5) * 3)}" r="${f1(0.42 * K)}" fill="${shade(base, -0.5)}" opacity="0.7"/>`);
+    }
+  }
+  else if (type === "clockface") {
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, rr = Math.min(w, h) / 2;
+    for (let i = 0; i < 9; i++) {
+      const t = (i / 9) * Math.PI * 2 + rand() * 0.2;
+      dots.push(`<circle cx="${f1(cx + Math.cos(t) * rr * 0.72)}" cy="${f1(cy + Math.sin(t) * rr * 0.72)}" r="${f1(rr * 0.24)}" fill="${shade(base, -0.55)}" opacity="0.85"/>`);
+    }
+    dots.push(`<circle cx="${f1(cx)}" cy="${f1(cy)}" r="${f1(rr * 0.26)}" fill="${shade(base, -0.55)}" opacity="0.85"/>`);
+  }
+  else if (type === "lacy") {
+    for (let i = 0; i < area * 2.2; i++) {
+      const x = x0 + rand() * w, y = y0 + rand() * h, a = rand() * 6.28, L = (0.5 + rand() * 0.8) * K;
+      dots.push(`<path d="M${f1(x)},${f1(y)} q${f1(Math.cos(a + 1) * L / 2)},${f1(Math.sin(a + 1) * L / 2)} ${f1(Math.cos(a) * L)},${f1(Math.sin(a) * L)}" stroke="${shade(base, -0.4)}" stroke-width="${f1(0.16 * K)}" fill="none" opacity="0.55"/>`);
+    }
+  }
+  return dots.join("");
+}
+
+/* Builds nucleus geometry: an array of SVG shapes (union) plus extras such as filaments. */
+function nucleusGeometry(n, rand) {
+  const cx = C0 + (n.dx || 0) * K, cy = C0 + (n.dy || 0) * K;
+  const shapes = [], extras = [], centres = [];
+  let box;
+  if (n.type === "round" || n.type === "oval") {
+    const r = n.r * K;
+    shapes.push(`<path d="${blob({ cx, cy, r, sx: n.sx || 1, sy: n.sy || 1, wobble: 0.035 }, rand)}"/>`);
+    box = { x0: cx - r * 1.2, y0: cy - r * 1.2, x1: cx + r * 1.2, y1: cy + r * 1.2 };
+    centres.push([cx, cy, r]);
+  } else if (n.type === "kidney") {
+    const r = n.r * K;
+    shapes.push(`<path d="${blob({ cx, cy, r, sx: 1.12, sy: 0.9, rot: n.rot || 0, indent: n.indent, wobble: n.wobble || 0.04 }, rand)}"/>`);
+    box = { x0: cx - r * 1.3, y0: cy - r * 1.3, x1: cx + r * 1.3, y1: cy + r * 1.3 };
+    centres.push([cx, cy, r * 0.6]);
+  } else if (n.type === "band") {
+    const R = n.arc * K, w = n.w * K, a0 = rand() * 6.28, span = 4.2;
+    const out = [], inn = [];
+    for (let i = 0; i <= 20; i++) {
+      const t = a0 - span / 2 + (span * i) / 20;
+      const ww = w * (0.92 + 0.12 * Math.sin(i * 1.3));
+      out.push([cx + Math.cos(t) * (R + ww / 2), cy + Math.sin(t) * (R + ww / 2)]);
+      inn.push([cx + Math.cos(t) * (R - ww / 2), cy + Math.sin(t) * (R - ww / 2)]);
+    }
+    shapes.push(`<path d="${smoothPath(out.concat(inn.reverse()))}"/>`);
+    [a0 - span / 2, a0 + span / 2].forEach((t) => shapes.push(`<circle cx="${f1(cx + Math.cos(t) * R)}" cy="${f1(cy + Math.sin(t) * R)}" r="${f1(w / 2)}"/>`));
+    box = { x0: cx - R - w, y0: cy - R - w, x1: cx + R + w, y1: cy + R + w };
+    centres.push([cx, cy, R]);
+  } else if (n.type === "lobes" || n.type === "mega") {
+    const count = n.n, lr = n.lr * K, sp = n.spread * K;
+    const pts = [];
+    if (n.type === "lobes") {
+      const a0 = rand() * 6.28, span = count === 2 ? 2.2 : 3.6;
+      for (let i = 0; i < count; i++) {
+        const t = a0 + (count === 1 ? 0 : -span / 2 + (span * i) / (count - 1));
+        pts.push([cx + Math.cos(t) * sp, cy + Math.sin(t) * sp, lr * (0.85 + rand() * 0.3)]);
+      }
+      for (let i = 0; i < pts.length - 1; i++) {
+        extras.push(`<line x1="${f1(pts[i][0])}" y1="${f1(pts[i][1])}" x2="${f1(pts[i + 1][0])}" y2="${f1(pts[i + 1][1])}" stroke="NUC" stroke-width="${f1(0.28 * K)}" stroke-linecap="round"/>`);
+      }
+      pts.forEach((p) => shapes.push(`<path d="${blob({ cx: p[0], cy: p[1], r: p[2], sx: 1.1, sy: 0.88, rot: rand() * 180, wobble: 0.06 }, rand)}"/>`));
+    } else {
+      for (let i = 0; i < count; i++) {
+        const t = rand() * 6.28, d = Math.sqrt(rand()) * sp;
+        pts.push([cx + Math.cos(t) * d, cy + Math.sin(t) * d, lr * (0.75 + rand() * 0.45)]);
+      }
+      pts.forEach((p) => shapes.push(`<path d="${blob({ cx: p[0], cy: p[1], r: p[2], wobble: 0.1 }, rand)}"/>`));
+    }
+    box = { x0: cx - sp - lr * 1.5, y0: cy - sp - lr * 1.5, x1: cx + sp + lr * 1.5, y1: cy + sp + lr * 1.5 };
+    pts.forEach((p) => centres.push(p));
+  } else if (n.type === "multi") {
+    const r = n.r * K, sp = n.spread * K, pts = [];
+    let guard = 0;
+    while (pts.length < n.n && guard++ < 400) {
+      const t = rand() * 6.28, d = Math.sqrt(rand()) * sp;
+      const p = [cx + Math.cos(t) * d, cy + Math.sin(t) * d, r * (0.9 + rand() * 0.2)];
+      if (pts.every((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) > (q[2] + p[2]) * 1.15)) pts.push(p);
+    }
+    pts.forEach((p) => shapes.push(`<path d="${blob({ cx: p[0], cy: p[1], r: p[2], sx: 1.1, sy: 0.9, rot: rand() * 180 }, rand)}"/>`));
+    box = { x0: cx - sp - r * 2, y0: cy - sp - r * 2, x1: cx + sp + r * 2, y1: cy + sp + r * 2 };
+    pts.forEach((p) => centres.push(p));
+  }
+  return { shapes, extras, centres, box, cx, cy };
+}
+
+function nearNucleus(x, y, centres, pad) {
+  return centres.some(([cx, cy, r]) => Math.hypot(x - cx, y - cy) < r + pad);
+}
+
+function drawCell(cell, opts = {}) {
+  const id = "c" + (++svgSeq);
+  const rand = rng(cell.id + (opts.seed || ""));
+  const d = cell.draw;
+  const label = opts.label === false ? "" : `<title>${cell.name}: schematic illustration</title>`;
+  let s = `<svg viewBox="0 0 200 200" class="cellsvg" role="img" aria-label="${cell.name}, schematic illustration" xmlns="http://www.w3.org/2000/svg">${label}`;
+  s += `<rect width="200" height="200" fill="#f7f0f2"/>`;
+
+  if (d.plateletField) {
+    const pk = 14; // px per µm in this zoomed field
+    const r2 = rng(cell.id + "f");
+    [[38, 40], [150, 30], [100, 104], [36, 160], [168, 150], [120, 196], [-10, 96], [212, 92]].forEach(([x, y], i) => {
+      s += rbcShape(x, y, 3.75 * pk, "#e3a1a6", false, id + "p" + i, r2);
+    });
+    [[96, 40], [62, 96], [150, 88], [94, 160], [182, 196], [20, 120], [140, 136], [58, 6]].forEach(([x, y], i) => {
+      const r = (1.0 + r2() * 0.5) * pk;
+      s += `<path d="${blob({ cx: x, cy: y, r, sx: 1.15, sy: 0.85, rot: r2() * 180, wobble: 0.12 }, r2)}" fill="#cdb0d8"/>`;
+      for (let g = 0; g < 7; g++) {
+        const t = r2() * 6.28, dd = r2() * r * 0.45;
+        s += `<circle cx="${f1(x + Math.cos(t) * dd)}" cy="${f1(y + Math.sin(t) * dd)}" r="${f1(0.18 * pk + r2())}" fill="#6d2f78" opacity="0.85"/>`;
+      }
+    });
+    s += scaleBar(5, pk);
+    return s + "</svg>";
+  }
+
+  const pxPerUm = (K * 2 * (d.r || 3.8)) / cell.sizeUm;
+  const R = (d.r || 3.8) * K;
+
+  s += backgroundRBCs(3.75 * pxPerUm, rand, id, R * Math.max(d.sx || 1, 1));
+
+  if (d.rbc) {
+    s += rbcShape(C0, C0, R, d.cyto, d.rbc === "poly", id, rand);
+    s += scaleBar(pxPerUm * 10 > 90 ? 5 : 10, pxPerUm);
+    return s + "</svg>";
+  }
+
+  const cytoPath = blob({ cx: C0, cy: C0, r: R, sx: d.sx || 1, sy: d.sy || 1, rot: (rand() - 0.5) * 30, wobble: d.irregular || 0.025 }, rand);
+  const gid = id + "cg";
+  s += `<defs><radialGradient id="${gid}" cx="0.5" cy="0.5" r="0.55"><stop offset="0" stop-color="${shade(d.cyto, 0.12)}"/><stop offset="0.85" stop-color="${d.cyto}"/><stop offset="1" stop-color="${shade(d.cyto, -0.15)}"/></radialGradient>`;
+  s += `<clipPath id="${id}cc"><path d="${cytoPath}"/></clipPath></defs>`;
+
+  if (d.plts) {
+    for (let i = 0; i < 9; i++) {
+      const t = rand() * 6.28;
+      s += `<path d="${blob({ cx: C0 + Math.cos(t) * R * 1.02, cy: C0 + Math.sin(t) * R * 1.02, r: 4 + rand() * 3, wobble: 0.15 }, rand)}" fill="${shade(d.cyto, -0.08)}"/>`;
+    }
+  }
+  if (d.blebs) {
+    for (let i = 0; i < 3; i++) {
+      const t = rand() * 6.28;
+      s += `<circle cx="${f1(C0 + Math.cos(t) * R * 0.98)}" cy="${f1(C0 + Math.sin(t) * R * 0.98)}" r="${f1(R * (0.12 + rand() * 0.08))}" fill="${d.cyto}"/>`;
+    }
+  }
+  s += `<path d="${cytoPath}" fill="url(#${gid})"/>`;
+
+  const nuc = d.nuc;
+  const geo = nucleusGeometry(nuc, rand);
+  const nucColor = d.chrom === "pyknotic" ? "#2a1238" : d.chrom === "fine" || d.chrom === "smooth" ? "#6a4790" : d.chrom === "lacy" ? "#7a5a9c" : "#4f2b6c";
+
+  s += `<g clip-path="url(#${id}cc)">`;
+  if (d.halo) s += `<circle cx="${f1(geo.cx)}" cy="${f1(geo.cy)}" r="${f1(nuc.r * K * 1.28)}" fill="${shade(d.cyto, 0.32)}" opacity="0.55"/>`;
+  if (d.hof) {
+    const vx = C0 - geo.cx, vy = C0 - geo.cy, L = Math.hypot(vx, vy) || 1;
+    const off = (nuc.r || 3) * K * 0.95;
+    const hx = d.hofFar ? C0 + (vx / L) * R * 0.2 : geo.cx + (vx / L) * off;
+    const hy = d.hofFar ? C0 + (vy / L) * R * 0.2 : geo.cy + (vy / L) * off;
+    const hr = (nuc.r || 3) * K * (d.hofStrong ? 0.75 : 0.6);
+    s += `<ellipse cx="${f1(hx)}" cy="${f1(hy)}" rx="${f1(hr)}" ry="${f1(hr * 0.75)}" transform="rotate(${f1((Math.atan2(vy, vx) * 180) / Math.PI + 90)} ${f1(hx)} ${f1(hy)})" fill="#ffffff" opacity="${d.hofStrong ? 0.5 : 0.35}"/>`;
+  }
+  // granules under the nucleus layer
+  const gran = d.gran;
+  const granDots = (over) => {
+    let g = "";
+    if (!gran || !!gran.over !== over) return g;
+    const rx = R * (d.sx || 1) * 0.93, ry = R * (d.sy || 1) * 0.93;
+    let placed = 0, guard = 0;
+    while (placed < gran.n && guard++ < gran.n * 20) {
+      const x = C0 + (rand() * 2 - 1) * rx, y = C0 + (rand() * 2 - 1) * ry;
+      if (!inEllipse(x, y, C0, C0, rx, ry)) continue;
+      if (!gran.over && nearNucleus(x, y, geo.centres, 3)) continue;
+      const gr = gran.s * K * (0.7 + rand() * 0.6);
+      g += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(gr)}" fill="${gran.color}" opacity="${f1(0.75 + rand() * 0.25)}"/>`;
+      placed++;
+    }
+    return g;
+  };
+  s += granDots(false);
+  if (d.vac) {
+    const rx = R * (d.sx || 1) * 0.85, ry = R * (d.sy || 1) * 0.85;
+    let placed = 0, guard = 0;
+    while (placed < d.vac && guard++ < 300) {
+      const x = C0 + (rand() * 2 - 1) * rx, y = C0 + (rand() * 2 - 1) * ry;
+      if (!inEllipse(x, y, C0, C0, rx, ry) || nearNucleus(x, y, geo.centres, 6)) continue;
+      const vr = (0.35 + rand() * 0.55) * K;
+      s += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(vr)}" fill="#fbf7f8" stroke="${shade(d.cyto, -0.2)}" stroke-width="0.6" opacity="0.92"/>`;
+      placed++;
+    }
+  }
+  if (d.debris) {
+    for (let i = 0; i < d.debris; i++) {
+      const t = rand() * 6.28, dd = R * (0.2 + rand() * 0.6);
+      const x = C0 + Math.cos(t) * dd, y = C0 + Math.sin(t) * dd;
+      if (nearNucleus(x, y, geo.centres, 4)) continue;
+      s += `<path d="${blob({ cx: x, cy: y, r: (0.4 + rand() * 0.6) * K, wobble: 0.2 }, rand)}" fill="${i % 2 ? "#8a6a2e" : "#3e5b9e"}" opacity="0.8"/>`;
+    }
+  }
+  s += `</g>`;
+
+  // nucleus with chromatin texture
+  const nclip = id + "nc";
+  s += `<defs><clipPath id="${nclip}">${geo.shapes.join("")}</clipPath></defs>`;
+  s += geo.extras.join("").replace(/NUC/g, shade(nucColor, -0.1));
+  s += `<g clip-path="url(#${nclip})"><rect x="${f1(geo.box.x0)}" y="${f1(geo.box.y0)}" width="${f1(geo.box.x1 - geo.box.x0)}" height="${f1(geo.box.y1 - geo.box.y0)}" fill="${nucColor}"/>`;
+  s += chromatin(d.chrom, geo.box, nucColor, rand);
+  if (d.nucleoli) {
+    const list = nuc.type === "multi" ? geo.centres : geo.centres.slice(0, 1);
+    list.forEach(([cx, cy, r]) => {
+      const count = nuc.type === "multi" ? 1 : d.nucleoli;
+      for (let i = 0; i < count; i++) {
+        const t = rand() * 6.28, dd = r * (count === 1 ? 0.2 : 0.42) * rand();
+        const nr = (nuc.type === "multi" ? 0.3 : 0.55 + rand() * 0.3) * K;
+        s += `<circle cx="${f1(cx + Math.cos(t) * dd + (i - count / 2) * r * 0.35)}" cy="${f1(cy + Math.sin(t) * dd)}" r="${f1(nr)}" fill="#a9acd8" stroke="#4d3473" stroke-width="0.7" opacity="0.9"/>`;
+      }
+    });
+  }
+  s += `</g>`;
+  s += granDots(true);
+  s += scaleBar(pxPerUm * 10 > 95 ? 5 : 10, pxPerUm);
+  return s + "</svg>";
+}
+
+function scaleBar(um, pxPerUm) {
+  const L = um * pxPerUm;
+  return `<g class="scalebar"><rect x="8" y="180" width="${f1(L + 12)}" height="14" rx="2" fill="#ffffff" opacity="0.8"/><line x1="14" y1="190" x2="${f1(14 + L)}" y2="190" stroke="#2c2337" stroke-width="2"/><text x="${f1(14 + L / 2)}" y="187" font-size="7.5" text-anchor="middle" fill="#2c2337" font-family="sans-serif">${um} µm</text></g>`;
+}
+
+/* App logic: routing, views and interactivity. Depends on data.js and cells.js. */
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const cellById = Object.fromEntries(CELLS.map((c) => [c.id, c]));
+const svgCache = {};
+const cellSVG = (id) => (svgCache[id] ||= drawCell(cellById[id]));
+
+const LESSON_CELLS = {
+  haematopoiesis: ["myeloblast", "proerythroblast", "megakaryocyte", "small-lymphocyte"],
+  erythropoiesis: ["proerythroblast", "basophilic-normoblast", "polychromatic-normoblast", "orthochromatic-normoblast", "reticulocyte", "rbc"],
+  granulopoiesis: ["myeloblast", "promyelocyte", "myelocyte", "metamyelocyte", "band", "neutrophil", "eosinophil", "basophil"],
+  "monocytes-lymphocytes": ["monocyte", "macrophage", "small-lymphocyte", "lgl", "plasma-cell", "hematogone"],
+  megakaryopoiesis: ["megakaryocyte", "platelet"],
+  "bone-marrow": ["osteoblast", "osteoclast", "mast-cell", "macrophage", "megakaryocyte", "plasma-cell"],
+  "reference-values": ["rbc", "neutrophil", "small-lymphocyte", "monocyte", "eosinophil", "platelet"]
+};
+
+/* Per-viewer progress, kept in this browser only. */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("idh:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("idh:" + k, JSON.stringify(v)); } catch {} }
+};
+const state = {
+  lesson: store.get("lesson", LESSONS[0].id),
+  done: new Set(store.get("done", [])),
+  known: new Set(store.get("known", [])),
+  quizBest: store.get("quizBest", null),
+  casesDone: new Set(store.get("casesDone", [])),
+  atlasFilter: "All",
+  practiceTab: "cards",
+  deck: "cells",
+  workTab: "tree",
+  animTab: "tree",
+  slideLesson: null,
+  slideIdx: 0
+};
+const save = () => {
+  store.set("lesson", state.lesson); store.set("done", [...state.done]); store.set("known", [...state.known]);
+  store.set("quizBest", state.quizBest); store.set("casesDone", [...state.casesDone]);
+};
+
+const ICONS = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  learn: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M8 7h7"/>',
+  atlas: '<circle cx="12" cy="12" r="8"/><circle cx="10" cy="11" r="3"/><circle cx="15.5" cy="14" r="1"/><circle cx="14" cy="8" r="1"/>',
+  practice: '<rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>',
+  cases: '<path d="M9 4h6v3H9z"/><rect x="4" y="6" width="16" height="15" rx="2"/><path d="M8 12h8M8 16h5"/>',
+  workups: '<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 7v10M8 5h3a4 4 0 0 1 4 4v1M8 19h3a4 4 0 0 0 4-4v-1"/>',
+  animations: '<polygon points="7,4 20,12 7,20"/>',
+  slides: '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M12 16v4M8 20h8"/>',
+  about: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'
+};
+const ROUTES = [
+  ["home", "Home"], ["learn", "Lessons"], ["atlas", "Atlas"], ["practice", "Flashcards & quiz"], ["cases", "Case studies"],
+  ["workups", "Workups"], ["animations", "Animations"], ["slides", "Slides"], ["about", "Sources & install"]
+];
+const MOBILE = [["home", "Home"], ["learn", "Learn"], ["atlas", "Atlas"], ["practice", "Practise"], ["more", "More"]];
+const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k] || ICONS.about}</svg>`;
+
+function renderNav(route) {
+  $("#nav").innerHTML = ROUTES.map(([r, t]) => `<a href="#${r}" ${r === route ? 'aria-current="page"' : ""}>${icon(r)}${t}</a>`).join("");
+  const moreRoutes = ["cases", "workups", "animations", "slides", "about", "more"];
+  $("#tabs").innerHTML = MOBILE.map(([r, t]) => {
+    const cur = r === route || (r === "more" && moreRoutes.includes(route));
+    return `<a href="#${r}" ${cur ? 'aria-current="page"' : ""}>${icon(r === "more" ? "workups" : r)}${t}</a>`;
+  }).join("");
+}
+
+/* ---------- Views ---------- */
+
+function viewHome() {
+  const lessonPct = Math.round((state.done.size / LESSONS.length) * 100);
+  const cardTotal = CELLS.length + FACTS.length;
+  const cardPct = Math.round((state.known.size / cardTotal) * 100);
+  const cur = LESSONS.find((l) => l.id === state.lesson) || LESSONS[0];
+  return `
+<section class="hero">
+  <div class="stack">
+    <span class="label">For Clinical Pathology MSc and MD students</span>
+    <h1>Interactive Diagnostic Haematology</h1>
+    <p class="lede">Learn haematology the way you report it: lessons, a cell atlas, flashcards, cases and step-by-step diagnostic workups. Everything except video links works offline.</p>
+    <div class="row"><a class="btn primary" href="#learn" data-lesson="${cur.id}">${state.done.size ? "Continue" : "Start"}: ${esc(cur.title)}</a><a class="btn" href="#atlas">Open the atlas</a></div>
+  </div>
+  <div class="hero-cells">
+    <div class="figure">${cellSVG("promyelocyte")}</div>
+    <div class="figure">${cellSVG("neutrophil")}</div>
+    <div class="figure">${cellSVG("plasma-cell")}</div>
+  </div>
+</section>
+
+<div class="section-h"><h2>Modules</h2><span class="muted">Built in this order</span></div>
+<div class="modules">
+${MODULES.map((m) => `
+  <${m.ready ? 'a href="#learn"' : "div"} class="card module ${m.ready ? "" : "locked"}">
+    <span class="n">${m.n}</span>
+    <h3>${esc(m.title)}</h3>
+    <span class="muted">${esc(m.sub)}</span>
+    ${m.ready ? `<div class="stack" style="gap:4px"><div class="bar"><i style="width:${lessonPct}%"></i></div><small class="muted">${state.done.size} of ${LESSONS.length} lessons complete</small></div>` : `<span class="tag az">In preparation</span>`}
+  </${m.ready ? "a" : "div"}>`).join("")}
+</div>
+
+<div class="section-h"><h2>Module 1 at a glance</h2></div>
+<div class="quick">
+  <a href="#learn"><b>${LESSONS.length} lessons</b><span>From stem cells to reference ranges</span></a>
+  <a href="#atlas"><b>${CELLS.length} cells in the atlas</b><span>Features, sizes and look-alikes</span></a>
+  <a href="#practice"><b>${cardTotal} flashcards</b><span>${cardPct}% marked as known</span></a>
+  <a href="#practice" data-tab="quiz"><b>${QUIZ.length} MCQs</b><span>${state.quizBest == null ? "Not attempted yet" : `Best score ${state.quizBest} of ${QUIZ.length}`}</span></a>
+  <a href="#cases"><b>${CASES.length} case studies</b><span>${state.casesDone.size} completed</span></a>
+  <a href="#workups"><b>Workups and calculators</b><span>Marrow reading, implausible results, reticulocytes</span></a>
+  <a href="#animations"><b>3 animations</b><span>Haematopoiesis, maturation, O₂ curve</span></a>
+  <a href="#slides"><b>Slide decks</b><span>Every lesson as a presentation</span></a>
+</div>`;
+}
+
+function viewLearn() {
+  const i = Math.max(0, LESSONS.findIndex((l) => l.id === state.lesson));
+  const L = LESSONS[i];
+  const body = L.body.replace(/<table/g, '<div class="tablewrap"><table').replace(/<\/table>/g, "</table></div>");
+  const cells = LESSON_CELLS[L.id] || [];
+  return `
+<div class="learn">
+  <nav class="toc" aria-label="Lessons">
+    ${LESSONS.map((l, k) => `<button data-go-lesson="${l.id}" aria-current="${l.id === L.id}"><span class="tick ${state.done.has(l.id) ? "done" : ""}">${state.done.has(l.id) ? "✓" : k + 1}</span><span>${esc(l.title)}</span></button>`).join("")}
+  </nav>
+  <article class="reader">
+    <span class="label">Lesson ${i + 1} of ${LESSONS.length}</span>
+    <h1>${esc(L.title)}</h1>
+    <div class="meta"><span>About ${L.minutes} minutes</span>
+      <a class="btn small" href="#slides" data-slides="${L.id}">${icon("slides")}Present as slides</a>
+      <a class="btn small" href="https://www.youtube.com/results?search_query=${encodeURIComponent(L.video)}" target="_blank" rel="noopener">${icon("animations")}Find videos (online)</a>
+    </div>
+    ${cells.length ? `<div class="strip">${cells.map((c) => `<button data-cell="${c}"><div class="figure">${cellSVG(c)}</div><span>${esc(cellById[c].name)}</span></button>`).join("")}</div>` : ""}
+    ${body}
+    <div class="keypoints"><h3>Key points</h3><ul>${L.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
+    <div class="row">
+      <button class="btn ${state.done.has(L.id) ? "" : "primary"}" data-complete="${L.id}">${state.done.has(L.id) ? "✓ Completed" : "Mark lesson complete"}</button>
+    </div>
+    <div class="sources"><b>Read more in</b><ul>${L.sources.map((s) => `<li>${esc(SOURCES[s])}</li>`).join("")}</ul></div>
+    <div class="pager">
+      ${i > 0 ? `<button class="btn" data-go-lesson="${LESSONS[i - 1].id}">← ${esc(LESSONS[i - 1].title)}</button>` : "<span></span>"}
+      ${i < LESSONS.length - 1 ? `<button class="btn" data-go-lesson="${LESSONS[i + 1].id}">${esc(LESSONS[i + 1].title)} →</button>` : `<a class="btn primary" href="#practice">Test yourself →</a>`}
+    </div>
+  </article>
+</div>`;
+}
+
+function viewAtlas() {
+  const groups = ["All", ...new Set(CELLS.map((c) => c.lineage))];
+  const list = CELLS.filter((c) => state.atlasFilter === "All" || c.lineage === state.atlasFilter);
+  return `
+<h1>Cell atlas</h1>
+<p class="muted" style="max-width:66ch">Original schematic drawings of Romanowsky-stained cells, drawn to scale against the red cells around them. Tap a cell for its features, normal numbers and look-alikes.</p>
+<div class="filters">${groups.map((g) => `<button class="chip" data-filter="${g}" aria-pressed="${g === state.atlasFilter}">${g}</button>`).join("")}</div>
+<div class="atlas">${list.map((c) => `<button data-cell="${c.id}"><div class="figure">${cellSVG(c.id)}</div><b>${esc(c.name)}</b><small>${esc(c.lineage)} · ${esc(c.size)}</small></button>`).join("")}</div>
+<p class="note" style="margin-top:18px">Compare these drawings with the photographs in Bain's Blood Cells and the Color Atlas of Hematology in your library.</p>`;
+}
+
+function openCell(id) {
+  const c = cellById[id];
+  const bg = document.createElement("div");
+  bg.className = "drawer-bg";
+  bg.innerHTML = `<div class="drawer" role="dialog" aria-modal="true" aria-label="${esc(c.name)}">
+    <div class="row" style="justify-content:space-between"><span class="tag az">${esc(c.lineage)}</span><button class="btn small" data-close>Close</button></div>
+    <h2 style="margin-top:12px">${esc(c.name)}</h2>
+    <div class="figure">${drawCell(c)}</div>
+    <dl class="kv">
+      <dt>Size</dt><dd class="num">${esc(c.size)}</dd>
+      <dt>Found in</dt><dd>${esc(c.where)}</dd>
+      <dt>Nucleus</dt><dd>${esc(c.nucleus)}</dd>
+      <dt>Cytoplasm</dt><dd>${esc(c.cyto)}</dd>
+      <dt>N:C ratio</dt><dd>${esc(c.nc)}</dd>
+      <dt>Normal numbers</dt><dd>${esc(c.normal)}</dd>
+      <dt>Look-alikes</dt><dd>${esc(c.mimic)}</dd>
+    </dl>
+    <p class="note">Schematic illustration, not a photomicrograph. The scale bar uses the surrounding red cells (about 7.5 µm) as a reference.</p>
+  </div>`;
+  const close = () => { bg.remove(); document.removeEventListener("keydown", onKey); };
+  const onKey = (e) => { if (e.key === "Escape") close(); };
+  bg.addEventListener("click", (e) => { if (e.target === bg || e.target.closest("[data-close]")) close(); });
+  document.addEventListener("keydown", onKey);
+  document.body.appendChild(bg);
+  $("[data-close]", bg).focus();
+}
+
+/* Flashcards */
+let fc = { cards: [], i: 0, flipped: false };
+function buildDeck() {
+  const cellCards = CELLS.map((c) => ({ id: "cell:" + c.id, kind: "cell", cell: c.id, a: c.name, sub: `${c.size}. ${c.nucleus}.` }));
+  const factCards = FACTS.map((f, i) => ({ id: "fact:" + i, kind: "fact", q: f[0], a: f[1] }));
+  let cards = state.deck === "cells" ? cellCards : state.deck === "facts" ? factCards : cellCards.concat(factCards);
+  const unknown = cards.filter((c) => !state.known.has(c.id));
+  if (unknown.length) cards = unknown;
+  const r = rng("deck" + Date.now());
+  cards = cards.slice().sort(() => r() - 0.5);
+  fc = { cards, i: 0, flipped: false };
+}
+function flashHTML() {
+  if (!fc.cards.length) buildDeck();
+  const c = fc.cards[fc.i];
+  const total = state.deck === "cells" ? CELLS.length : state.deck === "facts" ? FACTS.length : CELLS.length + FACTS.length;
+  const knownHere = [...state.known].filter((k) => state.deck === "all" || k.startsWith(state.deck === "cells" ? "cell:" : "fact:")).length;
+  const front = c.kind === "cell"
+    ? `<span class="label">Identify this cell</span><div class="figure">${cellSVG(c.cell)}</div>`
+    : `<span class="label">Question</span><div class="q">${esc(c.q)}</div>`;
+  const back = c.kind === "cell"
+    ? `<span class="label">Answer</span><div class="q">${esc(c.a)}</div><p>${esc(c.sub)}</p><p class="muted">${esc(cellById[c.cell].mimic)}</p>`
+    : `<span class="label">Answer</span><p style="font-size:1.1rem">${esc(c.a)}</p>`;
+  return `
+<div class="row" style="justify-content:space-between;max-width:560px;margin-top:16px">
+  <div class="seg" role="group" aria-label="Deck">${[["cells", "Cell identification"], ["facts", "Facts"], ["all", "Mixed"]].map(([k, t]) => `<button data-deck="${k}" aria-pressed="${state.deck === k}">${t}</button>`).join("")}</div>
+  <span class="muted num">${knownHere}/${total} known</span>
+</div>
+<div class="flash"><div class="flash-inner ${fc.flipped ? "flipped" : ""}" id="flash" tabindex="0" role="button" aria-label="Flip card">
+  <div class="face front">${front}<span class="muted" style="font-size:.85rem">Tap to show the answer</span></div>
+  <div class="face back">${back}</div>
+</div></div>
+<div class="row" style="max-width:560px">
+  <button class="btn" data-fc="again">Again</button>
+  <button class="btn primary" data-fc="known">I knew it</button>
+  <span class="muted num" style="margin-left:auto">Card ${fc.i + 1} of ${fc.cards.length}</span>
+</div>
+<p class="note" style="margin-top:14px">Cards you mark as known are skipped next time. <button class="btn small" data-fc="reset">Reset this deck</button></p>`;
+}
+
+/* Quiz */
+let qz = { i: 0, score: 0, answered: null, order: [] };
+function quizHTML() {
+  if (!qz.order.length) { const r = rng("q" + Date.now()); qz.order = QUIZ.map((_, i) => i).sort(() => r() - 0.5); }
+  if (qz.i >= QUIZ.length) {
+    return `<div class="quiz card" style="margin-top:16px"><span class="label">Quiz complete</span><h2 style="margin:6px 0">${qz.score} of ${QUIZ.length}</h2>
+      <p>${qz.score >= 15 ? "Excellent. You are ready for Module 2." : qz.score >= 11 ? "Good. Review the lessons for the questions you missed." : "Go back over the lessons and try again."}</p>
+      <button class="btn primary" data-quiz="restart">Try again</button></div>`;
+  }
+  const Q = QUIZ[qz.order[qz.i]];
+  return `<div class="quiz" style="margin-top:16px">
+  <div class="row" style="justify-content:space-between"><span class="label">Question ${qz.i + 1} of ${QUIZ.length}</span><span class="muted num">Score ${qz.score}</span></div>
+  <div class="bar" style="margin:8px 0 16px"><i style="width:${(qz.i / QUIZ.length) * 100}%"></i></div>
+  <p style="font-size:1.12rem;font-weight:600">${esc(Q.q)}</p>
+  <div class="opts">${Q.a.map((a, k) => {
+    let cls = "";
+    if (qz.answered != null) { if (k === Q.c) cls = "right"; else if (k === qz.answered) cls = "wrong"; }
+    return `<button class="opt ${cls}" data-ans="${k}" ${qz.answered != null ? "disabled" : ""}><span class="letter">${"ABCD"[k]}</span><span>${esc(a)}</span></button>`;
+  }).join("")}</div>
+  ${qz.answered != null ? `<div class="explain"><b>${qz.answered === Q.c ? "Correct." : "Not quite."}</b> ${esc(Q.e)}</div><div class="row" style="margin-top:14px"><button class="btn primary" data-quiz="next">${qz.i === QUIZ.length - 1 ? "See score" : "Next question"}</button></div>` : ""}
+</div>`;
+}
+
+function viewPractice() {
+  return `<h1>Flashcards and quiz</h1>
+<div class="seg" role="group" aria-label="Practice mode" style="margin-top:14px">
+  <button data-ptab="cards" aria-pressed="${state.practiceTab === "cards"}">Flashcards</button>
+  <button data-ptab="quiz" aria-pressed="${state.practiceTab === "quiz"}">MCQ quiz</button>
+</div>
+<div id="practiceBody">${state.practiceTab === "cards" ? flashHTML() : quizHTML()}</div>`;
+}
+
+/* Cases */
+let cs = { id: null, step: 0, picks: [] };
+function viewCases() {
+  if (!cs.id) {
+    return `<h1>Case studies</h1><p class="muted" style="max-width:66ch">Work through each case one decision at a time. Each step explains the reasoning before you move on.</p>
+<div class="cases" style="margin-top:18px">${CASES.map((c) => `<button class="card" data-case="${c.id}"><span class="row"><span class="tag">${esc(c.tag)}</span>${state.casesDone.has(c.id) ? '<span class="tag ok">Done</span>' : ""}</span><h3 style="margin:0">${esc(c.title)}</h3><span class="muted">${esc(c.stem.slice(0, 110))}…</span></button>`).join("")}</div>`;
+  }
+  const C = CASES.find((c) => c.id === cs.id);
+  let html = `<button class="btn small" data-case-back>← All cases</button>
+<div style="max-width:720px;margin-top:14px"><span class="tag">${esc(C.tag)}</span><h1 style="margin-top:8px">${esc(C.title)}</h1><p>${esc(C.stem)}</p>
+<div class="casedata">${C.data.map(([k, v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join("")}</div>`;
+  C.steps.forEach((S, k) => {
+    if (k > cs.step) return;
+    const pick = cs.picks[k];
+    html += `<div class="step"><span class="label">Step ${k + 1} of ${C.steps.length}</span><p style="font-weight:600;font-size:1.06rem">${esc(S.q)}</p><div class="opts">${S.opts.map((o, j) => {
+      let cls = "";
+      if (pick != null) { if (j === S.c) cls = "right"; else if (j === pick) cls = "wrong"; }
+      return `<button class="opt ${cls}" data-cstep="${k}" data-copt="${j}" ${pick != null ? "disabled" : ""}><span class="letter">${"ABCD"[j]}</span><span>${esc(o)}</span></button>`;
+    }).join("")}</div>${pick != null ? `<div class="explain">${esc(S.fb)}</div>` : ""}</div>`;
+  });
+  const finished = cs.picks.length === C.steps.length && cs.picks.every((p) => p != null);
+  if (cs.picks[cs.step] != null && cs.step < C.steps.length - 1) html += `<div class="row" style="margin-top:14px"><button class="btn primary" data-cnext>Next step</button></div>`;
+  if (finished) html += `<div class="keypoints"><h3>Teaching points</h3><ul>${C.teach.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></div>`;
+  return html + "</div>";
+}
+
+/* Workups */
+let tr = { path: ["start"] };
+function treeHTML() {
+  const node = TREE[tr.path[tr.path.length - 1]];
+  const trail = tr.path.slice(1).map((k) => {
+    for (const key in TREE) { const o = TREE[key].opts; if (o) { const f = o.find((x) => x[1] === k); if (f) return f[0]; } }
+    return k;
+  });
+  return `<div class="tree">
+  <p class="muted">Use this when a result does not fit the patient. Most implausible counts are sample or analyser problems.</p>
+  ${trail.length ? `<div class="trail">${trail.map((t) => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
+  ${node.end ? `<div class="endbox"><span class="label">Conclusion</span><h3>${esc(node.end)}</h3><p style="margin:0">${esc(node.detail)}</p></div>`
+    : `<div class="card"><p style="font-weight:600;font-size:1.08rem;margin-top:0">${esc(node.q)}</p><div class="opts">${node.opts.map(([t, k]) => `<button class="opt" data-tnode="${k}"><span class="letter">→</span><span>${esc(t)}</span></button>`).join("")}</div></div>`}
+  <div class="row">${tr.path.length > 1 ? `<button class="btn small" data-tback>Back</button><button class="btn small" data-treset>Start again</button>` : ""}</div>
+</div>`;
+}
+function marrowHTML() {
+  const ticks = store.get("marrowTicks", []);
+  return `<p class="muted" style="max-width:66ch">A systematic order for reporting a marrow aspirate. Tick each step as you go; your ticks are kept on this device.</p>
+<ol class="checklist">${MARROW_STEPS.map(([h, t], i) => `<li><label><input type="checkbox" data-mtick="${i}" ${ticks.includes(i) ? "checked" : ""}><div><b>${i + 1}. ${esc(h)}</b><br><span>${esc(t)}</span></div></label></li>`).join("")}</ol>
+<div class="row" style="margin-top:12px"><button class="btn small" data-mreset>Clear ticks</button></div>`;
+}
+function calcHTML() {
+  return `<div class="calcs">
+  <div class="card"><h3 style="margin-top:0">Reticulocyte count and production index</h3>
+    <div class="fields">
+      <div class="field"><label for="rp">Retics (%)</label><input id="rp" type="number" step="0.1" value="6"></div>
+      <div class="field"><label for="rr">RBC (×10¹²/L)</label><input id="rr" type="number" step="0.01" value="2.8"></div>
+      <div class="field"><label for="rh">Hct (L/L)</label><input id="rh" type="number" step="0.01" value="0.25"></div>
+    </div><div class="out" id="rout"></div></div>
+  <div class="card"><h3 style="margin-top:0">White count corrected for NRBCs</h3>
+    <div class="fields">
+      <div class="field"><label for="ww">WBC (×10⁹/L)</label><input id="ww" type="number" step="0.1" value="18"></div>
+      <div class="field"><label for="wn">NRBC per 100 WBC</label><input id="wn" type="number" step="1" value="50"></div>
+    </div><div class="out" id="wout"></div></div>
+  <div class="card"><h3 style="margin-top:0">Absolute count from a differential</h3>
+    <div class="fields">
+      <div class="field"><label for="aw">WBC (×10⁹/L)</label><input id="aw" type="number" step="0.1" value="7.5"></div>
+      <div class="field"><label for="ap">Cell type (%)</label><input id="ap" type="number" step="1" value="62"></div>
+    </div><div class="out" id="aout"></div></div>
+  <div class="card"><h3 style="margin-top:0">Marrow M:E ratio</h3>
+    <div class="fields">
+      <div class="field"><label for="mm">All myeloid cells (%)</label><input id="mm" type="number" step="1" value="60"></div>
+      <div class="field"><label for="me">All erythroblasts (%)</label><input id="me" type="number" step="1" value="22"></div>
+    </div><div class="out" id="mout"></div></div>
+</div>
+<p class="note">Teaching tools. Check results against your laboratory's methods before using them for a report.</p>`;
+}
+function runCalcs() {
+  const v = (id) => parseFloat($("#" + id)?.value);
+  if (!$("#rout")) return;
+  const rp = v("rp"), rr = v("rr"), rh = v("rh");
+  if ([rp, rr, rh].every(Number.isFinite) && rh > 0) {
+    const abs = (rp / 100) * rr * 1000, corr = rp * (rh / 0.45);
+    const mf = rh >= 0.4 ? 1 : rh >= 0.3 ? 1.5 : rh >= 0.2 ? 2 : 2.5, rpi = corr / mf;
+    $("#rout").innerHTML = `Absolute <b>${abs.toFixed(0)} × 10⁹/L</b><br>Corrected <b>${corr.toFixed(1)}%</b> · maturation factor <b>${mf}</b><br>RPI <b>${rpi.toFixed(1)}</b>: ${rpi >= 2 ? "adequate marrow response (think haemolysis or bleeding)" : "inadequate response for the degree of anaemia"}`;
+  } else $("#rout").textContent = "Enter all three values.";
+  const ww = v("ww"), wn = v("wn");
+  $("#wout").innerHTML = Number.isFinite(ww) && Number.isFinite(wn) ? `Corrected WBC <b>${((ww * 100) / (100 + wn)).toFixed(1)} × 10⁹/L</b>` : "Enter both values.";
+  const aw = v("aw"), ap = v("ap");
+  $("#aout").innerHTML = Number.isFinite(aw) && Number.isFinite(ap) ? `Absolute count <b>${((aw * ap) / 100).toFixed(2)} × 10⁹/L</b>` : "Enter both values.";
+  const mm = v("mm"), me = v("me");
+  if (Number.isFinite(mm) && me > 0) {
+    const r = mm / me;
+    $("#mout").innerHTML = `M:E ratio <b>${r.toFixed(1)}:1</b> · ${r < 1.5 ? "erythroid predominance (low)" : r > 5 ? "myeloid predominance (high)" : "within the usual range"}`;
+  } else $("#mout").textContent = "Enter both values.";
+}
+function viewWorkups() {
+  const tabs = [["tree", "Implausible results"], ["marrow", "Reading a marrow aspirate"], ["calc", "Calculators"]];
+  return `<h1>Workups</h1>
+<div class="seg" role="group" aria-label="Workup" style="margin:14px 0 18px">${tabs.map(([k, t]) => `<button data-wtab="${k}" aria-pressed="${state.workTab === k}">${t}</button>`).join("")}</div>
+${state.workTab === "tree" ? treeHTML() : state.workTab === "marrow" ? marrowHTML() : calcHTML()}`;
+}
+
+/* Animations */
+const TNODES = [
+  { id: "hsc", x: 380, y: 40, t: "HSC", c: "#4a3891", lv: 0, info: "Haematopoietic stem cell. CD34+ CD38− CD90+ CD45RA−. Self-renews and gives rise to every blood cell." },
+  { id: "mpp", x: 380, y: 110, t: "MPP", c: "#4a3891", lv: 1, p: "hsc", info: "Multipotent progenitor. Has lost long-term self-renewal but can still make all lineages." },
+  { id: "cmp", x: 230, y: 190, t: "CMP", c: "#b93a60", lv: 2, p: "mpp", info: "Common myeloid progenitor. Driven by GATA1 towards MEP, or by PU.1 and C/EBPα towards GMP." },
+  { id: "clp", x: 590, y: 190, t: "CLP", c: "#2f6fb0", lv: 2, p: "mpp", info: "Common lymphoid progenitor. IL-7 dependent. PAX5 commits to B cells; Notch and GATA3 to T cells." },
+  { id: "mep", x: 120, y: 270, t: "MEP", c: "#b93a60", lv: 3, p: "cmp", info: "Megakaryocyte–erythroid progenitor. GATA1 with FOG1, then KLF1 for red cells or FLI1 for megakaryocytes." },
+  { id: "gmp", x: 340, y: 270, t: "GMP", c: "#b93a60", lv: 3, p: "cmp", info: "Granulocyte–monocyte progenitor. G-CSF, GM-CSF and M-CSF steer it towards neutrophils or monocytes. Eosinophil and basophil progenitors arise close to this stage, IL-5 driving eosinophils." },
+  { id: "rbc", x: 60, y: 365, t: "Red cell", c: "#d06a78", lv: 4, p: "mep", cell: "rbc", info: "BFU-E → CFU-E → erythroblasts → reticulocyte → red cell. Needs EPO, iron, B12 and folate." },
+  { id: "plt", x: 175, y: 365, t: "Platelets", c: "#9a6aa6", lv: 4, p: "mep", cell: "megakaryocyte", info: "Megakaryocytes form by endomitosis under TPO and shed platelets into sinusoids." },
+  { id: "neut", x: 270, y: 365, t: "Neutrophil", c: "#c28aa8", lv: 4, p: "gmp", cell: "neutrophil", info: "Myeloblast → promyelocyte → myelocyte → metamyelocyte → band → segmented neutrophil." },
+  { id: "eos", x: 350, y: 365, t: "Eos / Baso", c: "#e46a3a", lv: 4, p: "gmp", cell: "eosinophil", info: "Eosinophils (IL-5) and basophils (IL-3). Basophils are CD123+ CD203c+." },
+  { id: "mono", x: 430, y: 365, t: "Monocyte", c: "#7f84b6", lv: 4, p: "gmp", cell: "monocyte", info: "Monoblast → promonocyte → monocyte → tissue macrophage. Dendritic cells arise close to this branch." },
+  { id: "b", x: 530, y: 365, t: "B cell", c: "#2f6fb0", lv: 4, p: "clp", cell: "plasma-cell", info: "Matures in the marrow (hematogones); final stage is the plasma cell." },
+  { id: "t", x: 615, y: 365, t: "T cell", c: "#2f6fb0", lv: 4, p: "clp", cell: "small-lymphocyte", info: "Progenitors leave the marrow and mature in the thymus." },
+  { id: "nk", x: 700, y: 365, t: "NK cell", c: "#2f6fb0", lv: 4, p: "clp", cell: "lgl", info: "Large granular lymphocytes, CD16+ CD56+ CD3−." }
+];
+let treeTimer = null, treeLevel = 4;
+function treeSVG() {
+  const byId = Object.fromEntries(TNODES.map((n) => [n.id, n]));
+  let s = `<svg viewBox="0 0 760 420" role="img" aria-label="Haematopoietic tree">`;
+  TNODES.forEach((n) => { if (n.p) { const p = byId[n.p]; s += `<path class="tedge ${n.lv > treeLevel ? "hidden" : ""}" d="M${p.x},${p.y + 18} C${p.x},${(p.y + n.y) / 2} ${n.x},${(p.y + n.y) / 2} ${n.x},${n.y - 20}"/>`; } });
+  TNODES.forEach((n) => {
+    s += `<g class="tnode ${n.lv > treeLevel ? "hidden" : ""}" data-tn="${n.id}" tabindex="0" role="button" aria-label="${n.t}">
+      <circle cx="${n.x}" cy="${n.y}" r="${n.lv === 4 ? 20 : 22}" fill="${n.c}" opacity="0.92"/>
+      ${n.lv < 4 ? `<text x="${n.x}" y="${n.y + 4}" text-anchor="middle" font-size="12" font-weight="700" style="fill:#fff">${n.t}</text>` : `<circle cx="${n.x}" cy="${n.y}" r="8" fill="#fff" opacity="0.35"/><text x="${n.x}" y="${n.y + 38}" text-anchor="middle" font-size="12" font-weight="600">${n.t}</text>`}
+    </g>`;
+  });
+  return s + `<text x="20" y="410" font-size="11" style="fill:var(--muted)">Myeloid branch in pink, lymphoid in blue. Tap any cell.</text></svg>`;
+}
+const MAT = {
+  erythroid: { ids: ["proerythroblast", "basophilic-normoblast", "polychromatic-normoblast", "orthochromatic-normoblast", "reticulocyte", "rbc"], divides: [true, true, true, false, false, false] },
+  granulocytic: { ids: ["myeloblast", "promyelocyte", "myelocyte", "metamyelocyte", "band", "neutrophil"], divides: [true, true, true, false, false, false] }
+};
+let mat = { line: "erythroid", i: 0, timer: null };
+function matPanel() {
+  const M = MAT[mat.line], c = cellById[M.ids[mat.i]];
+  return `<span class="label">Stage ${mat.i + 1} of ${M.ids.length}</span><h3 style="margin:4px 0 8px">${esc(c.name)}</h3>
+  <div class="row" style="margin-bottom:8px"><span class="tag ${M.divides[mat.i] ? "ok" : "az"}">${M.divides[mat.i] ? "Can divide" : "No longer divides"}</span><span class="tag az num">${esc(c.size)}</span></div>
+  <dl class="kv"><dt>Nucleus</dt><dd>${esc(c.nucleus)}</dd><dt>Cytoplasm</dt><dd>${esc(c.cyto)}</dd><dt>N:C ratio</dt><dd>${esc(c.nc)}</dd></dl>`;
+}
+function odcHTML() {
+  return `<div class="odc">
+  <div class="svgwrap" style="padding:8px"><svg viewBox="0 0 420 300" id="odcsvg" role="img" aria-label="Oxygen dissociation curve" style="min-width:0"></svg></div>
+  <div class="card stack">
+    <div class="field"><label for="ph">pH <span class="num" id="phv"></span></label><input class="slider" id="ph" type="range" min="7.0" max="7.8" step="0.01" value="7.40"></div>
+    <div class="field"><label for="tp">Temperature °C <span class="num" id="tpv"></span></label><input class="slider" id="tp" type="range" min="34" max="42" step="0.1" value="37"></div>
+    <div class="field"><label for="bpg">2,3-BPG mmol/L <span class="num" id="bpgv"></span></label><input class="slider" id="bpg" type="range" min="3" max="8" step="0.1" value="5"></div>
+    <label class="row" style="gap:8px"><input type="checkbox" id="hbf"> Fetal haemoglobin (HbF)</label>
+    <div class="out" id="odcout"></div>
+    <button class="btn small" id="odcreset">Reset to normal</button>
+    <p class="note" style="margin:0">Teaching model using the Hill equation (n = 2.7). Real curves also depend on CO₂, which acts mainly through pH.</p>
+  </div></div>`;
+}
+function drawODC() {
+  const svg = $("#odcsvg"); if (!svg) return;
+  const pH = +$("#ph").value, T = +$("#tp").value, B = +$("#bpg").value, F = $("#hbf").checked;
+  $("#phv").textContent = pH.toFixed(2); $("#tpv").textContent = T.toFixed(1); $("#bpgv").textContent = B.toFixed(1);
+  const base = F ? 19 : 26.6, bpgK = F ? 0.025 : 0.085;
+  const p50 = base * Math.pow(10, 0.48 * (7.4 - pH)) * Math.pow(10, 0.024 * (T - 37)) * (1 + bpgK * (B - 5));
+  const n = 2.7, S = (p, P = p50) => Math.pow(p, n) / (Math.pow(p, n) + Math.pow(P, n));
+  const X = (p) => 46 + (p / 100) * 354, Y = (s) => 262 - s * 240;
+  let g = "";
+  for (let p = 0; p <= 100; p += 20) g += `<line class="grid" x1="${X(p)}" y1="22" x2="${X(p)}" y2="262"/><text x="${X(p)}" y="278" text-anchor="middle">${p}</text>`;
+  for (let s = 0; s <= 1.001; s += 0.25) g += `<line class="grid" x1="46" y1="${Y(s)}" x2="400" y2="${Y(s)}"/><text x="40" y="${Y(s) + 4}" text-anchor="end">${Math.round(s * 100)}</text>`;
+  const path = (P) => { let d = ""; for (let p = 0; p <= 100; p += 1) d += (p ? "L" : "M") + X(p).toFixed(1) + "," + Y(S(p, P)).toFixed(1); return d; };
+  g += `<path d="${path(26.6)}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  g += `<path d="${path(p50)}" fill="none" stroke="var(--eosin)" stroke-width="3"/>`;
+  g += `<line x1="${X(p50)}" y1="${Y(0.5)}" x2="${X(p50)}" y2="262" stroke="var(--eosin)" stroke-dasharray="3 3"/><circle cx="${X(p50)}" cy="${Y(0.5)}" r="4.5" fill="var(--eosin)"/>`;
+  [40, 100].forEach((p) => { g += `<circle cx="${X(p)}" cy="${Y(S(p))}" r="4" fill="var(--azure)"/>`; });
+  g += `<text x="223" y="296" text-anchor="middle">PO₂ (mmHg)</text><text x="12" y="142" text-anchor="middle" transform="rotate(-90 12 142)">Saturation (%)</text>`;
+  g += `<text x="${X(62)}" y="${Y(0.55)}" style="fill:var(--muted)">normal</text>`;
+  svg.innerHTML = g;
+  const unload = (S(100) - S(40)) * 100;
+  const shift = p50 > 27.6 ? "Right shift: oxygen is released more easily to tissues." : p50 < 25.6 ? "Left shift: haemoglobin holds oxygen more tightly." : "Close to the normal curve.";
+  $("#odcout").innerHTML = `P₅₀ <b>${p50.toFixed(1)} mmHg</b> (${(p50 * 0.1333).toFixed(2)} kPa)<br>Saturation at 100 mmHg <b>${(S(100) * 100).toFixed(0)}%</b>, at 40 mmHg <b>${(S(40) * 100).toFixed(0)}%</b><br>Unloaded between arterial and venous blood <b>${unload.toFixed(0)}%</b><br>${shift}`;
+}
+function viewAnimations() {
+  const tabs = [["tree", "Haematopoiesis"], ["mat", "Maturation explorer"], ["odc", "Oxygen dissociation curve"]];
+  let body = "";
+  if (state.animTab === "tree") body = `<div class="anim"><div class="row"><button class="btn primary" id="treePlay">▶ Play the build-up</button><span class="muted">Then tap any cell to read about it.</span></div><div class="svgwrap" id="treeWrap">${treeSVG()}</div><div class="card" id="treeInfo"><b>HSC</b><p style="margin-bottom:0">${TNODES[0].info}</p></div></div>`;
+  if (state.animTab === "mat") {
+    const M = MAT[mat.line];
+    body = `<div class="anim"><div class="seg" role="group" aria-label="Lineage">${[["erythroid", "Erythroid"], ["granulocytic", "Neutrophil"]].map(([k, t]) => `<button data-mline="${k}" aria-pressed="${mat.line === k}">${t}</button>`).join("")}</div>
+    <div class="mat"><div><div class="stage figure" id="matStage">${M.ids.map((id, k) => `<div style="opacity:${k === mat.i ? 1 : 0}">${cellSVG(id)}</div>`).join("")}</div></div>
+    <div class="stack"><div id="matPanel">${matPanel()}</div>
+      <input class="slider" id="matSlider" type="range" min="0" max="${M.ids.length - 1}" step="1" value="${mat.i}" aria-label="Maturation stage">
+      <div class="ticks">${M.ids.map((id) => `<span>${esc(cellById[id].name.split(" (")[0].replace("erythroblast", "").replace("Neutrophil ", ""))}</span>`).join("")}</div>
+      <div class="row"><button class="btn primary" id="matPlay">${mat.timer ? "❚❚ Pause" : "▶ Play"}</button></div></div></div></div>`;
+  }
+  if (state.animTab === "odc") body = odcHTML();
+  return `<h1>Animations</h1>
+<div class="seg" role="group" aria-label="Animation" style="margin:14px 0 18px">${tabs.map(([k, t]) => `<button data-atab="${k}" aria-pressed="${state.animTab === k}">${t}</button>`).join("")}</div>${body}`;
+}
+function setMat(i) {
+  mat.i = i;
+  const st = $("#matStage"); if (!st) return;
+  [...st.children].forEach((d, k) => (d.style.opacity = k === i ? 1 : 0));
+  $("#matPanel").innerHTML = matPanel();
+  $("#matSlider").value = i;
+}
+
+/* Slides */
+function buildSlides(L) {
+  const slides = [];
+  slides.push(`<div class="slide title"><span class="kicker" style="color:#f6c1d1">Module 1 · Lesson ${LESSONS.indexOf(L) + 1}</span><h2>${esc(L.title)}</h2><p>Interactive Diagnostic Haematology</p></div>`);
+  const parts = L.body.split(/<h3>/);
+  if (parts[0].trim()) slides.push(`<div class="slide"><span class="kicker">Overview</span>${parts[0]}</div>`);
+  parts.slice(1).forEach((p) => {
+    const [h, rest] = p.split("</h3>");
+    slides.push(`<div class="slide"><span class="kicker">${esc(L.title)}</span><h3>${h}</h3>${rest}</div>`);
+  });
+  const cells = LESSON_CELLS[L.id] || [];
+  if (cells.length) slides.push(`<div class="slide"><span class="kicker">Morphology</span><h3>Cells in this lesson</h3><div class="cells">${cells.map((c) => `<div><div class="figure">${cellSVG(c)}</div><small>${esc(cellById[c].name)}</small></div>`).join("")}</div></div>`);
+  slides.push(`<div class="slide"><span class="kicker">Summary</span><h3>Key points</h3><ul>${L.points.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`);
+  return slides;
+}
+function viewSlides() {
+  const L = LESSONS.find((l) => l.id === (state.slideLesson || state.lesson)) || LESSONS[0];
+  const slides = buildSlides(L);
+  state.slideIdx = Math.min(state.slideIdx, slides.length - 1);
+  return `<h1>Slides</h1>
+<div class="row" style="margin:14px 0 16px"><div class="field" style="min-width:0;flex:1 1 260px;max-width:420px"><label for="slideSel">Lesson</label><select id="slideSel">${LESSONS.map((l) => `<option value="${l.id}" ${l.id === L.id ? "selected" : ""}>${esc(l.title)}</option>`).join("")}</select></div></div>
+<div class="deck" id="deck">${slides[state.slideIdx]}
+  <div class="deckbar"><div class="row"><button class="btn small" data-sl="-1" ${state.slideIdx === 0 ? "disabled" : ""}>← Previous</button><button class="btn small" data-sl="1" ${state.slideIdx === slides.length - 1 ? "disabled" : ""}>Next →</button></div>
+  <span class="num">${state.slideIdx + 1} / ${slides.length}</span><button class="btn small" id="fsBtn">Full screen</button></div>
+</div>
+<p class="note">Use the arrow keys or swipe to move between slides. Present from a laptop connected to a projector.</p>`;
+}
+
+function viewAbout() {
+  return `<div class="prose"><h1>Sources and install</h1>
+<h2 style="margin-top:22px">Install on your phone</h2>
+<ul>
+<li><b>Android (Chrome):</b> open the app link, tap the menu (⋮), then <i>Install app</i> or <i>Add to Home screen</i>.</li>
+<li><b>iPhone and iPad (Safari):</b> open the link, tap Share, then <i>Add to Home Screen</i>.</li>
+<li><b>Computer (Chrome or Edge):</b> click the install icon in the address bar.</li>
+</ul>
+<p>After the first visit, lessons, atlas, flashcards, quiz, cases, workups, animations and slides all work without internet. Video links need a connection. Your progress is stored on your own device.</p>
+<h2 style="margin-top:22px">Content and copyright</h2>
+<p>All text in this app is original teaching material written for it. The cell pictures are original schematic drawings, not copies of textbook figures or photographs. Facts and reference ranges were checked against the books below, which you should read for full detail and real photomicrographs.</p>
+<ul>${Object.values(SOURCES).map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
+<p>Reference ranges differ between laboratories, analysers and populations. Always use your own laboratory's ranges for reporting.</p>
+<h2 style="margin-top:22px">Coming next</h2>
+<ul>${MODULES.filter((m) => !m.ready).map((m) => `<li><b>Module ${m.n}: ${esc(m.title)}.</b> ${esc(m.sub)}.</li>`).join("")}</ul>
+<p class="footer-note">Interactive Diagnostic Haematology · Module 1 pilot · For education only, not for clinical decision-making.</p></div>`;
+}
+
+function viewMore() {
+  return `<h1>More</h1><div class="quick" style="margin-top:16px">
+  <a href="#cases"><b>Case studies</b><span>${CASES.length} stepwise cases</span></a>
+  <a href="#workups"><b>Workups</b><span>Decision tree, marrow checklist, calculators</span></a>
+  <a href="#animations"><b>Animations</b><span>Haematopoiesis, maturation, O₂ curve</span></a>
+  <a href="#slides"><b>Slides</b><span>Present any lesson</span></a>
+  <a href="#about"><b>Sources and install</b><span>Offline use and references</span></a>
+</div>`;
+}
+
+const VIEWS = { home: viewHome, learn: viewLearn, atlas: viewAtlas, practice: viewPractice, cases: viewCases, workups: viewWorkups, animations: viewAnimations, slides: viewSlides, about: viewAbout, more: viewMore };
+const TITLES = Object.fromEntries(ROUTES.concat([["more", "More"]]));
+
+function render(keepScroll) {
+  let route = location.hash.replace("#", "");
+  if (!VIEWS[route]) route = "home";
+  renderNav(route);
+  $("#crumb").textContent = `Module 1 · ${TITLES[route]}`;
+  const y = window.scrollY;
+  $("#view").innerHTML = VIEWS[route]();
+  if (route === "workups" && state.workTab === "calc") runCalcs();
+  if (route === "animations" && state.animTab === "odc") drawODC();
+  window.scrollTo(0, keepScroll ? y : 0);
+}
+
+/* ---------- Events ---------- */
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button, a, [data-tn]");
+  if (!t) return;
+  const d = t.dataset;
+  if (d.lesson) { state.lesson = d.lesson; save(); }
+  if (d.tab) { state.practiceTab = d.tab; }
+  if (d.slides) { state.slideLesson = d.slides; state.slideIdx = 0; }
+  if (d.goLesson) { state.lesson = d.goLesson; save(); render(); return; }
+  if (d.complete) { state.done.has(d.complete) ? state.done.delete(d.complete) : state.done.add(d.complete); save(); render(true); return; }
+  if (d.cell) { openCell(d.cell); return; }
+  if (d.filter) { state.atlasFilter = d.filter; render(true); return; }
+  if (d.ptab) { state.practiceTab = d.ptab; render(true); return; }
+  if (d.deck) { state.deck = d.deck; fc.cards = []; render(true); return; }
+  if (d.fc) {
+    const c = fc.cards[fc.i];
+    if (d.fc === "known") state.known.add(c.id);
+    if (d.fc === "reset") { [...state.known].forEach((k) => { if (state.deck === "all" || k.startsWith(state.deck === "cells" ? "cell:" : "fact:")) state.known.delete(k); }); fc.cards = []; }
+    else { fc.i = (fc.i + 1) % fc.cards.length; fc.flipped = false; if (d.fc === "known" && fc.i === 0) fc.cards = []; }
+    save(); $("#practiceBody").innerHTML = flashHTML(); return;
+  }
+  if (d.ans) { const Q = QUIZ[qz.order[qz.i]]; qz.answered = +d.ans; if (qz.answered === Q.c) qz.score++; $("#practiceBody").innerHTML = quizHTML(); return; }
+  if (d.quiz === "next") { qz.i++; qz.answered = null; if (qz.i >= QUIZ.length) { state.quizBest = Math.max(state.quizBest || 0, qz.score); save(); } $("#practiceBody").innerHTML = quizHTML(); return; }
+  if (d.quiz === "restart") { qz = { i: 0, score: 0, answered: null, order: [] }; $("#practiceBody").innerHTML = quizHTML(); return; }
+  if (d.case) { cs = { id: d.case, step: 0, picks: [] }; render(); return; }
+  if ("caseBack" in d) { cs = { id: null, step: 0, picks: [] }; render(); return; }
+  if (d.cstep != null && d.copt != null) {
+    const C = CASES.find((c) => c.id === cs.id);
+    cs.picks[+d.cstep] = +d.copt;
+    if (cs.picks.length === C.steps.length && cs.picks.every((p) => p != null)) { state.casesDone.add(C.id); save(); }
+    render(true); return;
+  }
+  if ("cnext" in d) { cs.step++; render(true); return; }
+  if (d.wtab) { state.workTab = d.wtab; render(true); return; }
+  if (d.tnode) { tr.path.push(d.tnode); render(true); return; }
+  if ("tback" in d) { tr.path.pop(); render(true); return; }
+  if ("treset" in d) { tr.path = ["start"]; render(true); return; }
+  if ("mreset" in d) { store.set("marrowTicks", []); render(true); return; }
+  if (d.atab) { state.animTab = d.atab; clearInterval(mat.timer); mat.timer = null; render(true); return; }
+  if (d.mline) { mat.line = d.mline; mat.i = 0; clearInterval(mat.timer); mat.timer = null; render(true); return; }
+  if (t.id === "matPlay") {
+    if (mat.timer) { clearInterval(mat.timer); mat.timer = null; t.textContent = "▶ Play"; }
+    else {
+      if (mat.i === MAT[mat.line].ids.length - 1) setMat(0);
+      t.textContent = "❚❚ Pause";
+      mat.timer = setInterval(() => {
+        const n = MAT[mat.line].ids.length;
+        if (mat.i >= n - 1) { clearInterval(mat.timer); mat.timer = null; const b = $("#matPlay"); if (b) b.textContent = "▶ Play"; return; }
+        setMat(mat.i + 1);
+      }, 2200);
+    }
+    return;
+  }
+  if (t.id === "treePlay") {
+    clearInterval(treeTimer); treeLevel = -1;
+    const step = () => {
+      treeLevel++;
+      document.querySelectorAll("#treeWrap .tnode, #treeWrap .tedge").forEach((el) => {
+        const id = el.dataset.tn; let lv;
+        if (id) lv = TNODES.find((n) => n.id === id).lv;
+        el.classList.toggle("hidden", id ? lv > treeLevel : false);
+      });
+      const edges = document.querySelectorAll("#treeWrap .tedge");
+      TNODES.filter((n) => n.p).forEach((n, k) => edges[k] && edges[k].classList.toggle("hidden", n.lv > treeLevel));
+      if (treeLevel >= 4) clearInterval(treeTimer);
+    };
+    step(); treeTimer = setInterval(step, 900); return;
+  }
+  const tn = e.target.closest("[data-tn]");
+  if (tn) {
+    const n = TNODES.find((x) => x.id === tn.dataset.tn);
+    $("#treeInfo").innerHTML = `<div class="row" style="align-items:flex-start;gap:14px">${n.cell ? `<div class="figure" style="width:110px;flex:none">${cellSVG(n.cell)}</div>` : ""}<div style="flex:1;min-width:0"><b>${n.t}</b><p style="margin-bottom:0">${n.info}</p></div></div>`;
+    return;
+  }
+  if (t.id === "odcreset") { $("#ph").value = 7.4; $("#tp").value = 37; $("#bpg").value = 5; $("#hbf").checked = false; drawODC(); return; }
+  if (d.sl) { state.slideIdx += +d.sl; render(true); return; }
+  if (t.id === "fsBtn") { const deck = $("#deck"); (document.fullscreenElement ? document.exitFullscreen() : deck.requestFullscreen?.())?.catch?.(() => {}); return; }
+  if (t.id === "installBtn" && deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; t.hidden = true; return; }
+  if (t.closest("#results")) { $("#results").hidden = true; $("#q").value = ""; }
+});
+
+document.addEventListener("click", (e) => {
+  const f = e.target.closest("#flash");
+  if (f) { fc.flipped = !fc.flipped; f.classList.toggle("flipped", fc.flipped); }
+});
+
+document.addEventListener("input", (e) => {
+  const id = e.target.id;
+  if (["rp", "rr", "rh", "ww", "wn", "aw", "ap", "mm", "me"].includes(id)) runCalcs();
+  if (["ph", "tp", "bpg", "hbf"].includes(id)) drawODC();
+  if (id === "matSlider") { clearInterval(mat.timer); mat.timer = null; const b = $("#matPlay"); if (b) b.textContent = "▶ Play"; setMat(+e.target.value); }
+  if (id === "q") search(e.target.value);
+});
+document.addEventListener("change", (e) => {
+  if (e.target.id === "slideSel") { state.slideLesson = e.target.value; state.slideIdx = 0; render(true); }
+  if (e.target.dataset.mtick != null) {
+    const i = +e.target.dataset.mtick; let ticks = store.get("marrowTicks", []);
+    ticks = e.target.checked ? [...new Set(ticks.concat(i))] : ticks.filter((x) => x !== i);
+    store.set("marrowTicks", ticks);
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.target.matches("input, select, textarea")) return;
+  if (location.hash === "#slides" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+    const n = buildSlides(LESSONS.find((l) => l.id === (state.slideLesson || state.lesson)) || LESSONS[0]).length;
+    const ni = state.slideIdx + (e.key === "ArrowRight" ? 1 : -1);
+    if (ni >= 0 && ni < n) { state.slideIdx = ni; const fs = document.fullscreenElement; render(true); if (fs) $("#deck").requestFullscreen?.().catch(() => {}); }
+  }
+  if ((e.key === "Enter" || e.key === " ") && e.target.id === "flash") { e.preventDefault(); e.target.click(); }
+  if ((e.key === "Enter" || e.key === " ") && e.target.closest("[data-tn]")) { e.preventDefault(); e.target.closest("[data-tn]").dispatchEvent(new MouseEvent("click", { bubbles: true })); }
+});
+let touchX = null;
+document.addEventListener("touchstart", (e) => { if (e.target.closest(".slide")) touchX = e.touches[0].clientX; }, { passive: true });
+document.addEventListener("touchend", (e) => {
+  if (touchX == null) return;
+  const dx = e.changedTouches[0].clientX - touchX; touchX = null;
+  if (Math.abs(dx) > 50) { const b = document.querySelector(`[data-sl="${dx < 0 ? 1 : -1}"]`); if (b && !b.disabled) b.click(); }
+});
+
+/* Search across lessons, atlas and flashcards. */
+const strip = (h) => h.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+const INDEX = [
+  ...LESSONS.map((l) => ({ kind: "Lesson", title: l.title, text: strip(l.body) + " " + l.points.join(" "), go: () => { state.lesson = l.id; save(); location.hash = "learn"; render(); } })),
+  ...CELLS.map((c) => ({ kind: "Atlas", title: c.name, text: [c.nucleus, c.cyto, c.mimic, c.lineage].join(" "), go: () => openCell(c.id) })),
+  ...FACTS.map((f) => ({ kind: "Flashcard", title: f[0], text: f[1], go: null, answer: f[1] }))
+];
+function search(q) {
+  const box = $("#results");
+  q = q.trim().toLowerCase();
+  if (q.length < 2) { box.hidden = true; return; }
+  const hits = INDEX.map((it) => {
+    const tt = it.title.toLowerCase(), tx = it.text.toLowerCase();
+    const score = (tt.includes(q) ? 3 : 0) + (tx.includes(q) ? 1 : 0);
+    return { it, score, at: tx.indexOf(q) };
+  }).filter((h) => h.score).sort((a, b) => b.score - a.score).slice(0, 12);
+  box.hidden = false;
+  if (!hits.length) { box.innerHTML = `<div style="padding:10px" class="muted">No matches for “${esc(q)}”.</div>`; return; }
+  box.innerHTML = hits.map((h, k) => {
+    const snip = h.it.answer || (h.at >= 0 ? "…" + h.it.text.slice(Math.max(0, h.at - 40), h.at + 80) + "…" : "");
+    return `<a href="javascript:void 0" data-hit="${k}"><span class="tag az">${h.it.kind}</span> <b>${esc(h.it.title)}</b><small>${esc(snip)}</small></a>`;
+  }).join("");
+  box.querySelectorAll("[data-hit]").forEach((a) => a.addEventListener("click", (ev) => { ev.preventDefault(); const it = hits[+a.dataset.hit].it; box.hidden = true; $("#q").value = ""; if (it.go) it.go(); }));
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#results").hidden = true; });
+
+/* Online status and install prompt (install works when served from the app's own site). */
+function net() { const p = $("#netpill"); p.textContent = navigator.onLine ? "Online" : "Offline: all but videos work"; p.classList.toggle("off", !navigator.onLine); }
+window.addEventListener("online", net); window.addEventListener("offline", net);
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferredPrompt = e; $("#installBtn").hidden = false; });
+
+window.addEventListener("hashchange", () => render());
+net();
+render();
+
+</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
+</body></html>
