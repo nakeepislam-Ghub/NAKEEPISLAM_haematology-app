@@ -332,5 +332,82 @@
   ],
   "author": "DaFerRod",
   "caption": "Band neutrophil with toxic granulation."
+ },
+ "m3-faggot": {
+  "label": "m3-faggot",
+  "box": [
+   0.2,
+   0.15,
+   0.95,
+   0.65
+  ],
+  "author": "Armed Forces Institute of Pathology (US)",
+  "caption": "Acute promyelocytic leukaemia: abnormal promyelocytes, including a faggot cell with bundles of Auer rods."
+ },
+ "m3-promono": {
+  "label": "m3-promono",
+  "box": [
+   0.05,
+   0.1,
+   0.65,
+   0.95
+  ],
+  "author": "Armed Forces Institute of Pathology (US)",
+  "caption": "Acute monocytic leukaemia: promonocytes with folded nuclei."
+ },
+ "m3-megakaryoblast": {
+  "label": "m3-megakaryoblast",
+  "box": [
+   0.06,
+   0.1,
+   0.48,
+   0.9
+  ],
+  "author": "Calvo C, Fenneteau O, et al.",
+  "caption": "Acute megakaryoblastic leukaemia: megakaryoblasts with cytoplasmic blebs."
+ },
+ "m3-cll": {
+  "label": "m3-cll",
+  "box": [
+   0.0,
+   0.15,
+   1.0,
+   0.65
+  ],
+  "author": "Armed Forces Institute of Pathology (US)",
+  "caption": "Chronic lymphocytic leukaemia: small mature lymphocytes with clumped chromatin, and smudge cells."
+ },
+ "m3-smudge": {
+  "label": "m3-smudge",
+  "box": [
+   0.15,
+   0.15,
+   0.75,
+   0.6
+  ],
+  "author": "Dr Graham Beards",
+  "caption": "Smudge (smear) cells in chronic lymphocytic leukaemia."
+ },
+ "m3-prolymph": {
+  "label": "m3-prolymph",
+  "box": [
+   0.1,
+   0.4,
+   0.6,
+   0.95
+  ],
+  "author": "SpicyMilkBoy",
+  "caption": "CLL with prolymphocytes: larger cells with a visible nucleolus."
+ },
+ "m3-hairy": {
+  "label": "m3-hairy",
+  "box": [
+   0.1,
+   0.15,
+   0.55,
+   0.55
+  ],
+  "author": "Paulo Henrique Orlandi Mourão",
+  "caption": "Hairy cell leukaemia: lymphoid cells with pale cytoplasm and fine projections."
  }
 }
