@@ -170,6 +170,16 @@ function nucleusGeometry(n, rand) {
     }
     box = { x0: cx - sp - lr * 1.5, y0: cy - sp - lr * 1.5, x1: cx + sp + lr * 1.5, y1: cy + sp + lr * 1.5 };
     pts.forEach((p) => centres.push(p));
+  } else if (n.type === "flower") {
+    const lr = n.lr * K, sp = n.spread * K, pts = [], a0 = rand() * 6.28;
+    shapes.push(`<path d="${blob({ cx, cy, r: sp * 0.9, wobble: 0.08 }, rand)}"/>`);
+    for (let i = 0; i < n.n; i++) {
+      const t = a0 + (i / n.n) * Math.PI * 2 + (rand() - 0.5) * 0.3;
+      pts.push([cx + Math.cos(t) * sp, cy + Math.sin(t) * sp, lr * (0.85 + rand() * 0.3)]);
+    }
+    pts.forEach((p) => shapes.push(`<path d="${blob({ cx: p[0], cy: p[1], r: p[2], sx: 1.15, sy: 0.85, rot: rand() * 180, wobble: 0.08 }, rand)}"/>`));
+    box = { x0: cx - sp - lr * 1.5, y0: cy - sp - lr * 1.5, x1: cx + sp + lr * 1.5, y1: cy + sp + lr * 1.5 };
+    centres.push([cx, cy, sp]); pts.forEach((p) => centres.push(p));
   } else if (n.type === "multi") {
     const r = n.r * K, sp = n.spread * K, pts = [];
     let guard = 0;
@@ -220,6 +230,18 @@ function drawCell(cell, opts = {}) {
 
   s += backgroundRBCs(3.75 * pxPerUm, rand, id, R * Math.max(d.sx || 1, 1));
 
+  if (d.smudge) {
+    // A crushed cell: bare, smeared nuclear chromatin with no cytoplasm.
+    s += `<path d="${blob({ cx: C0, cy: C0, r: R, sx: 1.15, sy: 0.9, rot: rand() * 180, wobble: 0.22 }, rand)}" fill="#a98cc2" opacity="0.75"/>`;
+    for (let i = 0; i < 26; i++) {
+      const t = rand() * 6.28, r0 = R * rand() * 0.5, L = R * (0.4 + rand() * 0.7);
+      s += `<path d="M${f1(C0 + Math.cos(t) * r0)},${f1(C0 + Math.sin(t) * r0)} q${f1(Math.cos(t + 0.5) * L / 2)},${f1(Math.sin(t + 0.5) * L / 2)} ${f1(Math.cos(t) * L)},${f1(Math.sin(t) * L)}" stroke="#5d3a80" stroke-width="${f1(0.15 * K + rand() * 0.8)}" fill="none" opacity="0.55"/>`;
+    }
+    s += `<path d="${blob({ cx: C0 + (rand() - 0.5) * 8, cy: C0 + (rand() - 0.5) * 8, r: R * 0.45, wobble: 0.25 }, rand)}" fill="#5b3a7e" opacity="0.6"/>`;
+    s += scaleBar(10, pxPerUm);
+    return s + "</svg>";
+  }
+
   if (d.rbc) {
     s += rbcShape(C0, C0, R, d.cyto, d.rbc === "poly", id, rand);
     s += scaleBar(pxPerUm * 10 > 90 ? 5 : 10, pxPerUm);
@@ -243,6 +265,17 @@ function drawCell(cell, opts = {}) {
       s += `<circle cx="${f1(C0 + Math.cos(t) * R * 0.98)}" cy="${f1(C0 + Math.sin(t) * R * 0.98)}" r="${f1(R * (0.12 + rand() * 0.08))}" fill="${d.cyto}"/>`;
     }
   }
+  const projections = (n, from, span, len, w) => {
+    let g = "";
+    for (let i = 0; i < n; i++) {
+      const t = from + (rand() - 0.5) * span, L = R * len * (0.6 + rand() * 0.8), bend = (rand() - 0.5) * 0.9;
+      const x0 = C0 + Math.cos(t) * R * 0.85 * (d.sx || 1), y0 = C0 + Math.sin(t) * R * 0.85 * (d.sy || 1);
+      g += `<path d="M${f1(x0)},${f1(y0)} q${f1(Math.cos(t + bend) * L * 0.6)},${f1(Math.sin(t + bend) * L * 0.6)} ${f1(Math.cos(t) * L * 1.1)},${f1(Math.sin(t) * L * 1.1)}" stroke="${d.cyto}" stroke-width="${f1(w * (0.6 + rand() * 0.6))}" stroke-linecap="round" fill="none"/>`;
+    }
+    return g;
+  };
+  if (d.hairs) s += projections(d.hairs, 0, Math.PI * 2, 0.32, 0.25 * K);
+  if (d.villi) { const a = rand() * 6.28; s += projections(d.villi, a, 1.1, 0.2, 0.32 * K) + projections(Math.ceil(d.villi / 2), a + Math.PI, 0.9, 0.18, 0.32 * K); }
   s += `<path d="${cytoPath}" fill="url(#${gid})"/>`;
 
   const nuc = d.nuc;
@@ -296,6 +329,12 @@ function drawCell(cell, opts = {}) {
       s += `<path d="${blob({ cx: x, cy: y, r: (0.4 + rand() * 0.6) * K, wobble: 0.2 }, rand)}" fill="${i % 2 ? "#8a6a2e" : "#3e5b9e"}" opacity="0.8"/>`;
     }
   }
+  if (d.dohle) {
+    for (let i = 0; i < d.dohle; i++) {
+      const t = rand() * 6.28;
+      s += `<path d="${blob({ cx: C0 + Math.cos(t) * R * 0.78, cy: C0 + Math.sin(t) * R * 0.78, r: 0.9 * K, sx: 1.4, sy: 0.7, rot: (t * 180) / Math.PI + 90, wobble: 0.15 }, rand)}" fill="#7f9ccc" opacity="0.75"/>`;
+    }
+  }
   s += `</g>`;
 
   // nucleus with chromatin texture
@@ -304,6 +343,14 @@ function drawCell(cell, opts = {}) {
   s += geo.extras.join("").replace(/NUC/g, shade(nucColor, -0.1));
   s += `<g clip-path="url(#${nclip})"><rect x="${f1(geo.box.x0)}" y="${f1(geo.box.y0)}" width="${f1(geo.box.x1 - geo.box.x0)}" height="${f1(geo.box.y1 - geo.box.y0)}" fill="${nucColor}"/>`;
   s += chromatin(d.chrom, geo.box, nucColor, rand);
+  if (d.grooves) {
+    const [gx, gy, gr] = geo.centres[0];
+    for (let i = 0; i < d.grooves; i++) {
+      const t = rand() * 6.28, off = (rand() - 0.5) * gr * 0.9, L = gr * (d.grooves === 1 ? 1.5 : 0.9 + rand() * 0.6);
+      const px = gx + Math.cos(t + 1.57) * off, py = gy + Math.sin(t + 1.57) * off;
+      s += `<path d="M${f1(px - Math.cos(t) * L / 2)},${f1(py - Math.sin(t) * L / 2)} q${f1(Math.cos(t + 1.57) * gr * 0.25 + Math.cos(t) * L / 2)},${f1(Math.sin(t + 1.57) * gr * 0.25 + Math.sin(t) * L / 2)} ${f1(Math.cos(t) * L)},${f1(Math.sin(t) * L)}" stroke="${shade(d.cyto, 0.15)}" stroke-width="${f1(0.22 * K)}" fill="none" opacity="0.85" stroke-linecap="round"/>`;
+    }
+  }
   if (d.nucleoli) {
     const list = nuc.type === "multi" ? geo.centres : geo.centres.slice(0, 1);
     list.forEach(([cx, cy, r]) => {
@@ -317,6 +364,20 @@ function drawCell(cell, opts = {}) {
   }
   s += `</g>`;
   s += granDots(true);
+  if (d.auer) {
+    const rx = R * (d.sx || 1) * 0.8, ry = R * (d.sy || 1) * 0.8;
+    const n = d.auer.faggot ? 14 : d.auer.n || 1;
+    const fx = C0 + (rand() - 0.5) * rx, fy = C0 + (rand() - 0.5) * ry;
+    let placed = 0, guard = 0;
+    while (placed < n && guard++ < 400) {
+      const x = d.auer.faggot ? fx + (rand() - 0.5) * K * 3 : C0 + (rand() * 2 - 1) * rx;
+      const y = d.auer.faggot ? fy + (rand() - 0.5) * K * 3 : C0 + (rand() * 2 - 1) * ry;
+      if (!inEllipse(x, y, C0, C0, rx, ry) || nearNucleus(x, y, geo.centres, 0.6 * K)) continue;
+      const a = d.auer.faggot ? (placed % 2 ? 0.5 : -0.4) + rand() * 0.3 : rand() * 3.14, L = (d.auer.faggot ? 2.2 : 2.8 + rand()) * K / 2;
+      s += `<line x1="${f1(x - Math.cos(a) * L)}" y1="${f1(y - Math.sin(a) * L)}" x2="${f1(x + Math.cos(a) * L)}" y2="${f1(y + Math.sin(a) * L)}" stroke="#a3174a" stroke-width="${f1(0.24 * K)}" stroke-linecap="round" opacity="0.92"/>`;
+      placed++;
+    }
+  }
   s += scaleBar(pxPerUm * 10 > 95 ? 5 : 10, pxPerUm);
   return s + "</svg>";
 }

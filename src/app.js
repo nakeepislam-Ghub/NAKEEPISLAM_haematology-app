@@ -1,8 +1,8 @@
-/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, cells.js and rbc.js. */
+/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, cells.js and rbc.js. */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const cellById = Object.fromEntries(CELLS.concat(M2_CELLS, M2_NUCLEATED).map((c) => [c.id, c]));
+const cellById = Object.fromEntries(CELLS.concat(M2_CELLS, M2_NUCLEATED, M3_CELLS).map((c) => [c.id, c]));
 const svgCache = {};
 const renderCell = (c) => (c.kind || c.perls ? drawMorph(c) : drawCell(c));
 const cellSVG = (id) => (svgCache[id] ||= renderCell(cellById[id]));
@@ -17,6 +17,7 @@ const M1_LESSON_CELLS = {
   "reference-values": ["rbc", "neutrophil", "small-lymphocyte", "monocyte", "eosinophil", "platelet"]
 };
 
+const YN = [[1, "Yes"], [0, "No"]];
 /* Calculators, shared between modules. Each reads its inputs and returns the result as HTML. */
 const CALCS = {
   retic: { title: "Reticulocyte count and production index", inputs: [["rp", "Retics (%)", 6, 0.1], ["rr", "RBC (×10¹²/L)", 2.8, 0.01], ["rh", "Hct (L/L)", 0.25, 0.01]],
@@ -40,6 +41,41 @@ const CALCS = {
       const t = (ti / tt) * 100;
       const read = tf < 15 ? "Absent iron stores: iron deficiency." : tf < 30 ? "Probable iron deficiency." : t < 20 && tf <= 100 ? "Possible iron deficiency with inflammation; check CRP and sTfR." : t > 45 ? "High saturation: consider iron overload or sideroblastic anaemia." : "Iron stores adequate.";
       return `TSAT <b>${t.toFixed(0)}%</b><br>${read}`;
+    } },
+  matutes: { title: "Matutes (CLL) score", inputs: [["mt5", "CD5", 1, 1, YN], ["mt23", "CD23", 1, 1, YN], ["mtf", "FMC7 negative", 1, 1, YN], ["mts", "Surface Ig weak", 1, 1, YN], ["mtb", "CD79b or CD22 weak", 0, 1, YN]],
+    run: (v) => {
+      const n = v.mt5 + v.mt23 + v.mtf + v.mts + v.mtb;
+      return `Score <b>${n} of 5</b>: ${n >= 4 ? "typical of CLL." : n === 3 ? "indeterminate (atypical CLL or another entity). Check CD200, cyclin D1 and t(11;14)." : "CLL unlikely. Consider mantle cell, marginal zone, follicular or hairy cell lymphoma."}${v.mt5 && n <= 3 ? "<br><b>CD5 positive with a low score:</b> exclude mantle cell lymphoma." : ""}`;
+    } },
+  blastcat: { title: "Blast count classifier (WHO-HAEM5 and ICC)", inputs: [["bm", "Marrow blasts (%)", 12, 1], ["bp", "Blood blasts (%)", 3, 1], ["ba", "Auer rods", 0, 1, YN],
+      ["bg", "Genetics", 0, 1, [[0, "No defining abnormality"], [1, "Defining (NPM1, KMT2A, PML::RARA, core binding factor...)"], [2, "BCR::ABL1"], [3, "CEBPA (bZIP)"], [4, "MR gene mutation or MR karyotype only"]]]],
+    run: ({ bm, bp, ba, bg }) => {
+      const mx = Math.max(bm, bp);
+      let who, icc;
+      if (bg === 1) who = "AML with the defining genetic abnormality (no blast minimum; correlate clinically)";
+      else if ((bg === 2 || bg === 3) && mx >= 20) who = bg === 2 ? "AML with BCR::ABL1 (exclude CML blast phase)" : "AML with CEBPA mutation";
+      else if (mx >= 20) who = bg === 4 ? "AML, myelodysplasia-related" : "AML, defined by differentiation";
+      else if (bm >= 10 || bp >= 5 || ba) who = "MDS with increased blasts 2 (MDS-IB2)";
+      else if (bm >= 5 || bp >= 2) who = "MDS with increased blasts 1 (MDS-IB1)";
+      else who = "MDS with low blasts, if cytopenia and dysplasia are present";
+      if ((bg === 1 || bg === 3) && mx >= 10) icc = bg === 3 ? "AML with in-frame bZIP CEBPA mutation" : "AML with the recurrent genetic abnormality";
+      else if (bg === 2 && mx >= 20) icc = "AML with BCR::ABL1";
+      else if (mx >= 20) icc = bg === 4 ? "AML with MR gene mutations or cytogenetic abnormalities" : "AML, NOS";
+      else if (mx >= 10) icc = "MDS/AML" + (bg === 4 ? " with MR gene mutations or cytogenetics" : "");
+      else if (bm >= 5 || bp >= 2) icc = "MDS with excess blasts";
+      else icc = "MDS (if cytopenia and dysplasia are present)";
+      return `<b>WHO-HAEM5:</b> ${who}<br><b>ICC 2022:</b> ${icc}<br><span class="muted">Teaching aid. TP53 status, del(5q), SF3B1, fibrosis, prior therapy and CMML criteria also change the category.</span>`;
+    } },
+  cmml: { title: "CMML criteria (WHO-HAEM5)", inputs: [["cw", "WBC (×10⁹/L)", 15, 0.1], ["cm", "Monocytes (×10⁹/L)", 3.2, 0.1], ["cpb", "Blood blasts + promonocytes (%)", 2, 1], ["cbm", "Marrow blasts + promonocytes (%)", 6, 1], ["cba", "BCR::ABL1 or MPN criteria met", 0, 1, YN]],
+    run: ({ cw, cm, cpb, cbm, cba }) => {
+      if (!(cw > 0)) return null;
+      const pct = (cm / cw) * 100;
+      if (cba) return "Not CMML: CML or another MPN takes priority.";
+      if (cpb >= 20 || cbm >= 20) return "Blasts 20% or more: this is AML, not CMML.";
+      if (cm < 0.5 || pct < 10) return `Monocytes ${cm.toFixed(1)} × 10⁹/L (${pct.toFixed(0)}%): the monocytosis criterion is <b>not met</b> (needs 0.5 × 10⁹/L or more and 10% or more).`;
+      const type = cw >= 13 ? "MP-CMML (myeloproliferative)" : "MD-CMML (myelodysplastic)";
+      const grade = cpb >= 5 || cbm >= 10 ? "CMML-2" : "CMML-1";
+      return `Monocytes ${pct.toFixed(0)}% of WBC: criterion met${cm < 1 ? " (0.5–0.9 × 10⁹/L: also needs clonality and dysplasia)" : ""}<br><b>${type}, ${grade}</b><br><span class="muted">Needs persistence, exclusion of reactive causes, and ideally a clonal marker or dysplasia.</span>`;
     } }
 };
 
@@ -52,9 +88,13 @@ const MODS = {
   m2: { id: "m2", n: 2, lessons: M2_LESSONS, lessonCells: M2_LESSON_CELLS, cells: M2_CELLS.concat(M2_NUCLEATED), facts: M2_FACTS, quiz: M2_QUIZ, cases: M2_CASES,
     hero: ["m2-sphero", "m2-sickle", "m2-target"], tagline: "From the anaemia algorithm to marrow failure",
     trees: M2_TREES, checklist: M2_CHECKLIST,
-    calcs: ["retic", "mentzer", "tsat", "absolute"], anims: [["globin", "Globin switching"], ["odc", "Oxygen dissociation curve"]] }
+    calcs: ["retic", "mentzer", "tsat", "absolute"], anims: [["globin", "Globin switching"], ["odc", "Oxygen dissociation curve"]] },
+  m3: { id: "m3", n: 3, lessons: M3_LESSONS, lessonCells: M3_LESSON_CELLS, cells: M3_CELLS, facts: M3_FACTS, quiz: M3_QUIZ, cases: M3_CASES,
+    hero: ["m3-faggot", "m3-hairy", "m3-flower"], tagline: "From reactive changes to WHO-HAEM5 and ICC 2022",
+    trees: M3_TREES, checklist: M3_CHECKLIST,
+    calcs: ["blastcat", "matutes", "cmml", "absolute"], anims: [["flow", "Flow cytometry: CD45 vs SSC"], ["tree", "Haematopoiesis"]] }
 };
-MODULES.find((m) => m.id === "m2").ready = true;
+["m2", "m3"].forEach((id) => (MODULES.find((m) => m.id === id).ready = true));
 
 /* Per-viewer progress, kept in this browser only. */
 const store = {
@@ -156,7 +196,7 @@ ${MODULES.map((m) => `
 <div class="section-h"><h2>Module ${MOD.n} at a glance</h2></div>
 <div class="quick">
   <a href="#learn"><b>${MOD.lessons.length} lessons</b><span>${esc(MOD.tagline)}</span></a>
-  <a href="#atlas"><b>${MOD.cells.length} images in the atlas</b><span>${MOD.id === "m1" ? "Features, sizes and look-alikes" : "Red cell shapes, inclusions and marrow clues"}</span></a>
+  <a href="#atlas"><b>${MOD.cells.length} images in the atlas</b><span>${MOD.id === "m1" ? "Features, sizes and look-alikes" : MOD.id === "m2" ? "Red cell shapes, inclusions and marrow clues" : "Blasts, Auer rods, lymphoma, plasma and T cells"}</span></a>
   <a href="#practice"><b>${cardTotal} flashcards</b><span>${cardPct}% marked as known</span></a>
   <a href="#practice" data-tab="quiz"><b>${MOD.quiz.length} MCQs</b><span>${state.quizBest == null ? "Not attempted yet" : `Best score ${state.quizBest} of ${MOD.quiz.length}`}</span></a>
   <a href="#cases"><b>${MOD.cases.length} case studies</b><span>${casesHere} completed</span></a>
@@ -202,11 +242,12 @@ function viewAtlas() {
   const groups = ["All", ...new Set(MOD.cells.map(lineageOf))];
   const list = MOD.cells.filter((c) => state.atlasFilter === "All" || lineageOf(c) === state.atlasFilter);
   return `
-<h1>${MOD.id === "m1" ? "Cell atlas" : "Red cell morphology atlas"}</h1>
-<p class="muted" style="max-width:66ch">${MOD.id === "m1" ? "Original schematic drawings of Romanowsky-stained cells, drawn to scale against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : "Original schematic drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
+<h1>${MOD.id === "m1" ? "Cell atlas" : MOD.id === "m2" ? "Red cell morphology atlas" : "White cell and leukaemia atlas"}</h1>
+<p class="muted" style="max-width:66ch">${MOD.id === "m1" ? "Original schematic drawings of Romanowsky-stained cells, drawn to scale against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : MOD.id === "m3" ? "Original schematic drawings of reactive, dysplastic and neoplastic white cells: blasts, Auer rods, APL, lymphoma cells, plasma cells and T cells. Tap a picture for what it is, where it is seen, and a reporting tip." : "Original schematic drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
 <div class="filters">${groups.map((g) => `<button class="chip" data-filter="${g}" aria-pressed="${g === state.atlasFilter}">${g}</button>`).join("")}</div>
 <div class="atlas">${list.map((c) => `<button data-cell="${c.id}"><div class="figure">${cellSVG(c.id)}</div><b>${esc(c.name)}</b><small>${esc(lineageOf(c))}${c.size ? " · " + esc(c.size) : ""}</small></button>`).join("")}</div>
-<p class="note" style="margin-top:18px">Compare these drawings with the photographs in Bain's Blood Cells and the Color Atlas of Hematology in your library.</p>`;
+<p class="note" style="margin-top:18px">Compare these drawings with the photographs in Bain's Blood Cells and the Color Atlas of Hematology in your library.</p>
+<div class="card" style="margin-top:14px;max-width:720px"><h3 style="margin-top:0">Photo atlases online</h3><p class="muted" style="margin-top:0">Free to view on their own websites (internet needed). Their images are owned by the publishers and are not copied into this app.</p><ul style="margin:0">${EXT_ATLASES.map(([t, u, d]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>: ${esc(d)}</li>`).join("")}</ul></div>`;
 }
 
 function openCell(id) {
@@ -240,6 +281,12 @@ function openCell(id) {
   document.body.appendChild(bg);
   $("[data-close]", bg).focus();
 }
+
+const EXT_ATLASES = [
+  ["ASH Image Bank", "https://imagebank.hematology.org/atlas-images", "American Society of Hematology library of peer-reviewed blood and marrow images, searchable by diagnosis."],
+  ["Bloodline Image Atlas", "https://www.bloodline.net/", "Peer-reviewed case images of blood and marrow morphology."],
+  ["Mindray Blood Cell Atlas", "https://www.mindray.com/", "Manufacturer PDF atlas of normal and abnormal peripheral blood cells photographed on the MC-80 analyser."]
+];
 
 /* Flashcards */
 let fc = { cards: [], i: 0, flipped: false };
@@ -291,7 +338,7 @@ function quizHTML() {
   if (!qz.order.length) { const r = rng("q" + Date.now()); qz.order = MOD.quiz.map((_, i) => i).sort(() => r() - 0.5); }
   if (qz.i >= MOD.quiz.length) {
     return `<div class="quiz card" style="margin-top:16px"><span class="label">Quiz complete</span><h2 style="margin:6px 0">${qz.score} of ${MOD.quiz.length}</h2>
-      <p>${qz.score >= 15 ? "Excellent. You are ready for Module 2." : qz.score >= 11 ? "Good. Review the lessons for the questions you missed." : "Go back over the lessons and try again."}</p>
+      <p>${qz.score >= Math.round(MOD.quiz.length * 0.8) ? "Excellent. You are ready for the next module." : qz.score >= Math.round(MOD.quiz.length * 0.6) ? "Good. Review the lessons for the questions you missed." : "Go back over the lessons and try again."}</p>
       <button class="btn primary" data-quiz="restart">Try again</button></div>`;
   }
   const Q = MOD.quiz[qz.order[qz.i]];
@@ -370,7 +417,7 @@ function marrowHTML() {
 function calcHTML() {
   return `<div class="calcs">${MOD.calcs.map((k) => {
     const C = CALCS[k];
-    return `<div class="card"><h3 style="margin-top:0">${C.title}</h3><div class="fields">${C.inputs.map(([id, label, v, step]) => `<div class="field"><label for="${id}">${label}</label><input id="${id}" data-calc="${k}" type="number" step="${step}" value="${v}"></div>`).join("")}</div><div class="out" id="out-${k}"></div></div>`;
+    return `<div class="card"><h3 style="margin-top:0">${C.title}</h3><div class="fields">${C.inputs.map(([id, label, v, step, opts]) => `<div class="field"><label for="${id}">${label}</label>${opts ? `<select id="${id}" data-calc="${k}">${opts.map(([ov, ot]) => `<option value="${ov}" ${ov === v ? "selected" : ""}>${esc(ot)}</option>`).join("")}</select>` : `<input id="${id}" data-calc="${k}" type="number" step="${step}" value="${v}">`}</div>`).join("")}</div><div class="out" id="out-${k}"></div></div>`;
   }).join("")}</div>
 <p class="note">Teaching tools. Check results against your laboratory's methods before using them for a report.</p>`;
 }
@@ -531,6 +578,7 @@ function viewAnimations() {
   }
   if (state.animTab === "odc") body = odcHTML();
   if (state.animTab === "globin") body = globinHTML();
+  if (state.animTab === "flow") body = flowHTML();
   return `<h1>Animations</h1>
 <div class="seg" role="group" aria-label="Animation" style="margin:14px 0 18px">${tabs.map(([k, t]) => `<button data-atab="${k}" aria-pressed="${state.animTab === k}">${t}</button>`).join("")}</div>${body}`;
 }
@@ -540,6 +588,48 @@ function setMat(i) {
   [...st.children].forEach((d, k) => (d.style.opacity = k === i ? 1 : 0));
   $("#matPanel").innerHTML = matPanel();
   $("#matSlider").value = i;
+}
+
+/* Flow cytometry simulator: CD45 versus side scatter. */
+let flowCase = "pb", flowGate = null;
+const FLOW_GATES = [["blast", "Blast gate", 30, 6, 28, 30], ["lymph", "Lymphocyte gate", 68, 2, 26, 22], ["gran", "Granulocyte gate", 40, 46, 34, 52]];
+function flowPoints(C) {
+  const r = rng("flow" + C.id), pts = [], N = 1400;
+  const gauss = () => { let u = 0; for (let i = 0; i < 4; i++) u += r(); return (u - 2) / 0.58; };
+  Object.entries(C.mix).forEach(([k, pct]) => {
+    const P = FLOW_POPS[k];
+    for (let i = 0; i < Math.round((N * pct) / 100); i++) pts.push([Math.min(99, Math.max(1, P.x + gauss() * P.sx)), Math.min(99, Math.max(1, P.y + gauss() * P.sy)), k]);
+  });
+  return pts;
+}
+function flowHTML() {
+  const C = FLOW_CASES.find((c) => c.id === flowCase), pts = flowPoints(C);
+  const X = (v) => 40 + v * 3.6, Y = (v) => 330 - v * 3.1;
+  let g = "";
+  [0, 25, 50, 75, 100].forEach((v) => { g += `<line class="grid" x1="${X(v)}" y1="20" x2="${X(v)}" y2="330"/><line class="grid" x1="40" y1="${Y(v)}" x2="400" y2="${Y(v)}"/>`; });
+  pts.forEach(([x, y, k]) => { g += `<circle cx="${X(x).toFixed(1)}" cy="${Y(y).toFixed(1)}" r="1.6" fill="${FLOW_POPS[k].color}" opacity="0.7"/>`; });
+  let gateOut = "Tap a gate to count the events inside it.";
+  if (flowGate) {
+    const [gk, gname, gx, gy, gw, gh] = FLOW_GATES.find((q) => q[0] === flowGate);
+    const inside = pts.filter(([x, y]) => x >= gx && x <= gx + gw && y >= gy && y <= gy + gh);
+    g += `<rect x="${X(gx)}" y="${Y(gy + gh)}" width="${gw * 3.6}" height="${gh * 3.1}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="6 4"/>`;
+    const by = {}; inside.forEach((p) => (by[p[2]] = (by[p[2]] || 0) + 1));
+    gateOut = `<b>${gname}: ${((inside.length / pts.length) * 100).toFixed(1)}% of events</b><br>${Object.entries(by).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${FLOW_POPS[k].name} ${((n / inside.length) * 100).toFixed(0)}%`).join(" · ") || "No events"}`;
+  }
+  g += `<text x="220" y="356" text-anchor="middle">CD45 →</text><text x="14" y="175" text-anchor="middle" transform="rotate(-90 14 175)">Side scatter →</text>`;
+  const legend = Object.keys(C.mix).map((k) => `<span style="display:inline-flex;align-items:center;gap:6px"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${FLOW_POPS[k].color}"></i>${FLOW_POPS[k].name} ${C.mix[k]}%</span>`).join("");
+  return `<div class="anim">
+  <div class="seg" role="group" aria-label="Sample">${FLOW_CASES.map((c) => `<button data-flow="${c.id}" aria-pressed="${c.id === flowCase}">${c.name}</button>`).join("")}</div>
+  <div class="odc">
+    <div class="svgwrap" style="padding:8px"><svg viewBox="0 0 410 365" role="img" aria-label="CD45 versus side scatter plot: ${esc(C.name)}" style="min-width:0">${g}</svg></div>
+    <div class="card stack">
+      <p style="margin:0">${esc(C.note)}</p>
+      <div style="display:flex;gap:6px 14px;flex-wrap:wrap;font-size:.9rem">${legend}</div>
+      <div class="row">${FLOW_GATES.map(([k, t]) => `<button class="btn small" data-fgate="${k}" aria-pressed="${flowGate === k}">${t}</button>`).join("")}</div>
+      <div class="out">${gateOut}</div>
+      <p class="note" style="margin:0">Simulated teaching data. Real plots vary with instrument settings and sample age.</p>
+    </div>
+  </div></div>`;
 }
 
 /* Slides */
@@ -585,14 +675,14 @@ function viewAbout() {
 <p>Reference ranges differ between laboratories, analysers and populations. Always use your own laboratory's ranges for reporting.</p>
 <h2 style="margin-top:22px">Coming next</h2>
 <ul>${MODULES.filter((m) => !m.ready).map((m) => `<li><b>Module ${m.n}: ${esc(m.title)}.</b> ${esc(m.sub)}.</li>`).join("")}</ul>
-<p class="footer-note">Interactive Diagnostic Haematology · Modules 1 and 2 · For education only, not for clinical decision-making.</p></div>`;
+<p class="footer-note">Interactive Diagnostic Haematology · Modules 1 to 3 · For education only, not for clinical decision-making.</p></div>`;
 }
 
 function viewMore() {
   return `<h1>More</h1><div class="quick" style="margin-top:16px">
   <a href="#cases"><b>Case studies</b><span>${MOD.cases.length} stepwise cases</span></a>
   <a href="#workups"><b>Workups</b><span>Decision tree, marrow checklist, calculators</span></a>
-  <a href="#animations"><b>Animations</b><span>Haematopoiesis, maturation, O₂ curve</span></a>
+  <a href="#animations"><b>Animations</b><span>${esc(MOD.anims.map((a) => a[1]).join(", "))}</span></a>
   <a href="#slides"><b>Slides</b><span>Present any lesson</span></a>
   <a href="#about"><b>Sources and install</b><span>Offline use and references</span></a>
 </div>`;
@@ -655,6 +745,8 @@ document.addEventListener("click", (e) => {
   if ("tback" in d) { tr.path.pop(); render(true); return; }
   if ("treset" in d) { tr.path = ["start"]; render(true); return; }
   if ("mreset" in d) { store.set(ticksKey(), []); render(true); return; }
+  if (d.flow) { flowCase = d.flow; render(true); return; }
+  if (d.fgate) { flowGate = flowGate === d.fgate ? null : d.fgate; render(true); return; }
   if (d.atab) { state.animTab = d.atab; clearInterval(mat.timer); mat.timer = null; render(true); return; }
   if (d.mline) { mat.line = d.mline; mat.i = 0; clearInterval(mat.timer); mat.timer = null; render(true); return; }
   if (t.id === "matPlay") {
