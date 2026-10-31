@@ -85,6 +85,8 @@ button { cursor: pointer; }
 .main { min-width: 0; display: flex; flex-direction: column; }
 .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; gap: 12px; align-items: center; }
 .top .crumb { font-weight: 600; color: var(--muted); font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.modsel { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 600; font-size: .88rem; max-width: 46vw; min-width: 0; }
+.module.current { border-color: var(--azure); box-shadow: 0 0 0 1px var(--azure); }
 .search { margin-left: auto; position: relative; flex: 0 1 320px; min-width: 0; }
 .search input { width: 100%; padding: 8px 12px 8px 34px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
 .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 2; }
@@ -309,6 +311,10 @@ table.t.num td:not(:first-child) { font-family: var(--f-mono); font-size: .86rem
   <div class="main">
     <header class="top">
       <span class="crumb" id="crumb">Module 1 · Normal blood and marrow cells</span>
+      <select id="modSel" class="modsel" aria-label="Module">
+        <option value="m1">Module 1 · Normal cells</option>
+        <option value="m2">Module 2 · Red cells</option>
+      </select>
       <div class="search">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
         <input id="q" type="search" placeholder="Search cells, lessons, facts" aria-label="Search" autocomplete="off">
@@ -950,6 +956,632 @@ const MARROW_STEPS = [
   ["Write the conclusion", "Answer the clinical question in the first line. List the key findings and any recommended further tests."]
 ];
 
+/* Module 2 content: Red cell disorders. Original text written from the reference books in
+   the project library. Cut-offs follow common UK/international practice; check local ranges. */
+
+Object.assign(SOURCES, {
+  rbcd: "RBCs disorders (project library)",
+  hoff7: "Hoffbrand et al., Postgraduate Haematology, 7th ed. (2015)",
+  imh: "Immunohaematology (project library)"
+});
+
+const M2_LESSONS = [
+{
+  id: "anaemia-approach",
+  title: "Approach to anaemia",
+  minutes: 12,
+  sources: ["dl", "hof", "psh"],
+  video: "approach to anemia MCV reticulocyte classification",
+  body: `
+<p>Anaemia is a haemoglobin below the reference range for age, sex and pregnancy status. The WHO cut-offs are 130 g/L for men, 120 g/L for non-pregnant women and 110 g/L in pregnancy. Anaemia is a finding, not a diagnosis: the job is to find its cause.</p>
+<h3>Two questions that classify almost every anaemia</h3>
+<ol>
+<li><b>Is the marrow responding?</b> The reticulocyte count separates <i>hypoproliferative</i> anaemias (low or inappropriately normal reticulocytes: deficiency, marrow failure, infiltration, renal disease, inflammation) from <i>hyperproliferative</i> ones (raised reticulocytes: bleeding or haemolysis).</li>
+<li><b>What size are the red cells?</b> MCV sorts the hypoproliferative group into microcytic, normocytic and macrocytic.</li>
+</ol>
+<div class="tablewrap"><table class="t"><thead><tr><th>Microcytic (MCV under 83 fL)</th><th>Normocytic</th><th>Macrocytic (MCV over 101 fL)</th></tr></thead><tbody>
+<tr><td>Iron deficiency</td><td>Anaemia of inflammation (early)</td><td>Megaloblastic: B12 or folate deficiency, drugs (methotrexate, hydroxycarbamide)</td></tr>
+<tr><td>Thalassaemia trait</td><td>Chronic kidney disease</td><td>Alcohol, liver disease</td></tr>
+<tr><td>Anaemia of inflammation (late)</td><td>Acute blood loss</td><td>Hypothyroidism</td></tr>
+<tr><td>Sideroblastic anaemia (hereditary)</td><td>Marrow infiltration or failure</td><td>Myelodysplastic neoplasms, aplastic anaemia</td></tr>
+<tr><td>Lead poisoning (rarely)</td><td>Mixed deficiency (micro plus macro, with a high RDW)</td><td>Reticulocytosis (haemolysis, recovery)</td></tr>
+</tbody></table></div>
+<h3>The blood film</h3>
+<p>Always look at the film. A few patterns settle the diagnosis on their own: spherocytes (hereditary spherocytosis, warm AIHA), fragments (microangiopathy), sickle cells, target cells with microcytosis (haemoglobinopathy), oval macrocytes with hypersegmented neutrophils (megaloblastic), a leucoerythroblastic picture with teardrop cells (marrow infiltration or fibrosis), and rouleaux (paraprotein).</p>
+<h3>The red cell distribution width</h3>
+<p>RDW measures variation in red cell size. It rises early in iron deficiency and in mixed deficiencies, and is usually normal in uncomplicated thalassaemia trait. It is a useful supporting clue, never a diagnosis on its own.</p>
+<h3>Correcting the reticulocyte count</h3>
+<p>A reticulocyte percentage overstates marrow output in anaemia, because the denominator (red cells) is small and stressed reticulocytes circulate longer. Report the absolute count, or use the reticulocyte production index (RPI): an RPI below 2 in an anaemic patient means the marrow is not keeping up. The calculator in the workups section does this.</p>
+`,
+  points: [
+    "Anaemia: Hb under 130 g/L (men), 120 g/L (women), 110 g/L (pregnancy)",
+    "First the reticulocytes (response), then the MCV (size)",
+    "Raised reticulocytes: bleeding or haemolysis",
+    "Always review the film: spherocytes, fragments, sickle, target, oval macrocytes, teardrops",
+    "High RDW suggests iron deficiency or mixed deficiency rather than thalassaemia trait",
+    "RPI under 2 in anaemia means an inadequate marrow response"
+  ]
+},
+{
+  id: "iron",
+  title: "Iron metabolism, iron deficiency and anaemia of inflammation",
+  minutes: 15,
+  sources: ["hof", "dl", "rbcd"],
+  video: "iron metabolism hepcidin ferroportin iron deficiency anemia",
+  body: `
+<p>The body holds 3 to 4 g of iron, two thirds of it in haemoglobin. There is no regulated excretion route, so balance is controlled at absorption. Daily losses of about 1 mg (about 2 mg in menstruating women) are replaced from 1 to 2 mg absorbed from the diet.</p>
+<h3>The iron cycle</h3>
+<ul>
+<li><b>Absorption:</b> in the duodenum. Ferric iron is reduced by duodenal cytochrome b (DCYTB) and enters the enterocyte through DMT1. Haem iron is absorbed separately and more efficiently.</li>
+<li><b>Export:</b> ferroportin is the only known cellular iron exporter, on enterocytes, macrophages and hepatocytes. Hephaestin (gut) and ceruloplasmin (plasma) oxidise iron for loading onto transferrin.</li>
+<li><b>Transport:</b> transferrin carries iron to transferrin receptor 1 on erythroblasts.</li>
+<li><b>Recycling:</b> macrophages recover about 20 to 25 mg a day from senescent red cells, which is most of what the marrow uses.</li>
+<li><b>Control:</b> hepcidin, made by the liver, binds ferroportin and causes its internalisation and breakdown. Hepcidin rises with iron loading and inflammation (IL-6), and falls with iron deficiency, hypoxia and active erythropoiesis (through erythroferrone).</li>
+</ul>
+<h3>Stages of iron deficiency</h3>
+<ol>
+<li><b>Depleted stores:</b> ferritin falls; haemoglobin is normal.</li>
+<li><b>Iron-deficient erythropoiesis:</b> transferrin saturation falls, zinc protoporphyrin and soluble transferrin receptor rise, reticulocyte haemoglobin content falls.</li>
+<li><b>Iron deficiency anaemia:</b> haemoglobin falls; microcytosis and hypochromia appear, with pencil cells and a raised RDW. Platelets are often raised.</li>
+</ol>
+<h3>Laboratory diagnosis</h3>
+<p>A serum ferritin below 15 µg/L is diagnostic of absent stores; many guidelines use below 30 µg/L to improve sensitivity. Ferritin is an acute phase protein, so a normal value does not exclude iron deficiency in inflammation; in that setting a ferritin up to about 100 µg/L with a transferrin saturation below 20% is consistent with iron deficiency. Absent stainable iron in marrow particles remains the reference standard.</p>
+<p>In adult men and postmenopausal women, unexplained iron deficiency needs gastrointestinal investigation for occult bleeding, including coeliac serology.</p>
+<h3>Anaemia of inflammation (chronic disease)</h3>
+<p>IL-6 raises hepcidin, which traps iron in macrophages and blocks absorption. Inflammation also blunts the EPO response and shortens red cell survival. The anaemia is usually mild and normocytic, becoming microcytic when long-standing.</p>
+<div class="tablewrap"><table class="t"><thead><tr><th></th><th>Iron deficiency</th><th>Anaemia of inflammation</th><th>Thalassaemia trait</th><th>Sideroblastic</th></tr></thead><tbody>
+<tr><td>MCV</td><td>Low</td><td>Normal or low</td><td>Very low for the Hb</td><td>Low (hereditary) or high (acquired)</td></tr>
+<tr><td>RBC count</td><td>Low</td><td>Low</td><td>Normal or high</td><td>Low</td></tr>
+<tr><td>RDW</td><td>High</td><td>Normal</td><td>Normal or mildly high</td><td>High (dimorphic film)</td></tr>
+<tr><td>Ferritin</td><td>Low</td><td>Normal or high</td><td>Normal</td><td>High</td></tr>
+<tr><td>Transferrin saturation</td><td>Low</td><td>Low</td><td>Normal</td><td>High</td></tr>
+<tr><td>Soluble transferrin receptor</td><td>High</td><td>Normal</td><td>Normal or high</td><td>Normal or high</td></tr>
+<tr><td>Marrow iron</td><td>Absent</td><td>Present in macrophages</td><td>Present</td><td>Ring sideroblasts</td></tr>
+</tbody></table></div>
+<p>Iron-refractory iron deficiency anaemia (IRIDA) is a rare recessive disorder caused by TMPRSS6 mutations: hepcidin is inappropriately high, so oral iron fails.</p>
+`,
+  points: [
+    "Hepcidin degrades ferroportin: high in inflammation and iron overload, low in iron deficiency",
+    "Ferritin under 15 µg/L is diagnostic; under 30 µg/L is commonly used",
+    "In inflammation, ferritin up to about 100 µg/L with TSAT under 20% still fits iron deficiency",
+    "Iron deficiency: low MCV, low RBC count, high RDW, often high platelets",
+    "Unexplained iron deficiency in men and postmenopausal women: investigate the GI tract",
+    "IRIDA: TMPRSS6 mutation, high hepcidin, no response to oral iron"
+  ]
+},
+{
+  id: "megaloblastic",
+  title: "Macrocytic and megaloblastic anaemia",
+  minutes: 13,
+  sources: ["hof", "dl", "bmp"],
+  video: "megaloblastic anemia vitamin B12 folate deficiency hypersegmented neutrophils",
+  body: `
+<p>Megaloblastic anaemia results from impaired DNA synthesis, usually from vitamin B<sub>12</sub> (cobalamin) or folate deficiency. Nuclear maturation lags behind cytoplasmic maturation in every dividing lineage, and many precursors die in the marrow (ineffective haematopoiesis).</p>
+<h3>Physiology</h3>
+<ul>
+<li><b>B<sub>12</sub>:</b> released from food by acid and pepsin, bound by haptocorrin, transferred to intrinsic factor (from gastric parietal cells) in the duodenum, and absorbed in the terminal ileum through the cubam receptor. Transported in plasma by transcobalamin (holotranscobalamin is the active fraction). Stores of 2 to 3 mg last several years.</li>
+<li><b>Folate:</b> absorbed in the proximal jejunum. Stores last only about 4 months.</li>
+<li><b>Biochemistry:</b> B<sub>12</sub> is needed for methionine synthase (homocysteine to methionine, regenerating tetrahydrofolate) and for methylmalonyl-CoA mutase. So methylmalonic acid rises only in B<sub>12</sub> deficiency, while homocysteine rises in both.</li>
+</ul>
+<h3>Causes</h3>
+<div class="tablewrap"><table class="t"><thead><tr><th>B<sub>12</sub> deficiency</th><th>Folate deficiency</th></tr></thead><tbody>
+<tr><td>Pernicious anaemia (autoimmune gastritis)</td><td>Poor diet, alcohol</td></tr>
+<tr><td>Gastrectomy, bariatric surgery</td><td>Increased demand: pregnancy, haemolysis, exfoliative skin disease</td></tr>
+<tr><td>Ileal resection or Crohn disease, bacterial overgrowth, fish tapeworm</td><td>Malabsorption: coeliac disease</td></tr>
+<tr><td>Strict vegan diet</td><td>Drugs: methotrexate, trimethoprim, phenytoin</td></tr>
+<tr><td>Drugs: metformin, proton pump inhibitors; nitrous oxide inactivates B<sub>12</sub></td><td>Dialysis losses</td></tr>
+</tbody></table></div>
+<h3>Laboratory features</h3>
+<ul>
+<li><b>Blood:</b> oval macrocytes (MCV often over 110 fL), anisopoikilocytosis with teardrops and fragments, Howell–Jolly bodies, hypersegmented neutrophils (5% or more with 5 lobes, or any with 6 or more), and in severe cases pancytopenia. Reticulocytes are low.</li>
+<li><b>Chemistry:</b> raised LDH (often very high) and unconjugated bilirubin, from intramedullary haemolysis.</li>
+<li><b>Marrow:</b> hypercellular with megaloblasts (large erythroblasts with open, sieve-like chromatin despite haemoglobinised cytoplasm), giant metamyelocytes and band forms, and hypersegmented megakaryocytes.</li>
+</ul>
+<h3>Diagnosing the cause</h3>
+<p>Serum B<sub>12</sub> has poor sensitivity and specificity near the cut-off; holotranscobalamin and methylmalonic acid help in borderline cases. For pernicious anaemia, intrinsic factor antibodies are highly specific but positive in only about half of patients; parietal cell antibodies are sensitive but not specific. A raised gastrin and low pepsinogen support autoimmune gastritis.</p>
+<p><b>Safety point:</b> in combined or uncertain deficiency, replace B<sub>12</sub> before or with folate. Folate alone can worsen B<sub>12</sub>-related neuropathy (subacute combined degeneration of the cord).</p>
+<h3>Non-megaloblastic macrocytosis</h3>
+<p>Alcohol, liver disease and hypothyroidism give round macrocytes with an MCV usually under 110 fL. Reticulocytosis raises the MCV because reticulocytes are larger. Myelodysplastic neoplasms cause macrocytosis with dysplasia, and are covered in Module 3.</p>
+`,
+  points: [
+    "B12 needs intrinsic factor and is absorbed in the terminal ileum; folate in the jejunum",
+    "MMA rises only with B12 deficiency; homocysteine rises with both",
+    "Oval macrocytes plus hypersegmented neutrophils suggest megaloblastic anaemia",
+    "High LDH and bilirubin come from ineffective (intramedullary) erythropoiesis",
+    "Intrinsic factor antibodies: specific, about 50% sensitive",
+    "Give B12 before or with folate"
+  ]
+},
+{
+  id: "haemolysis-membrane",
+  title: "Haemolysis and red cell membrane disorders",
+  minutes: 13,
+  sources: ["dl", "hof", "rbcd"],
+  video: "hereditary spherocytosis EMA binding test hemolysis",
+  body: `
+<p>Haemolysis means shortened red cell survival. The marrow can increase production 6 to 8 times, so anaemia appears only when destruction outpaces that. Haemolysis is extravascular (macrophages in spleen and liver, most cases) or intravascular (complement lysis, mechanical damage, toxins, some infections).</p>
+<h3>Laboratory markers of haemolysis</h3>
+<div class="tablewrap"><table class="t"><thead><tr><th>Marker</th><th>Finding</th><th>Comment</th></tr></thead><tbody>
+<tr><td>Reticulocytes</td><td>Raised</td><td>May be low in a parvovirus crisis or with coexisting deficiency</td></tr>
+<tr><td>Unconjugated bilirubin</td><td>Raised</td><td>Also raised in Gilbert syndrome</td></tr>
+<tr><td>LDH</td><td>Raised</td><td>Highest in intravascular haemolysis</td></tr>
+<tr><td>Haptoglobin</td><td>Low or absent</td><td>An acute phase protein; can be normal in inflammation</td></tr>
+<tr><td>Plasma free haemoglobin, haemoglobinuria</td><td>Present</td><td>Intravascular haemolysis</td></tr>
+<tr><td>Urine haemosiderin</td><td>Present</td><td>Chronic intravascular haemolysis (appears after about a week)</td></tr>
+</tbody></table></div>
+<p>Then look at the film and do a direct antiglobulin test (DAT). These two steps split most haemolytic anaemias into immune and non-immune causes. The haemolysis decision tree in the workups section follows this order.</p>
+<h3>Hereditary spherocytosis</h3>
+<p>The commonest inherited haemolytic anaemia in people of Northern European descent, mostly autosomal dominant. Defects in vertical membrane links (ankyrin most often, then band 3, spectrin and protein 4.2) cause loss of membrane, and the spheres are trapped in the spleen.</p>
+<ul>
+<li>Spherocytes, raised MCHC (often over 360 g/L) and raised reticulocytes, with a negative DAT.</li>
+<li><b>EMA binding test:</b> flow cytometry of eosin-5-maleimide binding to band 3. Reduced fluorescence is the preferred screening test, with high sensitivity and specificity.</li>
+<li>Osmotic fragility and the acidified glycerol lysis test are older alternatives.</li>
+<li>Complications: gallstones, aplastic crisis with parvovirus B19, folate deficiency. Splenectomy is reserved for severe disease.</li>
+</ul>
+<h3>Other membrane disorders</h3>
+<ul>
+<li><b>Hereditary elliptocytosis:</b> horizontal spectrin defects; mostly no symptoms.</li>
+<li><b>Southeast Asian ovalocytosis:</b> band 3 deletion; rigid stomatocytic ovalocytes; protective against malaria.</li>
+<li><b>Hereditary pyropoikilocytosis:</b> severe, with fragments and microspherocytes; red cells break down at 45 to 46°C.</li>
+<li><b>Hereditary stomatocytosis and xerocytosis:</b> cation leak disorders (PIEZO1 in xerocytosis). Splenectomy is contraindicated because of thrombosis risk.</li>
+</ul>
+`,
+  points: [
+    "Haemolysis markers: reticulocytes, unconjugated bilirubin, LDH up; haptoglobin down",
+    "Intravascular: haemoglobinuria, then haemosiderinuria",
+    "After the markers: film and DAT",
+    "HS: spherocytes, high MCHC, DAT negative, reduced EMA binding",
+    "Ankyrin is the most common HS defect; most cases are autosomal dominant",
+    "Avoid splenectomy in hereditary stomatocytosis and xerocytosis"
+  ]
+},
+{
+  id: "enzymopathies",
+  title: "Red cell enzymopathies",
+  minutes: 9,
+  sources: ["hof", "dl"],
+  video: "G6PD deficiency bite cells Heinz bodies pyruvate kinase deficiency",
+  body: `
+<h3>G6PD deficiency</h3>
+<p>The commonest red cell enzyme defect, affecting several hundred million people, especially in Africa, the Mediterranean, the Middle East and Asia. It is X-linked, so hemizygous males are affected and heterozygous females show variable expression through lyonisation.</p>
+<ul>
+<li><b>Clinical patterns:</b> neonatal jaundice; acute haemolysis after an oxidant stress; rarely, chronic non-spherocytic haemolytic anaemia.</li>
+<li><b>Triggers:</b> fava beans (favism), infections, and drugs such as primaquine and tafenoquine, dapsone, rasburicase, sulfonamides, nitrofurantoin and methylene blue.</li>
+<li><b>Film during a crisis:</b> bite cells and blister cells, irregularly contracted cells, and Heinz bodies on a supravital stain (denatured haemoglobin). The haemolysis is largely intravascular.</li>
+<li><b>Testing:</b> the fluorescent spot test or a quantitative assay. Reticulocytes and young red cells have more enzyme, so a test done during or just after a crisis can be falsely normal. Repeat it about 3 months later if the result is normal but suspicion remains.</li>
+</ul>
+<h3>Pyruvate kinase deficiency</h3>
+<p>The commonest glycolytic defect, autosomal recessive, causing chronic haemolysis from birth. The film shows few specific changes, apart from prickle cells (echinocytes), which are more obvious after splenectomy. 2,3-BPG accumulates, which right-shifts the oxygen curve, so patients tolerate their anaemia unusually well. Mitapivat, a PK activator, is now a treatment option.</p>
+<h3>Pyrimidine 5'-nucleotidase deficiency</h3>
+<p>Autosomal recessive. Prominent basophilic stippling is the clue. Lead poisoning inhibits the same enzyme and causes the same stippling.</p>
+`,
+  points: [
+    "G6PD deficiency is X-linked; triggers are fava beans, infection and oxidant drugs",
+    "Crisis film: bite and blister cells; supravital stain shows Heinz bodies",
+    "G6PD assay may be falsely normal just after a crisis: repeat at about 3 months",
+    "PK deficiency: autosomal recessive, high 2,3-BPG, echinocytes after splenectomy",
+    "Basophilic stippling: P5'N deficiency, lead poisoning, thalassaemia"
+  ]
+},
+{
+  id: "haemoglobinopathies",
+  title: "Thalassaemias and haemoglobin variants",
+  minutes: 16,
+  sources: ["hof", "dl", "rbcd"],
+  video: "thalassemia hemoglobin electrophoresis HPLC HbA2 sickle cell",
+  body: `
+<p>Haemoglobin disorders are either <b>thalassaemias</b> (reduced synthesis of structurally normal globin chains) or <b>structural variants</b> (an altered chain, such as HbS, HbC or HbE). Some variants, such as HbE, are also synthesised at a reduced rate and behave like a mild thalassaemia.</p>
+<h3>α-thalassaemia</h3>
+<p>Usually caused by deletions of one or both of the paired α genes on chromosome 16 (αα/αα normally).</p>
+<div class="tablewrap"><table class="t"><thead><tr><th>Genotype</th><th>Name</th><th>Picture</th></tr></thead><tbody>
+<tr><td>−α/αα</td><td>Silent carrier</td><td>Normal or borderline indices</td></tr>
+<tr><td>−−/αα or −α/−α</td><td>α-thalassaemia trait</td><td>Microcytosis, normal HbA<sub>2</sub>; diagnosed by DNA analysis. The cis form (−−/αα) is common in Southeast Asia and matters for the risk of hydrops in offspring</td></tr>
+<tr><td>−−/−α</td><td>HbH disease</td><td>Moderate haemolytic anaemia; β<sub>4</sub> tetramers (HbH) seen as "golf ball" inclusions on brilliant cresyl blue staining</td></tr>
+<tr><td>−−/−−</td><td>Hb Bart's hydrops fetalis</td><td>γ<sub>4</sub> tetramers; usually fatal in utero</td></tr>
+</tbody></table></div>
+<h3>β-thalassaemia</h3>
+<p>Usually point mutations of the β gene on chromosome 11, reducing (β<sup>+</sup>) or abolishing (β<sup>0</sup>) output. Excess α chains precipitate in erythroblasts and cause ineffective erythropoiesis.</p>
+<ul>
+<li><b>Trait:</b> microcytosis with a normal or raised RBC count, mild or no anaemia, and HbA<sub>2</sub> above 3.5% (often 4% to 6%). HbF is normal or slightly raised.</li>
+<li><b>Thalassaemia major:</b> transfusion-dependent from the first year of life; HbA absent (β<sup>0</sup>/β<sup>0</sup>) or very low, mostly HbF. Extramedullary haematopoiesis, bone deformity and iron overload.</li>
+<li><b>Thalassaemia intermedia (non-transfusion-dependent):</b> a clinical label for milder genotypes.</li>
+</ul>
+<p><b>Pitfall:</b> coexisting iron deficiency lowers HbA<sub>2</sub> and can mask β-thalassaemia trait. Correct the iron and repeat if the result does not fit.</p>
+<h3>Screening indices</h3>
+<p>The Mentzer index (MCV ÷ RBC count) is below 13 in thalassaemia trait and above 13 in iron deficiency more often than not. It is a quick triage tool, not a diagnosis. The calculator in the workups section includes it.</p>
+<h3>Sickle cell disease and other variants</h3>
+<ul>
+<li><b>HbS:</b> β6 glutamic acid to valine. Deoxygenated HbS polymerises and the cells sickle. Sickle cell anaemia (HbSS) and compound states (HbSC, HbS/β-thalassaemia) cause vaso-occlusion, haemolysis and hyposplenism. Sickle cell trait (HbAS) has about 35% to 40% HbS and is usually harmless.</li>
+<li><b>HbC:</b> β6 glutamic acid to lysine. Target cells and intracellular crystals.</li>
+<li><b>HbE:</b> common in Southeast Asia; microcytosis; HbE/β-thalassaemia can be severe.</li>
+<li><b>Unstable haemoglobins and high-affinity variants:</b> Heinz body haemolysis and erythrocytosis respectively.</li>
+</ul>
+<h3>Laboratory methods</h3>
+<ul>
+<li><b>HPLC or capillary electrophoresis:</b> first-line, quantifying HbA<sub>2</sub>, HbF and most variants by retention time or migration.</li>
+<li><b>Sickle solubility test:</b> detects HbS but cannot tell trait from disease. It is unreliable in infants under about 6 months because of high HbF.</li>
+<li><b>Confirmation:</b> a second method (for example, electrophoresis at acid pH), family studies and DNA analysis, which is essential for α-thalassaemia and for prenatal diagnosis.</li>
+</ul>
+`,
+  points: [
+    "α genes: 4 (chromosome 16). HbH disease = 3 deleted; Bart's hydrops = 4 deleted",
+    "β-thal trait: microcytosis, normal or high RBC, HbA2 over 3.5%",
+    "Iron deficiency can mask β-thal trait by lowering HbA2",
+    "Mentzer index under 13 suggests thalassaemia trait (screening only)",
+    "HbS: β6 Glu→Val; HbC: β6 Glu→Lys",
+    "HPLC or capillary electrophoresis first; DNA analysis for α-thalassaemia"
+  ]
+},
+{
+  id: "acquired-haemolysis",
+  title: "Immune and acquired haemolytic anaemias",
+  minutes: 15,
+  sources: ["imh", "hof", "dl"],
+  video: "autoimmune hemolytic anemia direct antiglobulin test warm cold PNH flow cytometry",
+  body: `
+<h3>The direct antiglobulin test (DAT)</h3>
+<p>The DAT detects IgG or complement (C3d) already bound to the patient's red cells, using anti-human globulin. A monospecific DAT tells you which is present, and that points to the type of immune haemolysis. A positive DAT is not proof of haemolysis: it occurs in up to about 1 in 1000 healthy blood donors and in many hospital patients. Conversely, a few cases of AIHA are DAT-negative by standard methods.</p>
+<h3>Warm autoimmune haemolytic anaemia</h3>
+<p>IgG antibodies, active at 37°C, usually with broad specificity within the Rh system. DAT is positive for IgG, with or without C3d. Spherocytes are typical, with extravascular haemolysis in the spleen. Half of cases are secondary: CLL and other lymphomas, SLE and other autoimmune diseases, drugs, and immunodeficiency.</p>
+<h3>Cold agglutinin disease</h3>
+<p>IgM antibodies, usually anti-I, active below body temperature. They fix complement, so the DAT is positive for C3d only. Red cells agglutinate on the film and in the tube, which causes the spurious indices covered in Module 1. Primary cold agglutinin disease is a clonal B cell disorder; secondary cold agglutinins follow Mycoplasma pneumoniae (anti-I) or EBV infection (anti-i), or accompany lymphoma.</p>
+<h3>Paroxysmal cold haemoglobinuria</h3>
+<p>The Donath–Landsteiner antibody is a biphasic IgG with anti-P specificity: it binds in the cold and lyses with complement on warming. It is seen mainly in children after viral infections, with acute intravascular haemolysis.</p>
+<h3>Alloimmune and drug-induced haemolysis</h3>
+<p>Alloimmune causes are haemolytic transfusion reactions and haemolytic disease of the fetus and newborn. Drug-induced haemolysis occurs by drug adsorption (penicillin), immune complex formation (ceftriaxone) or true autoantibody induction (methyldopa).</p>
+<h3>Microangiopathic haemolytic anaemia (MAHA)</h3>
+<p>Red cell fragmentation (schistocytes) with thrombocytopenia. A fragment count above 1% is significant in adults (ICSH). Causes include:</p>
+<ul>
+<li><b>TTP:</b> ADAMTS13 activity below 10%, usually from an acquired autoantibody. A medical emergency; the PLASMIC score estimates the probability while the assay is pending.</li>
+<li><b>Haemolytic uraemic syndrome:</b> Shiga toxin-producing E. coli; atypical HUS from complement dysregulation.</li>
+<li><b>Other causes:</b> DIC, HELLP and pre-eclampsia, malignant hypertension, disseminated cancer, and certain drugs.</li>
+</ul>
+<p>Mechanical haemolysis without thrombocytopenia occurs with prosthetic heart valves and in march haemoglobinuria.</p>
+<h3>Paroxysmal nocturnal haemoglobinuria (PNH)</h3>
+<p>An acquired PIGA mutation in a haematopoietic stem cell stops GPI-anchor synthesis, so the complement regulators CD55 and CD59 are lost. The results are complement-mediated intravascular haemolysis, thrombosis in unusual sites (hepatic, cerebral and mesenteric veins), and an association with aplastic anaemia.</p>
+<p>Diagnosis is by high-sensitivity flow cytometry: FLAER (which binds GPI anchors) with CD24 on neutrophils and CD14 on monocytes, and CD59 on red cells (type I, II and III cells). Measure the clone on white cells, because red cell clones are underestimated after haemolysis or transfusion.</p>
+<h3>Other acquired causes</h3>
+<p>Malaria, Clostridium perfringens sepsis, babesiosis, severe burns, snake venoms, Wilson disease, and spur cell anaemia in advanced liver disease.</p>
+`,
+  points: [
+    "Warm AIHA: IgG, DAT IgG ± C3d, spherocytes; often secondary to CLL or SLE",
+    "Cold agglutinin disease: IgM anti-I, DAT C3d only, agglutination",
+    "PCH: biphasic IgG anti-P (Donath–Landsteiner), children after viral illness",
+    "MAHA: schistocytes over 1% plus thrombocytopenia; check ADAMTS13 for TTP",
+    "PNH: PIGA mutation, loss of CD55/CD59; diagnose with FLAER on neutrophils and monocytes",
+    "A positive DAT alone does not prove haemolysis"
+  ]
+},
+{
+  id: "marrow-failure",
+  title: "Marrow failure, sideroblastic and congenital anaemias",
+  minutes: 12,
+  sources: ["bmp", "hof", "bmd"],
+  video: "aplastic anemia Camitta criteria pure red cell aplasia parvovirus sideroblastic anemia",
+  body: `
+<h3>Aplastic anaemia</h3>
+<p>Pancytopenia with a hypocellular marrow, without infiltration or fibrosis. Most acquired cases are immune-mediated destruction of stem cells by T cells. Other causes include drugs (chloramphenicol, gold, anticonvulsants), benzene, viral hepatitis (seronegative), pregnancy and radiation.</p>
+<p><b>Severity (Camitta criteria):</b> severe aplastic anaemia needs marrow cellularity below 25% (or 25% to 50% with under 30% residual haematopoietic cells) plus two of: neutrophils below 0.5 × 10<sup>9</sup>/L, platelets below 20 × 10<sup>9</sup>/L, and reticulocytes below 20 × 10<sup>9</sup>/L. Very severe disease has neutrophils below 0.2 × 10<sup>9</sup>/L.</p>
+<p>The workup has three aims: exclude hypocellular MDS, look for small PNH clones (present in up to half of patients), and screen for inherited marrow failure.</p>
+<h3>Inherited marrow failure syndromes</h3>
+<ul>
+<li><b>Fanconi anaemia:</b> DNA repair defect; short stature, radial ray and skin abnormalities; diagnosed by increased chromosome breakage with diepoxybutane (DEB) or mitomycin C. High risk of AML and squamous cancers.</li>
+<li><b>Telomere biology disorders (dyskeratosis congenita):</b> nail dystrophy, leukoplakia, reticulate pigmentation; very short telomeres on flow-FISH.</li>
+<li><b>Shwachman–Diamond syndrome:</b> neutropenia with exocrine pancreatic insufficiency.</li>
+<li><b>Diamond–Blackfan anaemia:</b> isolated red cell aplasia in infancy, ribosomal protein genes, raised red cell adenosine deaminase, often macrocytosis and raised HbF.</li>
+</ul>
+<h3>Pure red cell aplasia</h3>
+<p>Anaemia with reticulocytes near zero and absent erythroid precursors in an otherwise normal marrow. Parvovirus B19 infects erythroid progenitors through the P antigen: giant pronormoblasts with nuclear inclusions are characteristic, and in people with chronic haemolysis it causes an aplastic crisis. Other causes are thymoma, large granular lymphocyte leukaemia, autoimmune disease, drugs, and anti-EPO antibodies.</p>
+<h3>Sideroblastic anaemias</h3>
+<p>Defective haem synthesis leaves iron in erythroblast mitochondria, which appear as ring sideroblasts on a Perls stain.</p>
+<ul>
+<li><b>Hereditary:</b> X-linked ALAS2 mutations (often pyridoxine-responsive), SLC25A38 and others. Usually microcytic.</li>
+<li><b>Acquired:</b> MDS with SF3B1 mutation (macrocytic; covered in Module 3), alcohol, isoniazid, lead, copper deficiency (often from excess zinc, or after bariatric surgery).</li>
+</ul>
+<p>The film is often dimorphic, with a mixed population of normal and hypochromic cells. Pappenheimer bodies may be seen.</p>
+<h3>Congenital dyserythropoietic anaemias</h3>
+<p>Rare inherited disorders of ineffective erythropoiesis with distinctive erythroblast morphology. The commonest, CDA II (SEC23B mutation), shows binucleate late erythroblasts; it was formerly called HEMPAS after its positive acidified serum test.</p>
+<h3>Anaemia of chronic kidney disease</h3>
+<p>Mainly inadequate EPO production, with a contribution from inflammation and hepcidin. Normocytic and normochromic, sometimes with echinocytes (burr cells).</p>
+`,
+  points: [
+    "Severe AA: cellularity under 25% plus two of neutrophils under 0.5, platelets under 20, retics under 20 × 10⁹/L",
+    "Always look for PNH clones and inherited marrow failure in aplastic anaemia",
+    "Fanconi anaemia: DEB chromosome breakage test",
+    "Parvovirus B19: giant pronormoblasts; aplastic crisis in chronic haemolysis",
+    "Ring sideroblasts: ALAS2 (X-linked), alcohol, isoniazid, lead, copper deficiency, MDS-SF3B1",
+    "CDA II: binucleate erythroblasts, SEC23B"
+  ]
+}
+];
+
+/* Red cell morphology atlas. Drawn by rbc.js; "kind" selects the drawing. */
+const M2_CELLS = [
+{ id:"m2-normal", name:"Normal red cells", group:"Size and colour", kind:"normal",
+  what:"Biconcave discs about the size of a small lymphocyte nucleus, with central pallor about one third of the diameter.",
+  seen:"Normal blood. Use as the reference for every other picture.", tip:"Judge films in the thin part, where cells just touch." },
+{ id:"m2-microhypo", name:"Microcytic hypochromic cells", group:"Size and colour", kind:"microhypo",
+  what:"Small cells with enlarged central pallor, more than one third of the diameter. Often with pencil cells.",
+  seen:"Iron deficiency, thalassaemia trait, anaemia of inflammation (late), hereditary sideroblastic anaemia.", tip:"Pencil cells and a high platelet count favour iron deficiency." },
+{ id:"m2-macro", name:"Oval macrocytes", group:"Size and colour", kind:"macro",
+  what:"Large oval cells, well filled with haemoglobin.", seen:"Megaloblastic anaemia (B12 or folate deficiency), drugs that impair DNA synthesis, MDS.", tip:"Round macrocytes point instead to alcohol, liver disease or reticulocytosis." },
+{ id:"m2-poly", name:"Polychromasia", group:"Size and colour", kind:"poly",
+  what:"Larger blue-grey cells without central pallor: reticulocytes on a Romanowsky stain.", seen:"Haemolysis, bleeding, response to haematinics.", tip:"Confirm with a reticulocyte count." },
+{ id:"m2-dimorphic", name:"Dimorphic film", group:"Size and colour", kind:"dimorphic",
+  what:"Two populations: normal cells and hypochromic microcytes.", seen:"Sideroblastic anaemia, treated iron deficiency, recent transfusion.", tip:"The RDW is high and the histogram may show two peaks." },
+{ id:"m2-sphero", name:"Spherocytes", group:"Shape", kind:"sphero",
+  what:"Small, dense, round cells without central pallor.", seen:"Hereditary spherocytosis, warm AIHA, ABO haemolytic disease of the newborn, burns, Clostridium sepsis.", tip:"Look in the thin area; cells in thick areas lose their pallor artefactually." },
+{ id:"m2-target", name:"Target cells (codocytes)", group:"Shape", kind:"target",
+  what:"A central dense spot within the pallor, like a bull's-eye. Excess membrane relative to volume.", seen:"Liver disease, haemoglobinopathies (HbC, thalassaemia, HbE), hyposplenism, iron deficiency (few).", tip:"Can be produced artefactually by slow drying in humid conditions." },
+{ id:"m2-ellipto", name:"Elliptocytes", group:"Shape", kind:"ellipto",
+  what:"Elongated cells with parallel sides, the long axis more than twice the short.", seen:"Hereditary elliptocytosis (most cells), iron deficiency, megaloblastic anaemia, myelofibrosis (some).", tip:"Under 5% can be normal." },
+{ id:"m2-schisto", name:"Schistocytes (fragments)", group:"Shape", kind:"schisto",
+  what:"Fragments with sharp angles and straight edges: helmet cells, triangles, keratocytes and microspherocytes.", seen:"Microangiopathy (TTP, HUS, DIC), prosthetic valves, severe burns.", tip:"Over 1% in adults is significant (ICSH). Report it urgently with thrombocytopenia." },
+{ id:"m2-sickle", name:"Sickle cells (drepanocytes)", group:"Shape", kind:"sickle",
+  what:"Crescent-shaped cells with pointed ends; also boat-shaped forms.", seen:"Sickle cell disease (HbSS, HbSC, HbS/β-thalassaemia).", tip:"Not seen in sickle trait under normal conditions." },
+{ id:"m2-tear", name:"Teardrop cells (dacrocytes)", group:"Shape", kind:"tear",
+  what:"Cells with a single tapering tail.", seen:"Primary myelofibrosis, marrow infiltration, thalassaemia, megaloblastic anaemia.", tip:"With a leucoerythroblastic film, suspect marrow infiltration or fibrosis." },
+{ id:"m2-acantho", name:"Acanthocytes", group:"Shape", kind:"acantho",
+  what:"Dense cells with a few irregular spicules of unequal length.", seen:"Severe liver disease (spur cell anaemia), abetalipoproteinaemia, McLeod phenotype, after splenectomy.", tip:"Compare echinocytes, whose spicules are many and regular." },
+{ id:"m2-echino", name:"Echinocytes (burr or crenated cells)", group:"Shape", kind:"echino",
+  what:"Many short, regular projections around the whole cell.", seen:"Storage artefact (most often), renal failure, PK deficiency, after splenectomy.", tip:"Check sample age first." },
+{ id:"m2-stomato", name:"Stomatocytes", group:"Shape", kind:"stomato",
+  what:"Cells with a slit-like or mouth-shaped central pallor.", seen:"Alcohol, liver disease, hereditary stomatocytosis, Southeast Asian ovalocytosis (stomatocytic ovalocytes).", tip:"A few are common as an artefact in thick areas." },
+{ id:"m2-bite", name:"Bite cells (keratocytes)", group:"Shape", kind:"bite",
+  what:"Cells with a semicircular bite removed from the edge, where splenic macrophages took out Heinz bodies.", seen:"G6PD deficiency in crisis, unstable haemoglobins, oxidant drugs (dapsone).", tip:"Look also for blister cells and irregularly contracted cells." },
+{ id:"m2-blister", name:"Blister cells", group:"Shape", kind:"blister",
+  what:"Haemoglobin pushed to one side, leaving an empty blister bounded by membrane.", seen:"Acute oxidant haemolysis, especially G6PD deficiency.", tip:"Very suggestive of G6PD deficiency in the right setting." },
+{ id:"m2-hj", name:"Howell–Jolly bodies", group:"Inclusions", kind:"hj",
+  what:"A single small, round, dense purple nuclear remnant, usually at the edge of the cell.", seen:"Hyposplenism and splenectomy, megaloblastic anaemia.", tip:"In an adult without a known cause, think of coeliac disease or sickle cell disease (autosplenectomy)." },
+{ id:"m2-stipple", name:"Basophilic stippling", group:"Inclusions", kind:"stipple",
+  what:"Fine or coarse blue dots spread through the cell: aggregated ribosomes.", seen:"Thalassaemia, lead poisoning, P5'N deficiency, dyserythropoiesis, megaloblastic anaemia.", tip:"Coarse stippling in microcytic anaemia: think lead or thalassaemia." },
+{ id:"m2-pappen", name:"Pappenheimer bodies", group:"Inclusions", kind:"pappen",
+  what:"Small clusters of purple granules near the periphery. They contain iron, so they stain with Perls (siderocytes).", seen:"Hyposplenism, sideroblastic anaemia, thalassaemia, MDS.", tip:"Confirm with a Perls stain if needed." },
+{ id:"m2-hbh", name:"HbH inclusions", group:"Supravital stains", kind:"hbh", stain:"Brilliant cresyl blue",
+  what:"Many fine, evenly spaced blue-green dots: the 'golf ball' appearance of precipitated β4 tetramers after incubation.", seen:"HbH disease; occasional cells in α-thalassaemia trait.", tip:"Needs 1 to 2 hours' incubation with the stain." },
+{ id:"m2-heinz", name:"Heinz bodies", group:"Supravital stains", kind:"heinz", stain:"Methyl violet",
+  what:"One or more round bodies of denatured haemoglobin attached to the membrane. Invisible on a routine stain.", seen:"G6PD deficiency after oxidant stress, unstable haemoglobins, after splenectomy.", tip:"Order a supravital stain if bite cells are seen." },
+{ id:"m2-rouleaux", name:"Rouleaux", group:"Arrangement", kind:"rouleaux",
+  what:"Red cells stacked like piles of coins in the thin part of the film.", seen:"Raised plasma proteins: myeloma and other paraproteins, chronic inflammation, pregnancy.", tip:"Matches a raised ESR. Distinguish from agglutination, which forms irregular clumps." },
+{ id:"m2-agglut", name:"Red cell agglutination", group:"Arrangement", kind:"agglut",
+  what:"Irregular three-dimensional clumps of red cells.", seen:"Cold agglutinins (cold agglutinin disease, Mycoplasma, EBV), sometimes warm AIHA.", tip:"Causes a falsely low RBC count with high MCV and MCHC." },
+{ id:"m2-malaria", name:"Plasmodium falciparum rings", group:"Parasites", kind:"malaria",
+  what:"Small delicate rings with one or two chromatin dots; several per cell and appliqué forms at the edge. Infected cells are not enlarged.", seen:"Falciparum malaria. Count parasitaemia; over 2% in a non-immune patient is a warning sign.", tip:"Thick films for detection, thin films for species and parasitaemia." }
+];
+
+/* Drawn with Module 1's engine (drawCell), so they keep the same style. */
+const M2_NUCLEATED = [
+{ id:"m2-hyperseg", name:"Hypersegmented neutrophil", group:"White cell clues", sizeUm:15,
+  what:"A neutrophil with 6 or more lobes, or 5% or more of neutrophils with 5 lobes.", seen:"Megaloblastic anaemia (early and specific clue), uraemia, iron deficiency (occasionally).", tip:"Count 100 neutrophils before calling it.",
+  draw:{ r:7.4, cyto:"#f1d8e2", nuc:{type:"lobes", n:6, lr:1.35, spread:4.3}, chrom:"clumped", gran:{color:"#c79bbd", n:120, s:0.13} } },
+{ id:"m2-megaloblast", name:"Megaloblast", group:"Marrow", sizeUm:20,
+  what:"A large erythroblast whose nucleus has open, sieve-like chromatin while the cytoplasm is already haemoglobinised: nuclear–cytoplasmic asynchrony.", seen:"B12 or folate deficiency, drugs that impair DNA synthesis.", tip:"Look for giant metamyelocytes in the same marrow.",
+  draw:{ r:9.6, cyto:"#a993bf", nuc:{type:"round", r:5.6}, chrom:"fine", nucleoli:0 } },
+{ id:"m2-giant-pronorm", name:"Giant pronormoblast", group:"Marrow", sizeUm:30,
+  what:"A very large proerythroblast with a glassy nuclear inclusion and deeply blue cytoplasm.", seen:"Parvovirus B19 infection (aplastic crisis, pure red cell aplasia).", tip:"Few other erythroid cells are present.",
+  draw:{ r:12, cyto:"#3a50a6", nuc:{type:"round", r:8}, chrom:"smooth", nucleoli:1, blebs:true, halo:true } },
+{ id:"m2-ringsidero", name:"Ring sideroblast (Perls stain)", group:"Marrow", sizeUm:12, perls:true,
+  what:"An erythroblast with 5 or more blue iron granules covering at least one third of the nuclear rim.", seen:"Sideroblastic anaemias: ALAS2, alcohol, isoniazid, lead, copper deficiency, MDS-SF3B1.", tip:"Count at least 100 erythroblasts and report the percentage." }
+];
+
+const M2_LESSON_CELLS = {
+  "anaemia-approach": ["m2-normal", "m2-microhypo", "m2-macro", "m2-poly", "m2-sphero", "m2-schisto"],
+  iron: ["m2-microhypo", "m2-normal", "m2-target", "m2-dimorphic"],
+  megaloblastic: ["m2-macro", "m2-hyperseg", "m2-megaloblast", "m2-hj"],
+  "haemolysis-membrane": ["m2-sphero", "m2-ellipto", "m2-stomato", "m2-poly"],
+  enzymopathies: ["m2-bite", "m2-blister", "m2-heinz", "m2-echino", "m2-stipple"],
+  haemoglobinopathies: ["m2-target", "m2-sickle", "m2-microhypo", "m2-hbh", "m2-stipple"],
+  "acquired-haemolysis": ["m2-sphero", "m2-agglut", "m2-schisto", "m2-malaria"],
+  "marrow-failure": ["m2-giant-pronorm", "m2-ringsidero", "m2-dimorphic", "m2-pappen", "m2-tear"]
+};
+
+const M2_FACTS = [
+  ["What are the WHO haemoglobin cut-offs for anaemia?", "Men 130 g/L, non-pregnant women 120 g/L, pregnancy 110 g/L."],
+  ["What does hepcidin do?", "It binds ferroportin and causes its degradation, blocking iron export from enterocytes and macrophages."],
+  ["Which cytokine raises hepcidin in inflammation?", "IL-6."],
+  ["Which hormone from erythroblasts suppresses hepcidin?", "Erythroferrone."],
+  ["What ferritin is diagnostic of iron deficiency?", "Below 15 µg/L; many guidelines use below 30 µg/L."],
+  ["Which gene is mutated in IRIDA?", "TMPRSS6 (matriptase-2), giving inappropriately high hepcidin."],
+  ["Where is vitamin B12 absorbed?", "In the terminal ileum, bound to intrinsic factor, through the cubam receptor."],
+  ["Which metabolite rises in B12 but not folate deficiency?", "Methylmalonic acid."],
+  ["Define neutrophil hypersegmentation.", "5% or more of neutrophils with 5 lobes, or any neutrophil with 6 or more lobes."],
+  ["Why replace B12 before folate?", "Folate alone can correct the anaemia but worsen B12 neuropathy (subacute combined degeneration)."],
+  ["Which antibody test is most specific for pernicious anaemia?", "Intrinsic factor antibody (about 50% sensitive)."],
+  ["Name the haemolysis markers.", "Raised reticulocytes, unconjugated bilirubin and LDH; low haptoglobin."],
+  ["What is the preferred screening test for hereditary spherocytosis?", "The EMA binding test by flow cytometry (reduced fluorescence)."],
+  ["Which protein is most often defective in hereditary spherocytosis?", "Ankyrin."],
+  ["In which membrane disorder is splenectomy contraindicated?", "Hereditary stomatocytosis and xerocytosis, because of thrombosis risk."],
+  ["How is G6PD deficiency inherited?", "X-linked."],
+  ["Why can a G6PD assay be falsely normal after a crisis?", "Young red cells and reticulocytes have higher enzyme activity. Repeat about 3 months later."],
+  ["Name four drugs to avoid in G6PD deficiency.", "Primaquine (and tafenoquine), dapsone, rasburicase, nitrofurantoin; also sulfonamides and methylene blue."],
+  ["Why do patients with PK deficiency tolerate anaemia well?", "2,3-BPG accumulates and right-shifts the oxygen dissociation curve."],
+  ["What causes prominent basophilic stippling?", "Lead poisoning, P5'N deficiency, thalassaemia, dyserythropoiesis."],
+  ["What α-globin genotype gives HbH disease?", "Three genes deleted: −−/−α."],
+  ["What HbA2 level suggests β-thalassaemia trait?", "Above 3.5% (often 4% to 6%)."],
+  ["What can mask β-thalassaemia trait?", "Coexisting iron deficiency, which lowers HbA2."],
+  ["What is the Mentzer index?", "MCV ÷ RBC count. Under 13 suggests thalassaemia trait, over 13 iron deficiency (screening only)."],
+  ["What is the mutation in HbS?", "β6 glutamic acid to valine."],
+  ["What is the mutation in HbC?", "β6 glutamic acid to lysine."],
+  ["What does the sickle solubility test miss?", "It cannot tell trait from disease, and is unreliable under about 6 months of age."],
+  ["What is the DAT pattern in warm AIHA?", "IgG, with or without C3d."],
+  ["What is the DAT pattern in cold agglutinin disease?", "C3d only."],
+  ["What is the Donath–Landsteiner antibody?", "A biphasic IgG with anti-P specificity, causing paroxysmal cold haemoglobinuria."],
+  ["What fragment count is significant in adults?", "Over 1% of red cells (ICSH)."],
+  ["What ADAMTS13 level supports TTP?", "Below 10% activity."],
+  ["What is the defect in PNH?", "An acquired PIGA mutation; no GPI anchors, so CD55 and CD59 are lost."],
+  ["How is PNH best diagnosed?", "High-sensitivity flow cytometry with FLAER on neutrophils and monocytes."],
+  ["What are the Camitta criteria for severe aplastic anaemia?", "Cellularity under 25% plus two of: neutrophils under 0.5, platelets under 20, reticulocytes under 20 × 10⁹/L."],
+  ["Which test diagnoses Fanconi anaemia?", "Chromosome breakage with diepoxybutane (DEB) or mitomycin C."],
+  ["What marrow cell suggests parvovirus B19?", "The giant pronormoblast."],
+  ["Name causes of acquired sideroblastic anaemia.", "Alcohol, isoniazid, lead, copper deficiency (zinc excess), MDS with SF3B1 mutation."],
+  ["Which gene causes X-linked sideroblastic anaemia?", "ALAS2."],
+  ["Which CDA shows binucleate erythroblasts?", "CDA II (SEC23B), formerly HEMPAS."]
+];
+
+const M2_QUIZ = [
+{ q:"A 34-year-old woman has Hb 98 g/L, MCV 68 fL, RBC 4.2 × 10¹²/L, RDW 18%, platelets 480 × 10⁹/L and ferritin 6 µg/L. What is the diagnosis?", a:["β-thalassaemia trait","Iron deficiency anaemia","Anaemia of inflammation","Sideroblastic anaemia"], c:1,
+  e:"A very low ferritin is diagnostic. The high RDW, low RBC count and reactive thrombocytosis all fit." },
+{ q:"Hb 128 g/L, MCV 62 fL, RBC 6.1 × 10¹²/L, RDW 13.5%, ferritin 85 µg/L. What is the most useful next test?", a:["Serum iron","Haemoglobin HPLC with HbA2 measurement","Bone marrow aspirate","Vitamin B12 level"], c:1,
+  e:"Marked microcytosis with a high RBC count, normal RDW and normal ferritin suggest thalassaemia trait. The Mentzer index is about 10. HPLC quantifies HbA2." },
+{ q:"Which result best distinguishes iron deficiency from anaemia of inflammation?", a:["Low serum iron","Low transferrin saturation","Raised soluble transferrin receptor","Microcytosis"], c:2,
+  e:"Serum iron and transferrin saturation fall in both. Soluble transferrin receptor rises with iron-deficient erythropoiesis but stays normal in inflammation." },
+{ q:"A patient with megaloblastic anaemia has a raised methylmalonic acid and raised homocysteine. What is the deficiency?", a:["Folate","Vitamin B12","Iron","Vitamin B6"], c:1,
+  e:"Methylmalonic acid rises only in B12 deficiency, because B12 is the cofactor for methylmalonyl-CoA mutase. Homocysteine rises in both." },
+{ q:"Which finding on the film is the earliest and most specific clue to megaloblastic anaemia?", a:["Target cells","Hypersegmented neutrophils","Spherocytes","Rouleaux"], c:1,
+  e:"Hypersegmented neutrophils can appear before macrocytosis or anaemia." },
+{ q:"A child has anaemia, splenomegaly, spherocytes, MCHC 368 g/L and a negative DAT. Which test is preferred to confirm the diagnosis?", a:["Osmotic fragility","EMA binding by flow cytometry","Haemoglobin electrophoresis","G6PD assay"], c:1,
+  e:"EMA binding has high sensitivity and specificity for hereditary spherocytosis and is the preferred screening test. The negative DAT excludes immune spherocytosis." },
+{ q:"Two days after starting primaquine, a man develops dark urine and anaemia. The film shows bite and blister cells. His G6PD assay is normal. What next?", a:["G6PD deficiency is excluded","Repeat the G6PD assay about 3 months after recovery","Request an EMA binding test","Start corticosteroids"], c:1,
+  e:"After acute haemolysis, the surviving young red cells have more G6PD, which can give a falsely normal result." },
+{ q:"Hb 92 g/L, MCV 64 fL, HbA2 2.4%, normal ferritin, and golf-ball inclusions on brilliant cresyl blue. What is the diagnosis?", a:["β-thalassaemia trait","HbH disease","Iron deficiency","Sickle cell trait"], c:1,
+  e:"HbH inclusions (β4 tetramers) in a microcytic anaemia with normal or low HbA2 mean HbH disease: 3 of 4 α genes deleted." },
+{ q:"A woman with iron deficiency anaemia has HbA2 3.2%. Her partner has β-thalassaemia trait. What is the best advice?", a:["She does not carry β-thalassaemia","Repeat HbA2 after iron is replaced","Request a bone marrow","No further testing needed"], c:1,
+  e:"Iron deficiency lowers HbA2 and can mask β-thalassaemia trait. This matters for reproductive counselling." },
+{ q:"A sickle solubility test is positive. Which statement is correct?", a:["The patient has sickle cell disease","The patient has sickle cell trait","HbS is present, but trait cannot be told from disease","The test is diagnostic in newborns"], c:2,
+  e:"A positive solubility test means HbS is present. HPLC or electrophoresis quantifies it and separates trait (about 35–40% HbS) from disease." },
+{ q:"Haemolytic anaemia with spherocytes and a DAT positive for IgG and C3d, in a 70-year-old with lymphocytosis. What is the most likely underlying cause?", a:["Mycoplasma infection","Chronic lymphocytic leukaemia","PNH","Hereditary spherocytosis"], c:1,
+  e:"Warm AIHA is a well-known complication of CLL. Hereditary spherocytosis is DAT-negative." },
+{ q:"A DAT positive for C3d only, red cell agglutination on the film and acrocyanosis in winter. What is the antibody?", a:["Warm IgG","IgM cold agglutinin, usually anti-I","Biphasic IgG anti-P","IgA"], c:1,
+  e:"Cold agglutinins are IgM and fix complement, so only C3d stays on the cells at 37°C." },
+{ q:"Thrombocytopenia 18 × 10⁹/L, schistocytes 4%, LDH 1900 U/L, mild confusion and normal clotting times. What is the urgent test?", a:["Bone marrow aspirate","ADAMTS13 activity, while starting plasma exchange","EMA binding","Coombs crossmatch only"], c:1,
+  e:"This is suspected TTP. Treatment must not wait for the result. ADAMTS13 below 10% confirms it." },
+{ q:"Which test is preferred to diagnose PNH?", a:["Ham's acidified serum test","Sucrose lysis test","Flow cytometry with FLAER on neutrophils and monocytes","CD59 on red cells only"], c:2,
+  e:"High-sensitivity flow cytometry of white cells is the standard. Red cell clones are underestimated after haemolysis or transfusion." },
+{ q:"A child with hereditary spherocytosis suddenly becomes very pale. Hb 45 g/L and reticulocytes 0.1%. What is the most likely cause?", a:["Hyperhaemolytic crisis","Parvovirus B19 aplastic crisis","Splenic sequestration","Folate excess"], c:1,
+  e:"Parvovirus B19 halts erythropoiesis. With a shortened red cell lifespan, haemoglobin falls fast, and reticulocytes are absent." },
+{ q:"Which marrow finding defines a ring sideroblast?", a:["Any erythroblast with iron granules","5 or more granules covering one third or more of the nuclear rim","Iron in macrophages","Granules covering the whole cytoplasm"], c:1,
+  e:"This is the WHO and ICSH definition. Normal sideroblasts have a few scattered granules." },
+{ q:"Pancytopenia, marrow cellularity 10%, neutrophils 0.15 × 10⁹/L, platelets 8 × 10⁹/L, reticulocytes 12 × 10⁹/L. How is it classified?", a:["Non-severe aplastic anaemia","Severe aplastic anaemia","Very severe aplastic anaemia","Hypocellular MDS by definition"], c:2,
+  e:"Severe criteria are met, and neutrophils below 0.2 × 10⁹/L make it very severe." },
+{ q:"A young man with microcytic anaemia, abdominal pain and coarse basophilic stippling works in battery recycling. What is the most likely diagnosis?", a:["Iron deficiency","Lead poisoning","β-thalassaemia trait","Hereditary spherocytosis"], c:1,
+  e:"Lead inhibits ALA dehydratase, ferrochelatase and P5'N, giving stippling and sometimes ring sideroblasts." }
+];
+
+const M2_CASES = [
+{
+  id:"m2-micro", title:"Microcytosis in a pregnant woman", tag:"Microcytic anaemia",
+  stem:"A 26-year-old woman at 12 weeks of pregnancy has a routine blood count. Her partner's family is from Cyprus.",
+  data:[["Hb","104 g/L"],["MCV","66 fL"],["MCH","20 pg"],["RBC","5.4 × 10¹²/L"],["RDW","13.8%"],["Ferritin","64 µg/L"]],
+  steps:[
+    { q:"What is the most likely cause of the microcytosis?", opts:["Iron deficiency","Thalassaemia trait","Anaemia of inflammation","Lead poisoning"], c:1,
+      fb:"Marked microcytosis with a high RBC count, normal RDW and normal ferritin points to thalassaemia trait. Mentzer index: 66 ÷ 5.4 ≈ 12." },
+    { q:"HPLC shows HbA2 5.1% and HbF 1.2%. What does this mean?", opts:["α-thalassaemia trait","β-thalassaemia trait","Normal result","HbE trait"], c:1,
+      fb:"HbA2 above 3.5% confirms β-thalassaemia trait." },
+    { q:"What is the most important next step?", opts:["Start iron","Test the partner urgently","Transfuse","Repeat in 6 months"], c:1,
+      fb:"If the partner is also a carrier, the fetus has a 1 in 4 risk of β-thalassaemia major. Offer prenatal diagnosis early." }
+  ],
+  teach:["Microcytosis with a normal ferritin needs haemoglobin studies","Antenatal screening is time-critical: test the partner straight away","Do not give iron empirically to thalassaemia carriers who are iron-replete"]
+},
+{
+  id:"m2-macro", title:"Tired with tingling feet", tag:"Macrocytic anaemia",
+  stem:"A 62-year-old woman has 4 months of fatigue and pins and needles in both feet. She has hypothyroidism.",
+  data:[["Hb","78 g/L"],["MCV","121 fL"],["WBC","3.1 × 10⁹/L"],["Platelets","96 × 10⁹/L"],["Retics","22 × 10⁹/L"],["LDH","2400 U/L"]],
+  steps:[
+    { q:"Which film finding would you most expect?", opts:["Target cells","Oval macrocytes and hypersegmented neutrophils","Spherocytes","Teardrop cells and nucleated red cells only"], c:1,
+      fb:"Megaloblastic anaemia gives oval macrocytes and hypersegmented neutrophils. Pancytopenia and a very high LDH reflect ineffective haematopoiesis." },
+    { q:"Serum B12 is low. Which test best supports pernicious anaemia?", opts:["Parietal cell antibody","Intrinsic factor antibody","Schilling test","Gastrin alone"], c:1,
+      fb:"Intrinsic factor antibodies are highly specific. Parietal cell antibodies are sensitive but found in many older people without the disease." },
+    { q:"How should she be treated?", opts:["Oral folic acid alone","Intramuscular hydroxocobalamin, with folate only once B12 is started","Blood transfusion only","Iron"], c:1,
+      fb:"She has neurological symptoms, so start IM hydroxocobalamin promptly. Never give folate alone. Watch potassium and iron as the marrow recovers." }
+  ],
+  teach:["Autoimmune thyroid disease is associated with pernicious anaemia","Neurological symptoms can occur without anaemia","Reticulocytes peak at about day 5 to 7 after B12 treatment"]
+},
+{
+  id:"m2-g6pd", title:"Dark urine after a bean meal", tag:"Haemolysis",
+  stem:"A 7-year-old boy from Egypt is brought in with pallor, jaundice and cola-coloured urine, 2 days after eating fresh fava beans.",
+  data:[["Hb","68 g/L"],["Retics","9%"],["Bilirubin","62 µmol/L (unconj.)"],["LDH","1650 U/L"],["Haptoglobin","Undetectable"],["DAT","Negative"]],
+  steps:[
+    { q:"Which film finding supports the likely diagnosis?", opts:["Spherocytes and agglutination","Bite cells, blister cells and irregularly contracted cells","Sickle cells","Rouleaux"], c:1,
+      fb:"Oxidant haemolysis in G6PD deficiency produces bite and blister cells. Supravital staining shows Heinz bodies." },
+    { q:"A G6PD screening test now is normal. How do you interpret it?", opts:["G6PD deficiency is excluded","May be falsely normal because of reticulocytosis; repeat after about 3 months","The diagnosis is hereditary spherocytosis","The test was done wrongly"], c:1,
+      fb:"Young red cells carry more enzyme. Either repeat later or compare the result with the reticulocyte count." },
+    { q:"What is the key long-term advice?", opts:["Daily iron","Avoid fava beans and oxidant drugs; carry a list","Splenectomy","Lifelong folic acid only"], c:1,
+      fb:"Avoiding triggers prevents most episodes. Give the family a written list of unsafe drugs." }
+  ],
+  teach:["Haemolysis plus a negative DAT plus bite cells: think G6PD","X-linked: boys are most affected","Rasburicase and primaquine need G6PD testing first"]
+},
+{
+  id:"m2-aiha", title:"Spherocytes in an older man", tag:"Immune haemolysis",
+  stem:"A 71-year-old man presents with breathlessness and jaundice. He was told of 'a high white count' two years ago.",
+  data:[["Hb","64 g/L"],["WBC","48 × 10⁹/L"],["Lymphocytes","44 × 10⁹/L"],["Retics","310 × 10⁹/L"],["Bilirubin","48 µmol/L"],["Film","Spherocytes, smear cells"]],
+  steps:[
+    { q:"What test do you request next?", opts:["EMA binding","Direct antiglobulin test","Hb electrophoresis","G6PD assay"], c:1,
+      fb:"Spherocytes with haemolysis in an older adult with lymphocytosis point to warm AIHA. The DAT is the key test." },
+    { q:"DAT: IgG positive, C3d weakly positive. What is the most likely underlying disease?", opts:["Mycoplasma infection","Chronic lymphocytic leukaemia","PNH","Hereditary spherocytosis"], c:1,
+      fb:"Smear cells and a mature lymphocytosis suggest CLL, confirmed by flow cytometry (Module 3). AIHA occurs in about 5% to 10% of CLL." },
+    { q:"What should the transfusion laboratory be told?", opts:["Nothing special","Autoantibody present: it may mask alloantibodies, so extended testing is needed before transfusion","Give group O negative blood only","Transfusion is contraindicated"], c:1,
+      fb:"Panreactive autoantibodies make crossmatching harder. Adsorption studies exclude underlying alloantibodies. Do not withhold life-saving transfusion." }
+  ],
+  teach:["Warm AIHA: IgG ± C3d, spherocytes","Look for an underlying cause: CLL, lymphoma, SLE, drugs","Communicate early with the blood bank"]
+},
+{
+  id:"m2-ttp", title:"Confusion and low platelets", tag:"Microangiopathy",
+  stem:"A 38-year-old woman has 3 days of headache, purpura and new confusion. Blood pressure is normal.",
+  data:[["Hb","82 g/L"],["Platelets","14 × 10⁹/L"],["Schistocytes","5%"],["LDH","1800 U/L"],["PT / APTT","Normal"],["Creatinine","118 µmol/L"]],
+  steps:[
+    { q:"What is the most likely diagnosis?", opts:["DIC","Immune thrombocytopenia","Thrombotic thrombocytopenic purpura","Evans syndrome"], c:2,
+      fb:"MAHA with severe thrombocytopenia, neurological signs and normal clotting points to TTP. DIC would prolong the clotting times." },
+    { q:"What do you do now?", opts:["Wait for ADAMTS13","Start plasma exchange urgently, after taking a sample for ADAMTS13","Transfuse platelets","Bone marrow biopsy"], c:1,
+      fb:"Untreated TTP is often fatal. Take the sample before plasma exchange, but do not delay treatment. Avoid platelet transfusion unless bleeding is life-threatening." },
+    { q:"ADAMTS13 activity is under 5% with an inhibitor. What does this confirm?", opts:["Congenital TTP","Immune (acquired) TTP","HUS","HELLP"], c:1,
+      fb:"An anti-ADAMTS13 autoantibody defines immune TTP. Treatment adds steroids, rituximab and caplacizumab to plasma exchange." }
+  ],
+  teach:["Count schistocytes when thrombocytopenia and haemolysis coexist","TTP is a haematological emergency","The PLASMIC score helps while ADAMTS13 is pending"]
+}
+];
+
+const M2_TREES = [
+{ id:"anaemia", title:"Anaemia algorithm", intro:"Start with any anaemia. Each step uses a result you would have on the first day.",
+  nodes:{
+  start:{ q:"Reticulocyte response: is the absolute reticulocyte count raised (RPI 2 or more)?", opts:[["Yes, raised","hyper"],["No, low or normal","mcv"]] },
+  hyper:{ q:"Is there evidence of bleeding?", opts:[["Yes","bleed"],["No","haemol"]] },
+  bleed:{ end:"Blood loss with an appropriate marrow response", detail:"Find and stop the source. Iron deficiency will follow if bleeding continues." },
+  haemol:{ end:"Probable haemolysis", detail:"Confirm with bilirubin, LDH and haptoglobin, then follow the haemolysis tree." },
+  mcv:{ q:"What is the MCV?", opts:[["Under 83 fL","micro"],["83 to 101 fL","normo"],["Over 101 fL","macro"]] },
+  micro:{ q:"What is the ferritin?", opts:[["Low (under 15–30 µg/L)","ida"],["Normal or high","micro2"]] },
+  ida:{ end:"Iron deficiency anaemia", detail:"Find the cause: menstrual loss, GI loss (investigate men and postmenopausal women), malabsorption (coeliac), diet." },
+  micro2:{ q:"Is there evidence of inflammation (high CRP, chronic disease) and a low TSAT?", opts:[["Yes","acd"],["No","thal"]] },
+  acd:{ end:"Anaemia of inflammation (± iron deficiency)", detail:"A ferritin up to about 100 µg/L with TSAT under 20% can still hide iron deficiency. Soluble transferrin receptor helps." },
+  thal:{ end:"Consider thalassaemia trait or sideroblastic anaemia", detail:"High RBC count and normal RDW favour thalassaemia: do HPLC. A dimorphic film or high ferritin: do a marrow with Perls stain." },
+  normo:{ q:"Are other lineages abnormal, or is the film leucoerythroblastic?", opts:[["Yes","marrow"],["No","normo2"]] },
+  marrow:{ end:"Marrow failure or infiltration", detail:"Bone marrow aspirate and trephine: aplastic anaemia, leukaemia, myeloma, metastases, fibrosis." },
+  normo2:{ q:"Is there chronic kidney disease, inflammation or endocrine disease?", opts:[["Yes","secondary"],["No","mixed"]] },
+  secondary:{ end:"Anaemia of CKD, inflammation or endocrine disease", detail:"Check eGFR, CRP, thyroid function. In CKD the anaemia reflects inadequate EPO." },
+  mixed:{ end:"Look for early or mixed deficiency", detail:"A high RDW suggests mixed iron and B12 or folate deficiency. Check haematinics and the film. Consider pure red cell aplasia if retics are near zero." },
+  macro:{ q:"Does the film show oval macrocytes and hypersegmented neutrophils?", opts:[["Yes","mega"],["No","nonmega"]] },
+  mega:{ end:"Megaloblastic anaemia", detail:"B12 and folate (± MMA, holoTC), intrinsic factor antibodies. Check drugs. Give B12 before or with folate." },
+  nonmega:{ end:"Non-megaloblastic macrocytosis", detail:"Alcohol, liver disease, hypothyroidism, drugs, reticulocytosis. If cytopenias or dysplasia are present: marrow for MDS." }
+  }},
+{ id:"haemolysis", title:"Haemolysis workup", intro:"Use once haemolysis is confirmed (raised reticulocytes, bilirubin and LDH; low haptoglobin).",
+  nodes:{
+  start:{ q:"Direct antiglobulin test result?", opts:[["Positive","dat"],["Negative","film"]] },
+  dat:{ q:"Monospecific DAT pattern?", opts:[["IgG ± C3d","warm"],["C3d only","cold"]] },
+  warm:{ end:"Warm AIHA (or drug-induced, alloimmune)", detail:"Spherocytes. Look for CLL, lymphoma, SLE, drugs. Check recent transfusion or pregnancy for alloimmune causes." },
+  cold:{ q:"Is there red cell agglutination, or a high-titre cold agglutinin?", opts:[["Yes","cad"],["No, acute haemoglobinuria in a child","pch"]] },
+  cad:{ end:"Cold agglutinin disease or syndrome", detail:"Primary (clonal B cell) or secondary to Mycoplasma, EBV or lymphoma. Warm samples before counting." },
+  pch:{ end:"Consider paroxysmal cold haemoglobinuria", detail:"Do the Donath–Landsteiner test. Note that the DAT can be positive for C3d only." },
+  film:{ q:"What dominates the film?", opts:[["Fragments with low platelets","maha"],["Spherocytes","hs"],["Bite or blister cells","g6pd"],["Sickle or target cells","hb"],["Little to see","other"]] },
+  maha:{ end:"Microangiopathic haemolytic anaemia", detail:"Urgent: clotting screen, ADAMTS13 (TTP), renal function and stool culture (HUS), BP and pregnancy status." },
+  hs:{ end:"Hereditary spherocytosis (DAT-negative spherocytes)", detail:"EMA binding test, family history. Exclude DAT-negative AIHA and burns or Clostridium sepsis in the right setting." },
+  g6pd:{ end:"Oxidant haemolysis: probable G6PD deficiency", detail:"G6PD assay (may be falsely normal just after a crisis). Supravital stain for Heinz bodies; consider unstable haemoglobin." },
+  hb:{ end:"Haemoglobinopathy", detail:"HPLC or capillary electrophoresis, sickle solubility test, family studies." },
+  other:{ q:"Is there intravascular haemolysis, thrombosis or cytopenia?", opts:[["Yes","pnh"],["No","enz"]] },
+  pnh:{ end:"Consider PNH", detail:"High-sensitivity flow cytometry: FLAER on neutrophils and monocytes, CD59 on red cells." },
+  enz:{ end:"Consider PK deficiency or another enzymopathy", detail:"Red cell enzyme panel (PK, P5'N), membrane studies, and an NGS gene panel if unresolved." }
+  }}
+];
+
+const M2_CHECKLIST = { title:"Reporting a red cell film", intro:"A systematic order for describing red cells on a blood film. Tick each step as you go.", steps:[
+  ["Choose the right area", "The thin area where red cells just touch. Thick areas hide pallor; the feathered edge distorts shapes."],
+  ["Size", "Compare with a small lymphocyte nucleus. Normocytic, microcytic, macrocytic, or dimorphic (two populations)."],
+  ["Colour", "Normochromic or hypochromic. Polychromasia (reticulocytes). Spherocytes have no pallor."],
+  ["Shape (poikilocytes)", "Name each type present and grade it: spherocytes, target cells, elliptocytes, fragments, sickle cells, teardrops, acanthocytes, echinocytes, stomatocytes, bite and blister cells."],
+  ["Inclusions", "Howell–Jolly bodies, basophilic stippling, Pappenheimer bodies, parasites, nucleated red cells."],
+  ["Arrangement", "Rouleaux or agglutination."],
+  ["White cells and platelets", "Hypersegmented neutrophils, blasts, leucoerythroblastic picture, platelet number and size."],
+  ["Conclusion", "One sentence with the most likely cause, and the tests that would confirm it (for example, ferritin, HPLC, DAT, EMA, G6PD)."]
+]};
+
 /* Draws schematic Romanowsky-stained cells as SVG. All drawings are original.
    Units: one drawing unit = K px; cell parameters in data.js use these units. */
 
@@ -1278,15 +1910,155 @@ function scaleBar(um, pxPerUm) {
   return `<g class="scalebar"><rect x="8" y="180" width="${f1(L + 12)}" height="14" rx="2" fill="#ffffff" opacity="0.8"/><line x1="14" y1="190" x2="${f1(14 + L)}" y2="190" stroke="#2c2337" stroke-width="2"/><text x="${f1(14 + L / 2)}" y="187" font-size="7.5" text-anchor="middle" fill="#2c2337" font-family="sans-serif">${um} µm</text></g>`;
 }
 
-/* App logic: routing, views and interactivity. Depends on data.js and cells.js. */
+/* Draws red cell morphology fields as SVG for the Module 2 atlas. All drawings are original.
+   Reuses rng, shade, smoothPath and blob from cells.js. */
+
+const PXU = 8.2; // px per µm in red cell fields
+const RBC_R = 3.75 * PXU;
+const RBC_COL = "#df949a";
+
+function polarPath(cx, cy, fn, rot = 0, N = 72) {
+  const pts = [];
+  for (let i = 0; i < N; i++) {
+    const t = (i / N) * Math.PI * 2;
+    const r = fn(t);
+    const a = t + rot;
+    pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+  }
+  return smoothPath(pts);
+}
+
+let rbcSeq = 0;
+/* One red cell. o: {r, sx, sy, rot, pallor (0..0.8), color, shape, target, slit} */
+function rbcCell(cx, cy, o, rand) {
+  const id = "rb" + (++rbcSeq);
+  const r = o.r || RBC_R, col = o.color || RBC_COL, rot = o.rot ?? rand() * 6.28;
+  const sx = o.sx || 1, sy = o.sy || 1;
+  let fn;
+  if (o.shape === "tear") fn = (t) => { const d = Math.atan2(Math.sin(t), Math.cos(t)); return r * (0.92 + 0.75 * Math.exp(-(d * d) / 0.05)); };
+  else if (o.shape === "echino") fn = (t) => r * (1 + 0.07 * Math.pow(Math.max(0, Math.cos(16 * t)), 3));
+  else if (o.shape === "acantho") {
+    const sp = Array.from({ length: 5 + Math.floor(rand() * 4) }, () => [rand() * 6.28, 0.18 + rand() * 0.28]);
+    fn = (t) => r * (1 + sp.reduce((s, [a, h]) => { const d = Math.atan2(Math.sin(t - a), Math.cos(t - a)); return s + h * Math.exp(-(d * d) / 0.006); }, 0));
+  } else if (o.shape === "bite") fn = (t) => { const d = Math.atan2(Math.sin(t), Math.cos(t)); return r * (1 - 0.42 * Math.exp(-(d * d) / 0.09)); };
+  else fn = (t) => r * (1 + 0.02 * Math.sin(3 * t + rot));
+  let path;
+  if (o.shape === "sickle") {
+    const L = r * 1.9, W = r * 0.55, pts = [];
+    for (let i = 0; i <= 24; i++) { const u = -1 + (2 * i) / 24; pts.push([u * L, -W * (1 - u * u) - r * 0.25 * (1 - u * u)]); }
+    for (let i = 24; i >= 0; i--) { const u = -1 + (2 * i) / 24; pts.push([u * L * 0.97, W * 0.4 * (1 - u * u) - r * 0.25 * (1 - u * u)]); }
+    path = smoothPath(pts.map(([x, y]) => [cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]));
+  } else if (o.shape === "helmet" || o.shape === "triangle") {
+    const pts = o.shape === "helmet"
+      ? [[-1, 0.15], [-0.85, -0.45], [-0.35, -0.85], [0.35, -0.85], [0.85, -0.45], [1, 0.15], [0.6, 0.05], [0.2, 0.12], [-0.2, 0.12], [-0.6, 0.05]]
+      : [[0, -0.9], [0.18, -0.5], [0.85, 0.55], [0.3, 0.45], [-0.3, 0.5], [-0.8, 0.55], [-0.2, -0.45]];
+    path = smoothPath(pts.map(([x, y]) => { const X = x * r * 0.9, Y = y * r * 0.9; return [cx + X * Math.cos(rot) - Y * Math.sin(rot), cy + X * Math.sin(rot) + Y * Math.cos(rot)]; }));
+  } else {
+    path = polarPath(cx, cy, (t) => fn(t) * (sx * sy) / Math.hypot(sy * Math.cos(t), sx * Math.sin(t)) , rot);
+  }
+  const pal = o.pallor ?? 0.33;
+  let defs = `<radialGradient id="${id}" cx="0.5" cy="0.5" r="0.5">`;
+  if (o.target) defs += `<stop offset="0" stop-color="${shade(col, -0.05)}"/><stop offset="0.2" stop-color="${shade(col, -0.05)}"/><stop offset="0.3" stop-color="${shade(col, 0.6)}"/><stop offset="0.5" stop-color="${shade(col, 0.55)}"/><stop offset="0.66" stop-color="${col}"/>`;
+  else if (pal > 0) defs += `<stop offset="0" stop-color="${shade(col, 0.66)}"/><stop offset="${(pal * 0.85).toFixed(2)}" stop-color="${shade(col, 0.45)}"/><stop offset="${Math.min(0.95, pal + 0.22).toFixed(2)}" stop-color="${col}"/>`;
+  else defs += `<stop offset="0" stop-color="${shade(col, 0.08)}"/>`;
+  defs += `<stop offset="0.96" stop-color="${col}"/><stop offset="1" stop-color="${shade(col, -0.14)}"/></radialGradient>`;
+  let s = `<defs>${defs}<clipPath id="${id}c"><path d="${path}"/></clipPath></defs><path d="${path}" fill="url(#${id})"/>`;
+  if (o.slit) s += `<ellipse cx="${cx}" cy="${cy}" rx="${(r * 0.55).toFixed(1)}" ry="${(r * 0.12).toFixed(1)}" transform="rotate(${((rot * 180) / Math.PI).toFixed(0)} ${cx} ${cy})" fill="${shade(col, 0.7)}"/>`;
+  if (o.blister) { const a = rot; s += `<circle cx="${(cx + Math.cos(a) * r * 0.62).toFixed(1)}" cy="${(cy + Math.sin(a) * r * 0.62).toFixed(1)}" r="${(r * 0.46).toFixed(1)}" fill="#f7f0f2" stroke="${shade(col, -0.1)}" stroke-width="1.2"/>`; }
+  if (o.inc) s += `<g clip-path="url(#${id}c)">${o.inc(cx, cy, r, rand)}</g>`;
+  return s;
+}
+
+const dot = (x, y, r, c, op = 1) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="${c}" opacity="${op}"/>`;
+const INC = {
+  hj: (cx, cy, r, rand) => { const a = rand() * 6.28; return dot(cx + Math.cos(a) * r * 0.55, cy + Math.sin(a) * r * 0.55, r * 0.16, "#3b1650"); },
+  stipple: (cx, cy, r, rand) => { let s = ""; for (let i = 0; i < 26; i++) { const a = rand() * 6.28, d = Math.sqrt(rand()) * r * 0.92; s += dot(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 0.9 + rand() * 0.8, "#3d3f97", 0.85); } return s; },
+  pappen: (cx, cy, r, rand) => { let s = ""; const a = rand() * 6.28, bx = cx + Math.cos(a) * r * 0.6, by = cy + Math.sin(a) * r * 0.6; for (let i = 0; i < 5; i++) s += dot(bx + (rand() - 0.5) * 7, by + (rand() - 0.5) * 7, 1.2 + rand() * 0.6, "#4b2a6b"); return s; },
+  hbh: (cx, cy, r) => { let s = ""; for (let x = -r; x <= r; x += 4.6) for (let y = -r; y <= r; y += 4.6) s += dot(cx + x + (Math.abs(y) % 9 ? 2.3 : 0), cy + y, 1.3, "#1e5f8a", 0.85); return s; },
+  heinz: (cx, cy, r, rand) => { let s = ""; const n = 1 + Math.floor(rand() * 2); for (let i = 0; i < n; i++) { const a = rand() * 6.28; s += dot(cx + Math.cos(a) * r * 0.66, cy + Math.sin(a) * r * 0.66, r * 0.17, "#4a2a86"); } return s; },
+  malaria: (cx, cy, r, rand) => {
+    let s = ""; const n = 1 + Math.floor(rand() * 2.4);
+    for (let i = 0; i < n; i++) {
+      const a = rand() * 6.28, d = i === 1 ? r * 0.82 : r * rand() * 0.5, x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d, rr = r * 0.2;
+      s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(1)}" fill="none" stroke="#5f6fc0" stroke-width="1.6"/>`;
+      s += dot(x + rr * 0.9, y - rr * 0.4, 1.9, "#7a1d55");
+      if (rand() > 0.6) s += dot(x - rr * 0.9, y - rr * 0.3, 1.6, "#7a1d55");
+    }
+    return s;
+  }
+};
+
+const FIELD = [[52, 50], [146, 46], [100, 104], [44, 154], [152, 150], [100, 190], [196, 100], [4, 100]];
+
+function rbcField(kind, rand) {
+  let s = "", bg = "#f7f0f2";
+  const each = (spec) => FIELD.forEach(([x, y], i) => { const o = typeof spec === "function" ? spec(i) : spec; if (o) s += rbcCell(x + (rand() - 0.5) * 10, y + (rand() - 0.5) * 10, o, rand); });
+  const normal = { pallor: 0.33 };
+  switch (kind) {
+    case "normal": each(normal); break;
+    case "microhypo": each((i) => i === 6 ? { r: RBC_R * 0.8, sx: 1.7, sy: 0.55, pallor: 0.45, color: "#e6aeb2" } : { r: RBC_R * 0.8, pallor: 0.62, color: "#e6aeb2" }); break;
+    case "macro": each((i) => i > 5 ? null : ({ r: RBC_R * 1.1, sx: 1.18, sy: 0.88, pallor: 0.18 })); break;
+    case "poly": each((i) => i % 3 === 0 ? { r: RBC_R * 1.12, pallor: 0, color: "#b79bb7" } : normal); break;
+    case "dimorphic": each((i) => i % 2 ? { r: RBC_R * 0.82, pallor: 0.62, color: "#ebbbbe" } : normal); break;
+    case "sphero": each((i) => i % 3 === 1 ? normal : { r: RBC_R * 0.78, pallor: 0, color: "#cf6f79" }); break;
+    case "target": each((i) => i === 5 ? normal : { target: true }); break;
+    case "ellipto": each(() => ({ r: RBC_R * 0.82, sx: 1.55, sy: 0.6, pallor: 0.25 })); break;
+    case "schisto": each((i) => i === 0 || i === 4 ? { shape: "helmet", pallor: 0 } : i === 2 ? { shape: "triangle", r: RBC_R * 0.8, pallor: 0 } : i === 6 ? { r: RBC_R * 0.6, pallor: 0, color: "#cf6f79" } : normal); break;
+    case "sickle": each((i) => i % 2 ? { shape: "sickle", pallor: 0, color: "#d9838b" } : i === 4 ? { target: true } : normal); break;
+    case "tear": each((i) => i % 2 === 0 ? { shape: "tear", pallor: 0.25 } : normal); break;
+    case "acantho": each((i) => i % 3 === 2 ? normal : { shape: "acantho", r: RBC_R * 0.85, pallor: 0, color: "#d67e88" }); break;
+    case "echino": each(() => ({ shape: "echino", pallor: 0.2 })); break;
+    case "stomato": each((i) => i === 3 ? normal : { slit: true, pallor: 0 }); break;
+    case "bite": each((i) => i % 2 ? { shape: "bite", pallor: 0.2 } : normal); break;
+    case "blister": each((i) => i === 2 || i === 0 ? { blister: true, pallor: 0, color: "#d68790" } : normal); break;
+    case "hj": each((i) => i === 2 || i === 4 ? { ...normal, inc: INC.hj } : normal); break;
+    case "stipple": each((i) => i === 2 || i === 0 ? { ...normal, pallor: 0.15, inc: INC.stipple } : normal); break;
+    case "pappen": each((i) => i === 2 || i === 1 ? { ...normal, inc: INC.pappen } : normal); break;
+    case "hbh": bg = "#eef5f4"; each((i) => i % 3 === 1 ? { pallor: 0, color: "#a9c8cf" } : { pallor: 0, color: "#a9c8cf", inc: INC.hbh }); break;
+    case "heinz": bg = "#eef0f6"; each((i) => ({ pallor: 0, color: "#c9c3dc", inc: i % 2 ? INC.heinz : null })); break;
+    case "malaria": each((i) => i % 2 === 0 ? { ...normal, inc: INC.malaria } : normal); break;
+    case "rouleaux":
+      [[30, 70, 0.3], [40, 150, -0.2]].forEach(([x0, y0, ang]) => { for (let k = 0; k < 9; k++) s += rbcCell(x0 + k * 17 * Math.cos(ang), y0 + k * 17 * Math.sin(ang), { r: RBC_R * 0.95, pallor: 0.12 }, rand); });
+      break;
+    case "agglut":
+      [[70, 70], [140, 140]].forEach(([x0, y0]) => { for (let k = 0; k < 9; k++) { const a = rand() * 6.28, d = rand() * 30; s += rbcCell(x0 + Math.cos(a) * d, y0 + Math.sin(a) * d, { r: RBC_R * 0.92, pallor: 0.1 }, rand); } });
+      s += rbcCell(170, 40, normal, rand) + rbcCell(30, 170, normal, rand);
+      break;
+  }
+  return { body: s, bg };
+}
+
+function ringSideroblast(rand) {
+  // Perls stain: pink counterstain, erythroblast nucleus red, blue iron granules around the nucleus.
+  let s = `<rect width="200" height="200" fill="#f6eef0"/>`;
+  [[30, 36], [172, 40], [28, 168], [175, 165]].forEach(([x, y]) => { s += `<circle cx="${x}" cy="${y}" r="${RBC_R * 0.8}" fill="#f0d7da"/>`; });
+  s += `<circle cx="100" cy="100" r="52" fill="#efd0d6"/>`;
+  s += `<path d="${blob({ cx: 100, cy: 100, r: 30, wobble: 0.04 }, rand)}" fill="#b5475f"/>`;
+  for (let i = 0; i < 70; i++) s += dot(100 + (rand() - 0.5) * 50, 100 + (rand() - 0.5) * 50, 2 + rand() * 2, "#8f2f48", 0.5);
+  for (let i = 0; i < 13; i++) { const a = -0.6 + (i / 13) * 3.9 + (rand() - 0.5) * 0.15, d = 36 + rand() * 4; s += dot(100 + Math.cos(a) * d, 100 + Math.sin(a) * d, 2.6 + rand() * 1.2, "#1f4fb0"); }
+  return s + scaleBar(10, 52 * 2 / 12) + "</svg>";
+}
+
+function drawMorph(c) {
+  const rand = rng(c.id);
+  let s = `<svg viewBox="0 0 200 200" class="cellsvg" role="img" aria-label="${c.name}, schematic illustration" xmlns="http://www.w3.org/2000/svg"><title>${c.name}: schematic illustration</title>`;
+  if (c.perls) return s + ringSideroblast(rand);
+  const f = rbcField(c.kind, rand);
+  s += `<rect width="200" height="200" fill="${f.bg}"/>` + f.body;
+  if (c.stain) s += `<g><rect x="118" y="6" width="76" height="16" rx="3" fill="#ffffff" opacity="0.85"/><text x="156" y="17" font-size="7.5" text-anchor="middle" fill="#2c2337" font-family="sans-serif">${c.stain}</text></g>`;
+  return s + scaleBar(5, PXU) + "</svg>";
+}
+
+/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, cells.js and rbc.js. */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const cellById = Object.fromEntries(CELLS.map((c) => [c.id, c]));
+const cellById = Object.fromEntries(CELLS.concat(M2_CELLS, M2_NUCLEATED).map((c) => [c.id, c]));
 const svgCache = {};
-const cellSVG = (id) => (svgCache[id] ||= drawCell(cellById[id]));
+const renderCell = (c) => (c.kind || c.perls ? drawMorph(c) : drawCell(c));
+const cellSVG = (id) => (svgCache[id] ||= renderCell(cellById[id]));
 
-const LESSON_CELLS = {
+const M1_LESSON_CELLS = {
   haematopoiesis: ["myeloblast", "proerythroblast", "megakaryocyte", "small-lymphocyte"],
   erythropoiesis: ["proerythroblast", "basophilic-normoblast", "polychromatic-normoblast", "orthochromatic-normoblast", "reticulocyte", "rbc"],
   granulopoiesis: ["myeloblast", "promyelocyte", "myelocyte", "metamyelocyte", "band", "neutrophil", "eosinophil", "basophil"],
@@ -1296,29 +2068,82 @@ const LESSON_CELLS = {
   "reference-values": ["rbc", "neutrophil", "small-lymphocyte", "monocyte", "eosinophil", "platelet"]
 };
 
+/* Calculators, shared between modules. Each reads its inputs and returns the result as HTML. */
+const CALCS = {
+  retic: { title: "Reticulocyte count and production index", inputs: [["rp", "Retics (%)", 6, 0.1], ["rr", "RBC (×10¹²/L)", 2.8, 0.01], ["rh", "Hct (L/L)", 0.25, 0.01]],
+    run: ({ rp, rr, rh }) => {
+      if (!(rh > 0)) return null;
+      const abs = (rp / 100) * rr * 1000, corr = rp * (rh / 0.45);
+      const mf = rh >= 0.4 ? 1 : rh >= 0.3 ? 1.5 : rh >= 0.2 ? 2 : 2.5, rpi = corr / mf;
+      return `Absolute <b>${abs.toFixed(0)} × 10⁹/L</b><br>Corrected <b>${corr.toFixed(1)}%</b> · maturation factor <b>${mf}</b><br>RPI <b>${rpi.toFixed(1)}</b>: ${rpi >= 2 ? "adequate marrow response (think haemolysis or bleeding)" : "inadequate response for the degree of anaemia"}`;
+    } },
+  nrbc: { title: "White count corrected for NRBCs", inputs: [["ww", "WBC (×10⁹/L)", 18, 0.1], ["wn", "NRBC per 100 WBC", 50, 1]],
+    run: ({ ww, wn }) => `Corrected WBC <b>${((ww * 100) / (100 + wn)).toFixed(1)} × 10⁹/L</b>` },
+  absolute: { title: "Absolute count from a differential", inputs: [["aw", "WBC (×10⁹/L)", 7.5, 0.1], ["ap", "Cell type (%)", 62, 1]],
+    run: ({ aw, ap }) => `Absolute count <b>${((aw * ap) / 100).toFixed(2)} × 10⁹/L</b>` },
+  me: { title: "Marrow M:E ratio", inputs: [["mm", "All myeloid cells (%)", 60, 1], ["me", "All erythroblasts (%)", 22, 1]],
+    run: ({ mm, me }) => { if (!(me > 0)) return null; const r = mm / me; return `M:E ratio <b>${r.toFixed(1)}:1</b> · ${r < 1.5 ? "erythroid predominance (low)" : r > 5 ? "myeloid predominance (high)" : "within the usual range"}`; } },
+  mentzer: { title: "Mentzer index", inputs: [["zm", "MCV (fL)", 64, 1], ["zr", "RBC (×10¹²/L)", 5.6, 0.01]],
+    run: ({ zm, zr }) => { if (!(zr > 0)) return null; const m = zm / zr; return `Mentzer index <b>${m.toFixed(1)}</b>: ${m < 13 ? "favours thalassaemia trait. Confirm with HPLC (HbA2)." : "favours iron deficiency. Check ferritin."}<br><span class="muted">A screening aid only; mixed states are common.</span>`; } },
+  tsat: { title: "Transferrin saturation", inputs: [["ti", "Serum iron (µmol/L)", 6, 0.1], ["tt", "TIBC (µmol/L)", 78, 1], ["tf", "Ferritin (µg/L)", 9, 1]],
+    run: ({ ti, tt, tf }) => {
+      if (!(tt > 0)) return null;
+      const t = (ti / tt) * 100;
+      const read = tf < 15 ? "Absent iron stores: iron deficiency." : tf < 30 ? "Probable iron deficiency." : t < 20 && tf <= 100 ? "Possible iron deficiency with inflammation; check CRP and sTfR." : t > 45 ? "High saturation: consider iron overload or sideroblastic anaemia." : "Iron stores adequate.";
+      return `TSAT <b>${t.toFixed(0)}%</b><br>${read}`;
+    } }
+};
+
+const MODS = {
+  m1: { id: "m1", n: 1, lessons: LESSONS, lessonCells: M1_LESSON_CELLS, cells: CELLS, facts: FACTS, quiz: QUIZ, cases: CASES,
+    hero: ["promyelocyte", "neutrophil", "plasma-cell"], tagline: "From stem cells to reference ranges",
+    trees: [{ id: "implausible", title: "Implausible results", intro: "Use this when a result does not fit the patient. Most implausible counts are sample or analyser problems.", nodes: TREE }],
+    checklist: { title: "Reading a marrow aspirate", intro: "A systematic order for reporting a marrow aspirate. Tick each step as you go; your ticks are kept on this device.", steps: MARROW_STEPS },
+    calcs: ["retic", "nrbc", "absolute", "me"], anims: [["tree", "Haematopoiesis"], ["mat", "Maturation explorer"], ["odc", "Oxygen dissociation curve"]] },
+  m2: { id: "m2", n: 2, lessons: M2_LESSONS, lessonCells: M2_LESSON_CELLS, cells: M2_CELLS.concat(M2_NUCLEATED), facts: M2_FACTS, quiz: M2_QUIZ, cases: M2_CASES,
+    hero: ["m2-sphero", "m2-sickle", "m2-target"], tagline: "From the anaemia algorithm to marrow failure",
+    trees: M2_TREES, checklist: M2_CHECKLIST,
+    calcs: ["retic", "mentzer", "tsat", "absolute"], anims: [["globin", "Globin switching"], ["odc", "Oxygen dissociation curve"]] }
+};
+MODULES.find((m) => m.id === "m2").ready = true;
+
 /* Per-viewer progress, kept in this browser only. */
 const store = {
   get(k, d) { try { const v = localStorage.getItem("idh:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem("idh:" + k, JSON.stringify(v)); } catch {} }
 };
+let MOD = MODS[store.get("module", "m1")] || MODS.m1;
 const state = {
-  lesson: store.get("lesson", LESSONS[0].id),
+  lesson: store.get("lesson:" + MOD.id, MOD.lessons[0].id),
   done: new Set(store.get("done", [])),
   known: new Set(store.get("known", [])),
-  quizBest: store.get("quizBest", null),
+  quizBest: store.get("quizBest:" + MOD.id, null),
   casesDone: new Set(store.get("casesDone", [])),
   atlasFilter: "All",
   practiceTab: "cards",
   deck: "cells",
-  workTab: "tree",
-  animTab: "tree",
+  workTab: "tree0",
+  animTab: MOD.anims[0][0],
   slideLesson: null,
   slideIdx: 0
 };
 const save = () => {
-  store.set("lesson", state.lesson); store.set("done", [...state.done]); store.set("known", [...state.known]);
-  store.set("quizBest", state.quizBest); store.set("casesDone", [...state.casesDone]);
+  store.set("module", MOD.id); store.set("lesson:" + MOD.id, state.lesson); store.set("done", [...state.done]); store.set("known", [...state.known]);
+  store.set("quizBest:" + MOD.id, state.quizBest); store.set("casesDone", [...state.casesDone]);
 };
+function setModule(id) {
+  if (!MODS[id] || MOD.id === id) return;
+  MOD = MODS[id];
+  state.lesson = store.get("lesson:" + id, MOD.lessons[0].id);
+  state.quizBest = store.get("quizBest:" + id, null);
+  state.atlasFilter = "All"; state.workTab = "tree0"; state.animTab = MOD.anims[0][0];
+  state.slideLesson = null; state.slideIdx = 0;
+  fc = { cards: [], i: 0, flipped: false }; qz = { i: 0, score: 0, answered: null, order: [] };
+  cs = { id: null, step: 0, picks: [] }; tr = { path: ["start"] };
+  save();
+}
+const factKey = (i) => (MOD.id === "m1" ? "fact:" + i : `fact:${MOD.id}:${i}`);
+const lineageOf = (c) => c.lineage || c.group;
 
 const ICONS = {
   home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
@@ -1350,61 +2175,60 @@ function renderNav(route) {
 /* ---------- Views ---------- */
 
 function viewHome() {
-  const lessonPct = Math.round((state.done.size / LESSONS.length) * 100);
-  const cardTotal = CELLS.length + FACTS.length;
-  const cardPct = Math.round((state.known.size / cardTotal) * 100);
-  const cur = LESSONS.find((l) => l.id === state.lesson) || LESSONS[0];
+  const doneIn = (m) => m.lessons.filter((l) => state.done.has(l.id)).length;
+  const cardTotal = MOD.cells.length + MOD.facts.length;
+  const cardPct = Math.round((deckIds("all").filter((k) => state.known.has(k)).length / cardTotal) * 100);
+  const casesHere = MOD.cases.filter((c) => state.casesDone.has(c.id)).length;
+  const cur = MOD.lessons.find((l) => l.id === state.lesson) || MOD.lessons[0];
   return `
 <section class="hero">
   <div class="stack">
     <span class="label">For Clinical Pathology MSc and MD students</span>
     <h1>Interactive Diagnostic Haematology</h1>
     <p class="lede">Learn haematology the way you report it: lessons, a cell atlas, flashcards, cases and step-by-step diagnostic workups. Everything except video links works offline.</p>
-    <div class="row"><a class="btn primary" href="#learn" data-lesson="${cur.id}">${state.done.size ? "Continue" : "Start"}: ${esc(cur.title)}</a><a class="btn" href="#atlas">Open the atlas</a></div>
+    <div class="row"><a class="btn primary" href="#learn" data-lesson="${cur.id}">${doneIn(MOD) ? "Continue" : "Start"} Module ${MOD.n}: ${esc(cur.title)}</a><a class="btn" href="#atlas">Open the atlas</a></div>
   </div>
   <div class="hero-cells">
-    <div class="figure">${cellSVG("promyelocyte")}</div>
-    <div class="figure">${cellSVG("neutrophil")}</div>
-    <div class="figure">${cellSVG("plasma-cell")}</div>
+    ${MOD.hero.map((id) => `<div class="figure">${cellSVG(id)}</div>`).join("")}
   </div>
 </section>
 
 <div class="section-h"><h2>Modules</h2><span class="muted">Built in this order</span></div>
 <div class="modules">
 ${MODULES.map((m) => `
-  <${m.ready ? 'a href="#learn"' : "div"} class="card module ${m.ready ? "" : "locked"}">
+  <${m.ready ? `a href="#learn" data-mod="${m.id}"` : "div"} class="card module ${m.ready ? "" : "locked"} ${m.id === MOD.id ? "current" : ""}">
     <span class="n">${m.n}</span>
     <h3>${esc(m.title)}</h3>
     <span class="muted">${esc(m.sub)}</span>
-    ${m.ready ? `<div class="stack" style="gap:4px"><div class="bar"><i style="width:${lessonPct}%"></i></div><small class="muted">${state.done.size} of ${LESSONS.length} lessons complete</small></div>` : `<span class="tag az">In preparation</span>`}
+    ${m.ready ? `<div class="stack" style="gap:4px"><div class="bar"><i style="width:${Math.round((doneIn(MODS[m.id]) / MODS[m.id].lessons.length) * 100)}%"></i></div><small class="muted">${doneIn(MODS[m.id])} of ${MODS[m.id].lessons.length} lessons complete${m.id === MOD.id ? " · open now" : ""}</small></div>` : `<span class="tag az">In preparation</span>`}
   </${m.ready ? "a" : "div"}>`).join("")}
 </div>
 
-<div class="section-h"><h2>Module 1 at a glance</h2></div>
+<div class="section-h"><h2>Module ${MOD.n} at a glance</h2></div>
 <div class="quick">
-  <a href="#learn"><b>${LESSONS.length} lessons</b><span>From stem cells to reference ranges</span></a>
-  <a href="#atlas"><b>${CELLS.length} cells in the atlas</b><span>Features, sizes and look-alikes</span></a>
+  <a href="#learn"><b>${MOD.lessons.length} lessons</b><span>${esc(MOD.tagline)}</span></a>
+  <a href="#atlas"><b>${MOD.cells.length} images in the atlas</b><span>${MOD.id === "m1" ? "Features, sizes and look-alikes" : "Red cell shapes, inclusions and marrow clues"}</span></a>
   <a href="#practice"><b>${cardTotal} flashcards</b><span>${cardPct}% marked as known</span></a>
-  <a href="#practice" data-tab="quiz"><b>${QUIZ.length} MCQs</b><span>${state.quizBest == null ? "Not attempted yet" : `Best score ${state.quizBest} of ${QUIZ.length}`}</span></a>
-  <a href="#cases"><b>${CASES.length} case studies</b><span>${state.casesDone.size} completed</span></a>
-  <a href="#workups"><b>Workups and calculators</b><span>Marrow reading, implausible results, reticulocytes</span></a>
-  <a href="#animations"><b>3 animations</b><span>Haematopoiesis, maturation, O₂ curve</span></a>
+  <a href="#practice" data-tab="quiz"><b>${MOD.quiz.length} MCQs</b><span>${state.quizBest == null ? "Not attempted yet" : `Best score ${state.quizBest} of ${MOD.quiz.length}`}</span></a>
+  <a href="#cases"><b>${MOD.cases.length} case studies</b><span>${casesHere} completed</span></a>
+  <a href="#workups"><b>Workups and calculators</b><span>${esc(MOD.trees.map((t) => t.title).concat(MOD.checklist.title).join(", "))}</span></a>
+  <a href="#animations"><b>${MOD.anims.length} animations</b><span>${esc(MOD.anims.map((a) => a[1]).join(", "))}</span></a>
   <a href="#slides"><b>Slide decks</b><span>Every lesson as a presentation</span></a>
 </div>`;
 }
 
 function viewLearn() {
-  const i = Math.max(0, LESSONS.findIndex((l) => l.id === state.lesson));
-  const L = LESSONS[i];
+  const i = Math.max(0, MOD.lessons.findIndex((l) => l.id === state.lesson));
+  const L = MOD.lessons[i];
   const body = L.body.replace(/<table/g, '<div class="tablewrap"><table').replace(/<\/table>/g, "</table></div>");
-  const cells = LESSON_CELLS[L.id] || [];
+  const cells = MOD.lessonCells[L.id] || [];
   return `
 <div class="learn">
   <nav class="toc" aria-label="Lessons">
-    ${LESSONS.map((l, k) => `<button data-go-lesson="${l.id}" aria-current="${l.id === L.id}"><span class="tick ${state.done.has(l.id) ? "done" : ""}">${state.done.has(l.id) ? "✓" : k + 1}</span><span>${esc(l.title)}</span></button>`).join("")}
+    ${MOD.lessons.map((l, k) => `<button data-go-lesson="${l.id}" aria-current="${l.id === L.id}"><span class="tick ${state.done.has(l.id) ? "done" : ""}">${state.done.has(l.id) ? "✓" : k + 1}</span><span>${esc(l.title)}</span></button>`).join("")}
   </nav>
   <article class="reader">
-    <span class="label">Lesson ${i + 1} of ${LESSONS.length}</span>
+    <span class="label">Lesson ${i + 1} of ${MOD.lessons.length}</span>
     <h1>${esc(L.title)}</h1>
     <div class="meta"><span>About ${L.minutes} minutes</span>
       <a class="btn small" href="#slides" data-slides="${L.id}">${icon("slides")}Present as slides</a>
@@ -1418,21 +2242,21 @@ function viewLearn() {
     </div>
     <div class="sources"><b>Read more in</b><ul>${L.sources.map((s) => `<li>${esc(SOURCES[s])}</li>`).join("")}</ul></div>
     <div class="pager">
-      ${i > 0 ? `<button class="btn" data-go-lesson="${LESSONS[i - 1].id}">← ${esc(LESSONS[i - 1].title)}</button>` : "<span></span>"}
-      ${i < LESSONS.length - 1 ? `<button class="btn" data-go-lesson="${LESSONS[i + 1].id}">${esc(LESSONS[i + 1].title)} →</button>` : `<a class="btn primary" href="#practice">Test yourself →</a>`}
+      ${i > 0 ? `<button class="btn" data-go-lesson="${MOD.lessons[i - 1].id}">← ${esc(MOD.lessons[i - 1].title)}</button>` : "<span></span>"}
+      ${i < MOD.lessons.length - 1 ? `<button class="btn" data-go-lesson="${MOD.lessons[i + 1].id}">${esc(MOD.lessons[i + 1].title)} →</button>` : `<a class="btn primary" href="#practice">Test yourself →</a>`}
     </div>
   </article>
 </div>`;
 }
 
 function viewAtlas() {
-  const groups = ["All", ...new Set(CELLS.map((c) => c.lineage))];
-  const list = CELLS.filter((c) => state.atlasFilter === "All" || c.lineage === state.atlasFilter);
+  const groups = ["All", ...new Set(MOD.cells.map(lineageOf))];
+  const list = MOD.cells.filter((c) => state.atlasFilter === "All" || lineageOf(c) === state.atlasFilter);
   return `
-<h1>Cell atlas</h1>
-<p class="muted" style="max-width:66ch">Original schematic drawings of Romanowsky-stained cells, drawn to scale against the red cells around them. Tap a cell for its features, normal numbers and look-alikes.</p>
+<h1>${MOD.id === "m1" ? "Cell atlas" : "Red cell morphology atlas"}</h1>
+<p class="muted" style="max-width:66ch">${MOD.id === "m1" ? "Original schematic drawings of Romanowsky-stained cells, drawn to scale against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : "Original schematic drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
 <div class="filters">${groups.map((g) => `<button class="chip" data-filter="${g}" aria-pressed="${g === state.atlasFilter}">${g}</button>`).join("")}</div>
-<div class="atlas">${list.map((c) => `<button data-cell="${c.id}"><div class="figure">${cellSVG(c.id)}</div><b>${esc(c.name)}</b><small>${esc(c.lineage)} · ${esc(c.size)}</small></button>`).join("")}</div>
+<div class="atlas">${list.map((c) => `<button data-cell="${c.id}"><div class="figure">${cellSVG(c.id)}</div><b>${esc(c.name)}</b><small>${esc(lineageOf(c))}${c.size ? " · " + esc(c.size) : ""}</small></button>`).join("")}</div>
 <p class="note" style="margin-top:18px">Compare these drawings with the photographs in Bain's Blood Cells and the Color Atlas of Hematology in your library.</p>`;
 }
 
@@ -1441,10 +2265,15 @@ function openCell(id) {
   const bg = document.createElement("div");
   bg.className = "drawer-bg";
   bg.innerHTML = `<div class="drawer" role="dialog" aria-modal="true" aria-label="${esc(c.name)}">
-    <div class="row" style="justify-content:space-between"><span class="tag az">${esc(c.lineage)}</span><button class="btn small" data-close>Close</button></div>
+    <div class="row" style="justify-content:space-between"><span class="tag az">${esc(lineageOf(c))}</span><button class="btn small" data-close>Close</button></div>
     <h2 style="margin-top:12px">${esc(c.name)}</h2>
-    <div class="figure">${drawCell(c)}</div>
-    <dl class="kv">
+    <div class="figure">${renderCell(c)}</div>
+    ${c.what ? `<dl class="kv">
+      <dt>What it is</dt><dd>${esc(c.what)}</dd>
+      <dt>Seen in</dt><dd>${esc(c.seen)}</dd>
+      <dt>Reporting tip</dt><dd>${esc(c.tip)}</dd>
+      ${c.stain ? `<dt>Stain</dt><dd>${esc(c.stain)} (supravital)</dd>` : ""}
+    </dl>` : `<dl class="kv">
       <dt>Size</dt><dd class="num">${esc(c.size)}</dd>
       <dt>Found in</dt><dd>${esc(c.where)}</dd>
       <dt>Nucleus</dt><dd>${esc(c.nucleus)}</dd>
@@ -1452,8 +2281,8 @@ function openCell(id) {
       <dt>N:C ratio</dt><dd>${esc(c.nc)}</dd>
       <dt>Normal numbers</dt><dd>${esc(c.normal)}</dd>
       <dt>Look-alikes</dt><dd>${esc(c.mimic)}</dd>
-    </dl>
-    <p class="note">Schematic illustration, not a photomicrograph. The scale bar uses the surrounding red cells (about 7.5 µm) as a reference.</p>
+    </dl>`}
+    <p class="note">Schematic illustration, not a photomicrograph. The scale bar is drawn to the same scale as the cells; normal red cells are about 7.5 µm across.</p>
   </div>`;
   const close = () => { bg.remove(); document.removeEventListener("keydown", onKey); };
   const onKey = (e) => { if (e.key === "Escape") close(); };
@@ -1465,9 +2294,13 @@ function openCell(id) {
 
 /* Flashcards */
 let fc = { cards: [], i: 0, flipped: false };
+function deckIds(deck) {
+  const cellIds = MOD.cells.map((c) => "cell:" + c.id), factIds = MOD.facts.map((_, i) => factKey(i));
+  return deck === "cells" ? cellIds : deck === "facts" ? factIds : cellIds.concat(factIds);
+}
 function buildDeck() {
-  const cellCards = CELLS.map((c) => ({ id: "cell:" + c.id, kind: "cell", cell: c.id, a: c.name, sub: `${c.size}. ${c.nucleus}.` }));
-  const factCards = FACTS.map((f, i) => ({ id: "fact:" + i, kind: "fact", q: f[0], a: f[1] }));
+  const cellCards = MOD.cells.map((c) => ({ id: "cell:" + c.id, kind: "cell", cell: c.id, a: c.name, sub: c.what || `${c.size}. ${c.nucleus}.` }));
+  const factCards = MOD.facts.map((f, i) => ({ id: factKey(i), kind: "fact", q: f[0], a: f[1] }));
   let cards = state.deck === "cells" ? cellCards : state.deck === "facts" ? factCards : cellCards.concat(factCards);
   const unknown = cards.filter((c) => !state.known.has(c.id));
   if (unknown.length) cards = unknown;
@@ -1478,13 +2311,13 @@ function buildDeck() {
 function flashHTML() {
   if (!fc.cards.length) buildDeck();
   const c = fc.cards[fc.i];
-  const total = state.deck === "cells" ? CELLS.length : state.deck === "facts" ? FACTS.length : CELLS.length + FACTS.length;
-  const knownHere = [...state.known].filter((k) => state.deck === "all" || k.startsWith(state.deck === "cells" ? "cell:" : "fact:")).length;
+  const total = state.deck === "cells" ? MOD.cells.length : state.deck === "facts" ? MOD.facts.length : MOD.cells.length + MOD.facts.length;
+  const knownHere = deckIds(state.deck).filter((k) => state.known.has(k)).length;
   const front = c.kind === "cell"
-    ? `<span class="label">Identify this cell</span><div class="figure">${cellSVG(c.cell)}</div>`
+    ? `<span class="label">${MOD.id === "m1" ? "Identify this cell" : "Name this finding"}</span><div class="figure">${cellSVG(c.cell)}</div>`
     : `<span class="label">Question</span><div class="q">${esc(c.q)}</div>`;
   const back = c.kind === "cell"
-    ? `<span class="label">Answer</span><div class="q">${esc(c.a)}</div><p>${esc(c.sub)}</p><p class="muted">${esc(cellById[c.cell].mimic)}</p>`
+    ? `<span class="label">Answer</span><div class="q">${esc(c.a)}</div><p>${esc(c.sub)}</p><p class="muted">${esc(cellById[c.cell].mimic || cellById[c.cell].seen)}</p>`
     : `<span class="label">Answer</span><p style="font-size:1.1rem">${esc(c.a)}</p>`;
   return `
 <div class="row" style="justify-content:space-between;max-width:560px;margin-top:16px">
@@ -1506,23 +2339,23 @@ function flashHTML() {
 /* Quiz */
 let qz = { i: 0, score: 0, answered: null, order: [] };
 function quizHTML() {
-  if (!qz.order.length) { const r = rng("q" + Date.now()); qz.order = QUIZ.map((_, i) => i).sort(() => r() - 0.5); }
-  if (qz.i >= QUIZ.length) {
-    return `<div class="quiz card" style="margin-top:16px"><span class="label">Quiz complete</span><h2 style="margin:6px 0">${qz.score} of ${QUIZ.length}</h2>
+  if (!qz.order.length) { const r = rng("q" + Date.now()); qz.order = MOD.quiz.map((_, i) => i).sort(() => r() - 0.5); }
+  if (qz.i >= MOD.quiz.length) {
+    return `<div class="quiz card" style="margin-top:16px"><span class="label">Quiz complete</span><h2 style="margin:6px 0">${qz.score} of ${MOD.quiz.length}</h2>
       <p>${qz.score >= 15 ? "Excellent. You are ready for Module 2." : qz.score >= 11 ? "Good. Review the lessons for the questions you missed." : "Go back over the lessons and try again."}</p>
       <button class="btn primary" data-quiz="restart">Try again</button></div>`;
   }
-  const Q = QUIZ[qz.order[qz.i]];
+  const Q = MOD.quiz[qz.order[qz.i]];
   return `<div class="quiz" style="margin-top:16px">
-  <div class="row" style="justify-content:space-between"><span class="label">Question ${qz.i + 1} of ${QUIZ.length}</span><span class="muted num">Score ${qz.score}</span></div>
-  <div class="bar" style="margin:8px 0 16px"><i style="width:${(qz.i / QUIZ.length) * 100}%"></i></div>
+  <div class="row" style="justify-content:space-between"><span class="label">Question ${qz.i + 1} of ${MOD.quiz.length}</span><span class="muted num">Score ${qz.score}</span></div>
+  <div class="bar" style="margin:8px 0 16px"><i style="width:${(qz.i / MOD.quiz.length) * 100}%"></i></div>
   <p style="font-size:1.12rem;font-weight:600">${esc(Q.q)}</p>
   <div class="opts">${Q.a.map((a, k) => {
     let cls = "";
     if (qz.answered != null) { if (k === Q.c) cls = "right"; else if (k === qz.answered) cls = "wrong"; }
     return `<button class="opt ${cls}" data-ans="${k}" ${qz.answered != null ? "disabled" : ""}><span class="letter">${"ABCD"[k]}</span><span>${esc(a)}</span></button>`;
   }).join("")}</div>
-  ${qz.answered != null ? `<div class="explain"><b>${qz.answered === Q.c ? "Correct." : "Not quite."}</b> ${esc(Q.e)}</div><div class="row" style="margin-top:14px"><button class="btn primary" data-quiz="next">${qz.i === QUIZ.length - 1 ? "See score" : "Next question"}</button></div>` : ""}
+  ${qz.answered != null ? `<div class="explain"><b>${qz.answered === Q.c ? "Correct." : "Not quite."}</b> ${esc(Q.e)}</div><div class="row" style="margin-top:14px"><button class="btn primary" data-quiz="next">${qz.i === MOD.quiz.length - 1 ? "See score" : "Next question"}</button></div>` : ""}
 </div>`;
 }
 
@@ -1540,9 +2373,9 @@ let cs = { id: null, step: 0, picks: [] };
 function viewCases() {
   if (!cs.id) {
     return `<h1>Case studies</h1><p class="muted" style="max-width:66ch">Work through each case one decision at a time. Each step explains the reasoning before you move on.</p>
-<div class="cases" style="margin-top:18px">${CASES.map((c) => `<button class="card" data-case="${c.id}"><span class="row"><span class="tag">${esc(c.tag)}</span>${state.casesDone.has(c.id) ? '<span class="tag ok">Done</span>' : ""}</span><h3 style="margin:0">${esc(c.title)}</h3><span class="muted">${esc(c.stem.slice(0, 110))}…</span></button>`).join("")}</div>`;
+<div class="cases" style="margin-top:18px">${MOD.cases.map((c) => `<button class="card" data-case="${c.id}"><span class="row"><span class="tag">${esc(c.tag)}</span>${state.casesDone.has(c.id) ? '<span class="tag ok">Done</span>' : ""}</span><h3 style="margin:0">${esc(c.title)}</h3><span class="muted">${esc(c.stem.slice(0, 110))}…</span></button>`).join("")}</div>`;
   }
-  const C = CASES.find((c) => c.id === cs.id);
+  const C = MOD.cases.find((c) => c.id === cs.id);
   let html = `<button class="btn small" data-case-back>← All cases</button>
 <div style="max-width:720px;margin-top:14px"><span class="tag">${esc(C.tag)}</span><h1 style="margin-top:8px">${esc(C.title)}</h1><p>${esc(C.stem)}</p>
 <div class="casedata">${C.data.map(([k, v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join("")}</div>`;
@@ -1563,76 +2396,50 @@ function viewCases() {
 
 /* Workups */
 let tr = { path: ["start"] };
-function treeHTML() {
-  const node = TREE[tr.path[tr.path.length - 1]];
+function treeHTML(T) {
+  const nodes = T.nodes;
+  const node = nodes[tr.path[tr.path.length - 1]];
   const trail = tr.path.slice(1).map((k) => {
-    for (const key in TREE) { const o = TREE[key].opts; if (o) { const f = o.find((x) => x[1] === k); if (f) return f[0]; } }
+    for (const key in nodes) { const o = nodes[key].opts; if (o) { const f = o.find((x) => x[1] === k); if (f) return f[0]; } }
     return k;
   });
   return `<div class="tree">
-  <p class="muted">Use this when a result does not fit the patient. Most implausible counts are sample or analyser problems.</p>
+  <p class="muted">${esc(T.intro)}</p>
   ${trail.length ? `<div class="trail">${trail.map((t) => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
   ${node.end ? `<div class="endbox"><span class="label">Conclusion</span><h3>${esc(node.end)}</h3><p style="margin:0">${esc(node.detail)}</p></div>`
     : `<div class="card"><p style="font-weight:600;font-size:1.08rem;margin-top:0">${esc(node.q)}</p><div class="opts">${node.opts.map(([t, k]) => `<button class="opt" data-tnode="${k}"><span class="letter">→</span><span>${esc(t)}</span></button>`).join("")}</div></div>`}
   <div class="row">${tr.path.length > 1 ? `<button class="btn small" data-tback>Back</button><button class="btn small" data-treset>Start again</button>` : ""}</div>
 </div>`;
 }
+const ticksKey = () => (MOD.id === "m1" ? "marrowTicks" : "ticks:" + MOD.id);
 function marrowHTML() {
-  const ticks = store.get("marrowTicks", []);
-  return `<p class="muted" style="max-width:66ch">A systematic order for reporting a marrow aspirate. Tick each step as you go; your ticks are kept on this device.</p>
-<ol class="checklist">${MARROW_STEPS.map(([h, t], i) => `<li><label><input type="checkbox" data-mtick="${i}" ${ticks.includes(i) ? "checked" : ""}><div><b>${i + 1}. ${esc(h)}</b><br><span>${esc(t)}</span></div></label></li>`).join("")}</ol>
+  const ticks = store.get(ticksKey(), []);
+  return `<p class="muted" style="max-width:66ch">${esc(MOD.checklist.intro)}</p>
+<ol class="checklist">${MOD.checklist.steps.map(([h, t], i) => `<li><label><input type="checkbox" data-mtick="${i}" ${ticks.includes(i) ? "checked" : ""}><div><b>${i + 1}. ${esc(h)}</b><br><span>${esc(t)}</span></div></label></li>`).join("")}</ol>
 <div class="row" style="margin-top:12px"><button class="btn small" data-mreset>Clear ticks</button></div>`;
 }
 function calcHTML() {
-  return `<div class="calcs">
-  <div class="card"><h3 style="margin-top:0">Reticulocyte count and production index</h3>
-    <div class="fields">
-      <div class="field"><label for="rp">Retics (%)</label><input id="rp" type="number" step="0.1" value="6"></div>
-      <div class="field"><label for="rr">RBC (×10¹²/L)</label><input id="rr" type="number" step="0.01" value="2.8"></div>
-      <div class="field"><label for="rh">Hct (L/L)</label><input id="rh" type="number" step="0.01" value="0.25"></div>
-    </div><div class="out" id="rout"></div></div>
-  <div class="card"><h3 style="margin-top:0">White count corrected for NRBCs</h3>
-    <div class="fields">
-      <div class="field"><label for="ww">WBC (×10⁹/L)</label><input id="ww" type="number" step="0.1" value="18"></div>
-      <div class="field"><label for="wn">NRBC per 100 WBC</label><input id="wn" type="number" step="1" value="50"></div>
-    </div><div class="out" id="wout"></div></div>
-  <div class="card"><h3 style="margin-top:0">Absolute count from a differential</h3>
-    <div class="fields">
-      <div class="field"><label for="aw">WBC (×10⁹/L)</label><input id="aw" type="number" step="0.1" value="7.5"></div>
-      <div class="field"><label for="ap">Cell type (%)</label><input id="ap" type="number" step="1" value="62"></div>
-    </div><div class="out" id="aout"></div></div>
-  <div class="card"><h3 style="margin-top:0">Marrow M:E ratio</h3>
-    <div class="fields">
-      <div class="field"><label for="mm">All myeloid cells (%)</label><input id="mm" type="number" step="1" value="60"></div>
-      <div class="field"><label for="me">All erythroblasts (%)</label><input id="me" type="number" step="1" value="22"></div>
-    </div><div class="out" id="mout"></div></div>
-</div>
+  return `<div class="calcs">${MOD.calcs.map((k) => {
+    const C = CALCS[k];
+    return `<div class="card"><h3 style="margin-top:0">${C.title}</h3><div class="fields">${C.inputs.map(([id, label, v, step]) => `<div class="field"><label for="${id}">${label}</label><input id="${id}" data-calc="${k}" type="number" step="${step}" value="${v}"></div>`).join("")}</div><div class="out" id="out-${k}"></div></div>`;
+  }).join("")}</div>
 <p class="note">Teaching tools. Check results against your laboratory's methods before using them for a report.</p>`;
 }
 function runCalcs() {
-  const v = (id) => parseFloat($("#" + id)?.value);
-  if (!$("#rout")) return;
-  const rp = v("rp"), rr = v("rr"), rh = v("rh");
-  if ([rp, rr, rh].every(Number.isFinite) && rh > 0) {
-    const abs = (rp / 100) * rr * 1000, corr = rp * (rh / 0.45);
-    const mf = rh >= 0.4 ? 1 : rh >= 0.3 ? 1.5 : rh >= 0.2 ? 2 : 2.5, rpi = corr / mf;
-    $("#rout").innerHTML = `Absolute <b>${abs.toFixed(0)} × 10⁹/L</b><br>Corrected <b>${corr.toFixed(1)}%</b> · maturation factor <b>${mf}</b><br>RPI <b>${rpi.toFixed(1)}</b>: ${rpi >= 2 ? "adequate marrow response (think haemolysis or bleeding)" : "inadequate response for the degree of anaemia"}`;
-  } else $("#rout").textContent = "Enter all three values.";
-  const ww = v("ww"), wn = v("wn");
-  $("#wout").innerHTML = Number.isFinite(ww) && Number.isFinite(wn) ? `Corrected WBC <b>${((ww * 100) / (100 + wn)).toFixed(1)} × 10⁹/L</b>` : "Enter both values.";
-  const aw = v("aw"), ap = v("ap");
-  $("#aout").innerHTML = Number.isFinite(aw) && Number.isFinite(ap) ? `Absolute count <b>${((aw * ap) / 100).toFixed(2)} × 10⁹/L</b>` : "Enter both values.";
-  const mm = v("mm"), me = v("me");
-  if (Number.isFinite(mm) && me > 0) {
-    const r = mm / me;
-    $("#mout").innerHTML = `M:E ratio <b>${r.toFixed(1)}:1</b> · ${r < 1.5 ? "erythroid predominance (low)" : r > 5 ? "myeloid predominance (high)" : "within the usual range"}`;
-  } else $("#mout").textContent = "Enter both values.";
+  MOD.calcs.forEach((k) => {
+    const out = $("#out-" + k); if (!out) return;
+    const vals = {}; let ok = true;
+    CALCS[k].inputs.forEach(([id]) => { vals[id] = parseFloat($("#" + id).value); if (!Number.isFinite(vals[id])) ok = false; });
+    const html = ok ? CALCS[k].run(vals) : null;
+    out.innerHTML = html || "Enter all values.";
+  });
 }
 function viewWorkups() {
-  const tabs = [["tree", "Implausible results"], ["marrow", "Reading a marrow aspirate"], ["calc", "Calculators"]];
+  const tabs = MOD.trees.map((t, i) => ["tree" + i, t.title]).concat([["marrow", MOD.checklist.title], ["calc", "Calculators"]]);
+  if (!tabs.some(([k]) => k === state.workTab)) state.workTab = "tree0";
   return `<h1>Workups</h1>
 <div class="seg" role="group" aria-label="Workup" style="margin:14px 0 18px">${tabs.map(([k, t]) => `<button data-wtab="${k}" aria-pressed="${state.workTab === k}">${t}</button>`).join("")}</div>
-${state.workTab === "tree" ? treeHTML() : state.workTab === "marrow" ? marrowHTML() : calcHTML()}`;
+${state.workTab.startsWith("tree") ? treeHTML(MOD.trees[+state.workTab.slice(4)]) : state.workTab === "marrow" ? marrowHTML() : calcHTML()}`;
 }
 
 /* Animations */
@@ -1712,8 +2519,56 @@ function drawODC() {
   const shift = p50 > 27.6 ? "Right shift: oxygen is released more easily to tissues." : p50 < 25.6 ? "Left shift: haemoglobin holds oxygen more tightly." : "Close to the normal curve.";
   $("#odcout").innerHTML = `P₅₀ <b>${p50.toFixed(1)} mmHg</b> (${(p50 * 0.1333).toFixed(2)} kPa)<br>Saturation at 100 mmHg <b>${(S(100) * 100).toFixed(0)}%</b>, at 40 mmHg <b>${(S(40) * 100).toFixed(0)}%</b><br>Unloaded between arterial and venous blood <b>${unload.toFixed(0)}%</b><br>${shift}`;
 }
+/* Globin switching: approximate share of α-like and β-like chain synthesis (teaching model). */
+const GLOB = {
+  zeta: (t) => 100 / (1 + Math.exp((t - 7) / 1.2)),
+  eps: (t) => 100 / (1 + Math.exp((t - 8) / 1.3)),
+  beta: (t) => (8 + 89 / (1 + Math.exp(-(t - 44) / 4.5))) * (1 - GLOB.eps(t) / 100),
+  delta: (t) => 2.6 / (1 + Math.exp(-(t - 46) / 5)),
+  gamma: (t) => Math.max(0, 100 - GLOB.eps(t) - GLOB.beta(t) - GLOB.delta(t)),
+  alpha: (t) => 100 - GLOB.zeta(t)
+};
+const GLOB_LINES = [["zeta", "ζ", "#9a6aa6", "5 4"], ["alpha", "α", "#4a3891", "5 4"], ["eps", "ε", "#e46a3a", ""], ["gamma", "γ", "#b93a60", ""], ["beta", "β", "#2f6fb0", ""], ["delta", "δ", "#23714f", ""]];
+function globinHTML() {
+  return `<div class="odc">
+  <div class="svgwrap" style="padding:8px"><svg viewBox="0 0 440 300" id="globsvg" role="img" aria-label="Globin chain synthesis before and after birth" style="min-width:0"></svg></div>
+  <div class="card stack">
+    <div class="field"><label for="gt">Age <span class="num" id="gtv"></span></label><input class="slider" id="gt" type="range" min="2" max="92" step="1" value="40"></div>
+    <div class="out" id="globout"></div>
+    <p class="note" style="margin:0">Dashed lines are α-like chains, solid lines β-like chains. Curves are a smoothed teaching model of the published pattern.</p>
+  </div></div>`;
+}
+function drawGlobin() {
+  const svg = $("#globsvg"); if (!svg) return;
+  const t = +$("#gt").value;
+  const X = (w) => 40 + (w / 92) * 385, Y = (v) => 255 - v * 2.25;
+  let g = "";
+  for (let v = 0; v <= 100; v += 25) g += `<line class="grid" x1="40" y1="${Y(v)}" x2="425" y2="${Y(v)}"/><text x="34" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+  [[0, "Conception"], [20, "20 wk"], [40, "Birth"], [66, "6 mo"], [92, "1 yr"]].forEach(([w, l]) => { g += `<line class="grid" x1="${X(w)}" y1="30" x2="${X(w)}" y2="255"/><text x="${X(w)}" y="272" text-anchor="middle">${l}</text>`; });
+  g += `<line x1="${X(40)}" y1="30" x2="${X(40)}" y2="255" stroke="var(--muted)" stroke-width="1.5"/>`;
+  GLOB_LINES.forEach(([k, lab, col, dash]) => {
+    let d = ""; for (let w = 0; w <= 92; w += 1) d += (w ? "L" : "M") + X(w).toFixed(1) + "," + Y(GLOB[k](w)).toFixed(1);
+    g += `<path d="${d}" fill="none" stroke="${col}" stroke-width="2.5" ${dash ? `stroke-dasharray="${dash}"` : ""}/>`;
+  });
+  [["zeta", 4], ["alpha", 18], ["eps", 3], ["gamma", 26], ["beta", 80], ["delta", 84]].forEach(([k, w]) => {
+    const [, lab, col] = GLOB_LINES.find((x) => x[0] === k);
+    g += `<text x="${X(w) + 4}" y="${Y(GLOB[k](w)) - 6}" style="fill:${col};font-weight:700;font-size:13px">${lab}</text>`;
+  });
+  g += `<line x1="${X(t)}" y1="30" x2="${X(t)}" y2="255" stroke="var(--eosin)" stroke-width="2"/>`;
+  g += `<text x="12" y="142" text-anchor="middle" transform="rotate(-90 12 142)">% of chain synthesis</text>`;
+  svg.innerHTML = g;
+  const age = t < 40 ? `${t} weeks of gestation` : t === 40 ? "Birth" : `${Math.round((t - 40) / 4.33)} months after birth`;
+  $("#gtv").textContent = age;
+  const e = GLOB.eps(t), z = GLOB.zeta(t), a = GLOB.alpha(t), gm = GLOB.gamma(t), b = GLOB.beta(t), dl = GLOB.delta(t);
+  const emb = Math.max(e, z);
+  const hbF = (gm * a) / 100, hbA = (b * a) / 100, hbA2 = (dl * a) / 100;
+  $("#globout").innerHTML = emb > 10
+    ? `<b>Embryonic period.</b> The yolk sac makes ζ and ε chains: Hb Gower 1 (ζ₂ε₂), Gower 2 (α₂ε₂) and Portland (ζ₂γ₂).`
+    : `HbF (α₂γ₂) <b>${hbF.toFixed(0)}%</b> · HbA (α₂β₂) <b>${hbA.toFixed(0)}%</b> · HbA₂ (α₂δ₂) <b>${hbA2.toFixed(1)}%</b><br>${t < 30 ? "The liver is the main site; γ chains dominate." : t <= 44 ? "The switch from γ to β is under way. HbF is 60–90% at birth." : t < 70 ? "HbF falls quickly. β-thalassaemia major usually presents in this period, as γ chain synthesis falls." : "Close to the adult pattern: HbF under 1–2%, HbA2 2.2–3.5%."}`;
+}
 function viewAnimations() {
-  const tabs = [["tree", "Haematopoiesis"], ["mat", "Maturation explorer"], ["odc", "Oxygen dissociation curve"]];
+  const tabs = MOD.anims;
+  if (!tabs.some(([k]) => k === state.animTab)) state.animTab = tabs[0][0];
   let body = "";
   if (state.animTab === "tree") body = `<div class="anim"><div class="row"><button class="btn primary" id="treePlay">▶ Play the build-up</button><span class="muted">Then tap any cell to read about it.</span></div><div class="svgwrap" id="treeWrap">${treeSVG()}</div><div class="card" id="treeInfo"><b>HSC</b><p style="margin-bottom:0">${TNODES[0].info}</p></div></div>`;
   if (state.animTab === "mat") {
@@ -1726,6 +2581,7 @@ function viewAnimations() {
       <div class="row"><button class="btn primary" id="matPlay">${mat.timer ? "❚❚ Pause" : "▶ Play"}</button></div></div></div></div>`;
   }
   if (state.animTab === "odc") body = odcHTML();
+  if (state.animTab === "globin") body = globinHTML();
   return `<h1>Animations</h1>
 <div class="seg" role="group" aria-label="Animation" style="margin:14px 0 18px">${tabs.map(([k, t]) => `<button data-atab="${k}" aria-pressed="${state.animTab === k}">${t}</button>`).join("")}</div>${body}`;
 }
@@ -1740,24 +2596,24 @@ function setMat(i) {
 /* Slides */
 function buildSlides(L) {
   const slides = [];
-  slides.push(`<div class="slide title"><span class="kicker" style="color:#f6c1d1">Module 1 · Lesson ${LESSONS.indexOf(L) + 1}</span><h2>${esc(L.title)}</h2><p>Interactive Diagnostic Haematology</p></div>`);
+  slides.push(`<div class="slide title"><span class="kicker" style="color:#f6c1d1">Module ${MOD.n} · Lesson ${MOD.lessons.indexOf(L) + 1}</span><h2>${esc(L.title)}</h2><p>Interactive Diagnostic Haematology</p></div>`);
   const parts = L.body.split(/<h3>/);
   if (parts[0].trim()) slides.push(`<div class="slide"><span class="kicker">Overview</span>${parts[0]}</div>`);
   parts.slice(1).forEach((p) => {
     const [h, rest] = p.split("</h3>");
     slides.push(`<div class="slide"><span class="kicker">${esc(L.title)}</span><h3>${h}</h3>${rest}</div>`);
   });
-  const cells = LESSON_CELLS[L.id] || [];
+  const cells = MOD.lessonCells[L.id] || [];
   if (cells.length) slides.push(`<div class="slide"><span class="kicker">Morphology</span><h3>Cells in this lesson</h3><div class="cells">${cells.map((c) => `<div><div class="figure">${cellSVG(c)}</div><small>${esc(cellById[c].name)}</small></div>`).join("")}</div></div>`);
   slides.push(`<div class="slide"><span class="kicker">Summary</span><h3>Key points</h3><ul>${L.points.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`);
   return slides;
 }
 function viewSlides() {
-  const L = LESSONS.find((l) => l.id === (state.slideLesson || state.lesson)) || LESSONS[0];
+  const L = MOD.lessons.find((l) => l.id === (state.slideLesson || state.lesson)) || MOD.lessons[0];
   const slides = buildSlides(L);
   state.slideIdx = Math.min(state.slideIdx, slides.length - 1);
   return `<h1>Slides</h1>
-<div class="row" style="margin:14px 0 16px"><div class="field" style="min-width:0;flex:1 1 260px;max-width:420px"><label for="slideSel">Lesson</label><select id="slideSel">${LESSONS.map((l) => `<option value="${l.id}" ${l.id === L.id ? "selected" : ""}>${esc(l.title)}</option>`).join("")}</select></div></div>
+<div class="row" style="margin:14px 0 16px"><div class="field" style="min-width:0;flex:1 1 260px;max-width:420px"><label for="slideSel">Lesson</label><select id="slideSel">${MOD.lessons.map((l) => `<option value="${l.id}" ${l.id === L.id ? "selected" : ""}>${esc(l.title)}</option>`).join("")}</select></div></div>
 <div class="deck" id="deck">${slides[state.slideIdx]}
   <div class="deckbar"><div class="row"><button class="btn small" data-sl="-1" ${state.slideIdx === 0 ? "disabled" : ""}>← Previous</button><button class="btn small" data-sl="1" ${state.slideIdx === slides.length - 1 ? "disabled" : ""}>Next →</button></div>
   <span class="num">${state.slideIdx + 1} / ${slides.length}</span><button class="btn small" id="fsBtn">Full screen</button></div>
@@ -1780,12 +2636,12 @@ function viewAbout() {
 <p>Reference ranges differ between laboratories, analysers and populations. Always use your own laboratory's ranges for reporting.</p>
 <h2 style="margin-top:22px">Coming next</h2>
 <ul>${MODULES.filter((m) => !m.ready).map((m) => `<li><b>Module ${m.n}: ${esc(m.title)}.</b> ${esc(m.sub)}.</li>`).join("")}</ul>
-<p class="footer-note">Interactive Diagnostic Haematology · Module 1 pilot · For education only, not for clinical decision-making.</p></div>`;
+<p class="footer-note">Interactive Diagnostic Haematology · Modules 1 and 2 · For education only, not for clinical decision-making.</p></div>`;
 }
 
 function viewMore() {
   return `<h1>More</h1><div class="quick" style="margin-top:16px">
-  <a href="#cases"><b>Case studies</b><span>${CASES.length} stepwise cases</span></a>
+  <a href="#cases"><b>Case studies</b><span>${MOD.cases.length} stepwise cases</span></a>
   <a href="#workups"><b>Workups</b><span>Decision tree, marrow checklist, calculators</span></a>
   <a href="#animations"><b>Animations</b><span>Haematopoiesis, maturation, O₂ curve</span></a>
   <a href="#slides"><b>Slides</b><span>Present any lesson</span></a>
@@ -1800,11 +2656,13 @@ function render(keepScroll) {
   let route = location.hash.replace("#", "");
   if (!VIEWS[route]) route = "home";
   renderNav(route);
-  $("#crumb").textContent = `Module 1 · ${TITLES[route]}`;
+  $("#crumb").textContent = `Module ${MOD.n} · ${TITLES[route]}`;
+  $("#modSel").value = MOD.id;
   const y = window.scrollY;
   $("#view").innerHTML = VIEWS[route]();
   if (route === "workups" && state.workTab === "calc") runCalcs();
   if (route === "animations" && state.animTab === "odc") drawODC();
+  if (route === "animations" && state.animTab === "globin") drawGlobin();
   window.scrollTo(0, keepScroll ? y : 0);
 }
 
@@ -1814,6 +2672,7 @@ document.addEventListener("click", (e) => {
   const t = e.target.closest("button, a, [data-tn]");
   if (!t) return;
   const d = t.dataset;
+  if (d.mod) { setModule(d.mod); }
   if (d.lesson) { state.lesson = d.lesson; save(); }
   if (d.tab) { state.practiceTab = d.tab; }
   if (d.slides) { state.slideLesson = d.slides; state.slideIdx = 0; }
@@ -1826,27 +2685,27 @@ document.addEventListener("click", (e) => {
   if (d.fc) {
     const c = fc.cards[fc.i];
     if (d.fc === "known") state.known.add(c.id);
-    if (d.fc === "reset") { [...state.known].forEach((k) => { if (state.deck === "all" || k.startsWith(state.deck === "cells" ? "cell:" : "fact:")) state.known.delete(k); }); fc.cards = []; }
+    if (d.fc === "reset") { deckIds(state.deck).forEach((k) => state.known.delete(k)); fc.cards = []; }
     else { fc.i = (fc.i + 1) % fc.cards.length; fc.flipped = false; if (d.fc === "known" && fc.i === 0) fc.cards = []; }
     save(); $("#practiceBody").innerHTML = flashHTML(); return;
   }
-  if (d.ans) { const Q = QUIZ[qz.order[qz.i]]; qz.answered = +d.ans; if (qz.answered === Q.c) qz.score++; $("#practiceBody").innerHTML = quizHTML(); return; }
-  if (d.quiz === "next") { qz.i++; qz.answered = null; if (qz.i >= QUIZ.length) { state.quizBest = Math.max(state.quizBest || 0, qz.score); save(); } $("#practiceBody").innerHTML = quizHTML(); return; }
+  if (d.ans) { const Q = MOD.quiz[qz.order[qz.i]]; qz.answered = +d.ans; if (qz.answered === Q.c) qz.score++; $("#practiceBody").innerHTML = quizHTML(); return; }
+  if (d.quiz === "next") { qz.i++; qz.answered = null; if (qz.i >= MOD.quiz.length) { state.quizBest = Math.max(state.quizBest || 0, qz.score); save(); } $("#practiceBody").innerHTML = quizHTML(); return; }
   if (d.quiz === "restart") { qz = { i: 0, score: 0, answered: null, order: [] }; $("#practiceBody").innerHTML = quizHTML(); return; }
   if (d.case) { cs = { id: d.case, step: 0, picks: [] }; render(); return; }
   if ("caseBack" in d) { cs = { id: null, step: 0, picks: [] }; render(); return; }
   if (d.cstep != null && d.copt != null) {
-    const C = CASES.find((c) => c.id === cs.id);
+    const C = MOD.cases.find((c) => c.id === cs.id);
     cs.picks[+d.cstep] = +d.copt;
     if (cs.picks.length === C.steps.length && cs.picks.every((p) => p != null)) { state.casesDone.add(C.id); save(); }
     render(true); return;
   }
   if ("cnext" in d) { cs.step++; render(true); return; }
-  if (d.wtab) { state.workTab = d.wtab; render(true); return; }
+  if (d.wtab) { state.workTab = d.wtab; tr.path = ["start"]; render(true); return; }
   if (d.tnode) { tr.path.push(d.tnode); render(true); return; }
   if ("tback" in d) { tr.path.pop(); render(true); return; }
   if ("treset" in d) { tr.path = ["start"]; render(true); return; }
-  if ("mreset" in d) { store.set("marrowTicks", []); render(true); return; }
+  if ("mreset" in d) { store.set(ticksKey(), []); render(true); return; }
   if (d.atab) { state.animTab = d.atab; clearInterval(mat.timer); mat.timer = null; render(true); return; }
   if (d.mline) { mat.line = d.mline; mat.i = 0; clearInterval(mat.timer); mat.timer = null; render(true); return; }
   if (t.id === "matPlay") {
@@ -1897,23 +2756,25 @@ document.addEventListener("click", (e) => {
 
 document.addEventListener("input", (e) => {
   const id = e.target.id;
-  if (["rp", "rr", "rh", "ww", "wn", "aw", "ap", "mm", "me"].includes(id)) runCalcs();
+  if (e.target.dataset.calc) runCalcs();
+  if (id === "gt") drawGlobin();
   if (["ph", "tp", "bpg", "hbf"].includes(id)) drawODC();
   if (id === "matSlider") { clearInterval(mat.timer); mat.timer = null; const b = $("#matPlay"); if (b) b.textContent = "▶ Play"; setMat(+e.target.value); }
   if (id === "q") search(e.target.value);
 });
 document.addEventListener("change", (e) => {
+  if (e.target.id === "modSel") { setModule(e.target.value); render(); return; }
   if (e.target.id === "slideSel") { state.slideLesson = e.target.value; state.slideIdx = 0; render(true); }
   if (e.target.dataset.mtick != null) {
-    const i = +e.target.dataset.mtick; let ticks = store.get("marrowTicks", []);
+    const i = +e.target.dataset.mtick; let ticks = store.get(ticksKey(), []);
     ticks = e.target.checked ? [...new Set(ticks.concat(i))] : ticks.filter((x) => x !== i);
-    store.set("marrowTicks", ticks);
+    store.set(ticksKey(), ticks);
   }
 });
 document.addEventListener("keydown", (e) => {
   if (e.target.matches("input, select, textarea")) return;
   if (location.hash === "#slides" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
-    const n = buildSlides(LESSONS.find((l) => l.id === (state.slideLesson || state.lesson)) || LESSONS[0]).length;
+    const n = buildSlides(MOD.lessons.find((l) => l.id === (state.slideLesson || state.lesson)) || MOD.lessons[0]).length;
     const ni = state.slideIdx + (e.key === "ArrowRight" ? 1 : -1);
     if (ni >= 0 && ni < n) { state.slideIdx = ni; const fs = document.fullscreenElement; render(true); if (fs) $("#deck").requestFullscreen?.().catch(() => {}); }
   }
@@ -1930,11 +2791,11 @@ document.addEventListener("touchend", (e) => {
 
 /* Search across lessons, atlas and flashcards. */
 const strip = (h) => h.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-const INDEX = [
-  ...LESSONS.map((l) => ({ kind: "Lesson", title: l.title, text: strip(l.body) + " " + l.points.join(" "), go: () => { state.lesson = l.id; save(); location.hash = "learn"; render(); } })),
-  ...CELLS.map((c) => ({ kind: "Atlas", title: c.name, text: [c.nucleus, c.cyto, c.mimic, c.lineage].join(" "), go: () => openCell(c.id) })),
-  ...FACTS.map((f) => ({ kind: "Flashcard", title: f[0], text: f[1], go: null, answer: f[1] }))
-];
+const INDEX = Object.values(MODS).flatMap((m) => [
+  ...m.lessons.map((l) => ({ kind: `M${m.n} lesson`, title: l.title, text: strip(l.body) + " " + l.points.join(" "), go: () => { setModule(m.id); state.lesson = l.id; save(); location.hash = "learn"; render(); } })),
+  ...m.cells.map((c) => ({ kind: `M${m.n} atlas`, title: c.name, text: [c.nucleus, c.cyto, c.mimic, c.what, c.seen, lineageOf(c)].filter(Boolean).join(" "), go: () => openCell(c.id) })),
+  ...m.facts.map((f) => ({ kind: `M${m.n} card`, title: f[0], text: f[1], go: null, answer: f[1] }))
+]);
 function search(q) {
   const box = $("#results");
   q = q.trim().toLowerCase();
