@@ -2502,7 +2502,7 @@ function drawCell(cell, opts = {}) {
   const d = cell.draw;
   const label = opts.label === false ? "" : `<title>${cell.name}: schematic illustration</title>`;
   let s = `<svg viewBox="0 0 200 200" class="cellsvg" role="img" aria-label="${cell.name}, schematic illustration" xmlns="http://www.w3.org/2000/svg">${label}`;
-  s += `<rect width="200" height="200" fill="#f7f0f2"/>`;
+  s += stainDefs(id, Math.floor(rand() * 900) + 1) + `<rect width="200" height="200" fill="url(#${id}bg)"/>`;
 
   if (d.plateletField) {
     const pk = 14; // px per µm in this zoomed field
@@ -2518,14 +2518,14 @@ function drawCell(cell, opts = {}) {
         s += `<circle cx="${f1(x + Math.cos(t) * dd)}" cy="${f1(y + Math.sin(t) * dd)}" r="${f1(0.18 * pk + r2())}" fill="#6d2f78" opacity="0.85"/>`;
       }
     });
-    s += scaleBar(5, pk);
+    s += vignette(id) + scaleBar(5, pk);
     return s + "</svg>";
   }
 
   const pxPerUm = (K * 2 * (d.r || 3.8)) / cell.sizeUm;
   const R = (d.r || 3.8) * K;
 
-  s += backgroundRBCs(3.75 * pxPerUm, rand, id, R * Math.max(d.sx || 1, 1));
+  s += `<g filter="url(#${id}fb)" opacity="0.92">${backgroundRBCs(3.75 * pxPerUm, rand, id, R * Math.max(d.sx || 1, 1))}</g>`;
 
   if (d.smudge) {
     // A crushed cell: bare, smeared nuclear chromatin with no cytoplasm.
@@ -2535,13 +2535,13 @@ function drawCell(cell, opts = {}) {
       s += `<path d="M${f1(C0 + Math.cos(t) * r0)},${f1(C0 + Math.sin(t) * r0)} q${f1(Math.cos(t + 0.5) * L / 2)},${f1(Math.sin(t + 0.5) * L / 2)} ${f1(Math.cos(t) * L)},${f1(Math.sin(t) * L)}" stroke="#5d3a80" stroke-width="${f1(0.15 * K + rand() * 0.8)}" fill="none" opacity="0.55"/>`;
     }
     s += `<path d="${blob({ cx: C0 + (rand() - 0.5) * 8, cy: C0 + (rand() - 0.5) * 8, r: R * 0.45, wobble: 0.25 }, rand)}" fill="#5b3a7e" opacity="0.6"/>`;
-    s += scaleBar(10, pxPerUm);
+    s += vignette(id) + scaleBar(10, pxPerUm);
     return s + "</svg>";
   }
 
   if (d.rbc) {
     s += rbcShape(C0, C0, R, d.cyto, d.rbc === "poly", id, rand);
-    s += scaleBar(pxPerUm * 10 > 90 ? 5 : 10, pxPerUm);
+    s += vignette(id) + scaleBar(pxPerUm * 10 > 90 ? 5 : 10, pxPerUm);
     return s + "</svg>";
   }
 
@@ -2573,7 +2573,7 @@ function drawCell(cell, opts = {}) {
   };
   if (d.hairs) s += projections(d.hairs, 0, Math.PI * 2, 0.32, 0.25 * K);
   if (d.villi) { const a = rand() * 6.28; s += projections(d.villi, a, 1.1, 0.2, 0.32 * K) + projections(Math.ceil(d.villi / 2), a + Math.PI, 0.9, 0.18, 0.32 * K); }
-  s += `<path d="${cytoPath}" fill="url(#${gid})"/>`;
+  s += `<path d="${cytoPath}" fill="url(#${gid})" filter="url(#${id}fc)"/>`;
 
   const nuc = d.nuc;
   const geo = nucleusGeometry(nuc, rand);
@@ -2638,7 +2638,7 @@ function drawCell(cell, opts = {}) {
   const nclip = id + "nc";
   s += `<defs><clipPath id="${nclip}">${geo.shapes.join("")}</clipPath></defs>`;
   s += geo.extras.join("").replace(/NUC/g, shade(nucColor, -0.1));
-  s += `<g clip-path="url(#${nclip})"><rect x="${f1(geo.box.x0)}" y="${f1(geo.box.y0)}" width="${f1(geo.box.x1 - geo.box.x0)}" height="${f1(geo.box.y1 - geo.box.y0)}" fill="${nucColor}"/>`;
+  s += `<g filter="url(#${id}fn)"><g clip-path="url(#${nclip})"><rect x="${f1(geo.box.x0)}" y="${f1(geo.box.y0)}" width="${f1(geo.box.x1 - geo.box.x0)}" height="${f1(geo.box.y1 - geo.box.y0)}" fill="${nucColor}"/>`;
   s += chromatin(d.chrom, geo.box, nucColor, rand);
   if (d.grooves) {
     const [gx, gy, gr] = geo.centres[0];
@@ -2659,8 +2659,9 @@ function drawCell(cell, opts = {}) {
       }
     });
   }
-  s += `</g>`;
+  s += `</g></g>`;
   s += granDots(true);
+  s += vignette(id);
   if (d.auer) {
     const rx = R * (d.sx || 1) * 0.8, ry = R * (d.sy || 1) * 0.8;
     const n = d.auer.faggot ? 14 : d.auer.n || 1;
@@ -2678,6 +2679,21 @@ function drawCell(cell, opts = {}) {
   s += scaleBar(pxPerUm * 10 > 95 ? 5 : 10, pxPerUm);
   return s + "</svg>";
 }
+
+/* Photographic look: stain texture filters, a microscope-field background and a soft vignette. */
+function stainDefs(id, seed) {
+  const tex = (name, freq, oct, a, b, blur) => `<filter id="${id}${name}" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="${freq}" numOctaves="${oct}" seed="${seed}" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.05  0 0 0 0 0  0 0 0 0 0.12  ${a} 0 0 0 ${b}" result="d"/>
+    <feComposite in="d" in2="SourceGraphic" operator="in" result="dm"/>
+    <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="dm"/></feMerge>${blur ? `<feGaussianBlur stdDeviation="${blur}"/>` : ""}
+  </filter>`;
+  return `<defs>${tex("fc", 0.11, 2, 0.55, -0.3, 0)}${tex("fn", 0.24, 2, 1.5, -0.62, 0.32)}
+  <filter id="${id}fb"><feGaussianBlur stdDeviation="0.6"/></filter>
+  <radialGradient id="${id}bg" cx="0.5" cy="0.45" r="0.75"><stop offset="0" stop-color="#fbf5f4"/><stop offset="0.7" stop-color="#f3e8ec"/><stop offset="1" stop-color="#e6d6de"/></radialGradient>
+  <radialGradient id="${id}vg" cx="0.5" cy="0.5" r="0.72"><stop offset="0.62" stop-color="#3a2340" stop-opacity="0"/><stop offset="1" stop-color="#3a2340" stop-opacity="0.16"/></radialGradient></defs>`;
+}
+const vignette = (id) => `<rect width="200" height="200" fill="url(#${id}vg)" pointer-events="none"/>`;
 
 function scaleBar(um, pxPerUm) {
   const L = um * pxPerUm;
@@ -2818,7 +2834,8 @@ function drawMorph(c) {
   let s = `<svg viewBox="0 0 200 200" class="cellsvg" role="img" aria-label="${c.name}, schematic illustration" xmlns="http://www.w3.org/2000/svg"><title>${c.name}: schematic illustration</title>`;
   if (c.perls) return s + ringSideroblast(rand);
   const f = rbcField(c.kind, rand);
-  s += `<rect width="200" height="200" fill="${f.bg}"/>` + f.body;
+  const vid = "v" + (++svgSeq);
+  s += stainDefs(vid, 7) + `<rect width="200" height="200" fill="${f.bg}"/>` + f.body + vignette(vid);
   if (c.stain) s += `<g><rect x="118" y="6" width="76" height="16" rx="3" fill="#ffffff" opacity="0.85"/><text x="156" y="17" font-size="7.5" text-anchor="middle" fill="#2c2337" font-family="sans-serif">${c.stain}</text></g>`;
   return s + scaleBar(5, PXU) + "</svg>";
 }
