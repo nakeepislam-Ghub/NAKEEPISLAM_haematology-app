@@ -24,6 +24,7 @@ const ATLAS_PHOTO_NOTE = "Photos are from Wikimedia Commons under CC0, public do
 
 /* Thumbnail for grids, strips, flashcards and slides. */
 function cellPic(id, opts = {}) {
+  if (MINE_PREF() && mineFirst(id)) return minePic(id, opts);
   const p = PHOTOS[id];
   if (!p) return `<div class="pic drawn">${cellSVG(id)}<span class="pic-tag">Drawing</span></div>`;
   const alt = opts.credit ? "Photomicrograph to identify" : `Photomicrograph: ${cellById[id].name}`;
