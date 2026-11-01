@@ -164,19 +164,20 @@ const ICONS = {
   cases: '<path d="M9 4h6v3H9z"/><rect x="4" y="6" width="16" height="15" rx="2"/><path d="M8 12h8M8 16h5"/>',
   workups: '<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 7v10M8 5h3a4 4 0 0 1 4 4v1M8 19h3a4 4 0 0 0 4-4v-1"/>',
   animations: '<polygon points="7,4 20,12 7,20"/>',
+  mine: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/>',
   slides: '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M12 16v4M8 20h8"/>',
   about: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'
 };
 const ROUTES = [
   ["home", "Home"], ["learn", "Lessons"], ["atlas", "Atlas"], ["practice", "Flashcards & quiz"], ["cases", "Case studies"],
-  ["workups", "Workups"], ["animations", "Animations"], ["slides", "Slides"], ["about", "Sources & install"]
+  ["workups", "Workups"], ["animations", "Animations"], ["slides", "Slides"], ["mine", "My images"], ["about", "Sources & install"]
 ];
 const MOBILE = [["home", "Home"], ["learn", "Learn"], ["atlas", "Atlas"], ["practice", "Practise"], ["more", "More"]];
 const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k] || ICONS.about}</svg>`;
 
 function renderNav(route) {
   $("#nav").innerHTML = ROUTES.map(([r, t]) => `<a href="#${r}" ${r === route ? 'aria-current="page"' : ""}>${icon(r)}${t}</a>`).join("");
-  const moreRoutes = ["cases", "workups", "animations", "slides", "about", "more"];
+  const moreRoutes = ["cases", "workups", "animations", "slides", "mine", "about", "more"];
   $("#tabs").innerHTML = MOBILE.map(([r, t]) => {
     const cur = r === route || (r === "more" && moreRoutes.includes(route));
     return `<a href="#${r}" ${cur ? 'aria-current="page"' : ""}>${icon(r === "more" ? "workups" : r)}${t}</a>`;
@@ -279,6 +280,7 @@ function openCell(id) {
   bg.innerHTML = `<div class="drawer" role="dialog" aria-modal="true" aria-label="${esc(c.name)}">
     <div class="row" style="justify-content:space-between"><span class="tag az">${esc(lineageOf(c))}</span><button class="btn small" data-close>Close</button></div>
     <h2 style="margin-top:12px">${esc(c.name)}</h2>
+    ${MINE[id] ? mineGalleryHTML(id, c.name) : ""}
     ${photoFigure(id)}
     <figure class="pic-fig${PHOTOS[id] ? " small" : ""}"><div class="figure">${renderCell(c)}</div><figcaption>${PHOTOS[id] ? "Original drawing of the same cell, to scale." : "Original drawing. No openly licensed photo of good enough quality was found for this cell yet."}</figcaption></figure>
     ${c.what ? `<dl class="kv">
@@ -295,6 +297,7 @@ function openCell(id) {
       <dt>Normal numbers</dt><dd>${esc(c.normal)}</dd>
       <dt>Look-alikes</dt><dd>${esc(c.mimic)}</dd>
     </dl>`}
+    ${MINE[id] ? "" : mineGalleryHTML(id, c.name)}
     <p class="note">In the drawing, the scale bar is to the same scale as the cells; normal red cells are about 7.5 µm across. Photo magnification varies.</p>
     ${readingHTML(c)}
   </div>`;
@@ -398,7 +401,8 @@ function viewCases() {
   const C = MOD.cases.find((c) => c.id === cs.id);
   let html = `<button class="btn small" data-case-back>← All cases</button>
 <div style="max-width:720px;margin-top:14px"><span class="tag">${esc(C.tag)}</span><h1 style="margin-top:8px">${esc(C.title)}</h1><p>${esc(C.stem)}</p>
-<div class="casedata">${C.data.map(([k, v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join("")}</div>`;
+<div class="casedata">${C.data.map(([k, v]) => `<div><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join("")}</div>
+${mineGalleryHTML("case:" + C.id, "this case")}`;
   C.steps.forEach((S, k) => {
     if (k > cs.step) return;
     const pick = cs.picks[k];
@@ -724,7 +728,7 @@ function viewAbout() {
 </ul>
 <p>After the first visit, lessons, atlas, flashcards, quiz, cases, workups, animations and slides all work without internet. Video links need a connection. Your progress is stored on your own device.</p>
 <h2 style="margin-top:22px">Content and copyright</h2>
-<p>All text in this app is original teaching material written for it. Textbook figures and photographs are not reproduced, because they are under copyright. The cell photographs are openly licensed images from Wikimedia Commons (CC0, public domain, CC BY or CC BY-SA; credits below), and the drawings are original. Facts and reference ranges were checked against the books below, which you should read for full detail and more photomicrographs.</p>
+<p>All text in this app is original teaching material written for it. Textbook figures and photographs are not reproduced, because they are under copyright. The cell photographs are openly licensed images from Wikimedia Commons (CC0, public domain, CC BY or CC BY-SA; credits below), and the drawings are original. You can add your own pictures, for example figures from your textbooks, under <a href="#mine">My images</a>; they stay on your device for personal study and are never published. Facts and reference ranges were checked against the books below, which you should read for full detail and more photomicrographs.</p>
 <ul>${Object.values(SOURCES).map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
 <p>Reference ranges differ between laboratories, analysers and populations. Always use your own laboratory's ranges for reporting.</p>
 ${photoCreditsHTML()}
@@ -739,11 +743,12 @@ function viewMore() {
   <a href="#workups"><b>Workups</b><span>Decision tree, marrow checklist, calculators</span></a>
   <a href="#animations"><b>Animations</b><span>${esc(MOD.anims.map((a) => a[1]).join(", "))}</span></a>
   <a href="#slides"><b>Slides</b><span>Present any lesson</span></a>
+  <a href="#mine"><b>My images</b><span>${mineCount() ? mineCount() + " of your own pictures" : "Add your own textbook figures"}</span></a>
   <a href="#about"><b>Sources and install</b><span>Offline use and references</span></a>
 </div>`;
 }
 
-const VIEWS = { home: viewHome, learn: viewLearn, atlas: viewAtlas, practice: viewPractice, cases: viewCases, workups: viewWorkups, animations: viewAnimations, slides: viewSlides, about: viewAbout, more: viewMore };
+const VIEWS = { home: viewHome, learn: viewLearn, atlas: viewAtlas, practice: viewPractice, cases: viewCases, workups: viewWorkups, animations: viewAnimations, slides: viewSlides, mine: viewMine, about: viewAbout, more: viewMore };
 const TITLES = Object.fromEntries(ROUTES.concat([["more", "More"]]));
 
 function render(keepScroll) {
