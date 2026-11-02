@@ -41,6 +41,7 @@ function photoFigure(id) {
 
 /* Which library textbooks to read for more photos of each kind of cell. */
 function readingFor(c) {
+  if (c.id.startsWith("m5-")) return ["dl", "bc", "bmd"];
   if (c.id.startsWith("m3-")) return c.group === "Marrow" ? ["bmd", "hp", "bmp"] : ["bc", "hp", "bmd"];
   if (c.id.startsWith("m2-")) {
     if (c.group === "Marrow") return ["bmd", "bmp", "bc"];
@@ -59,7 +60,7 @@ function readingHTML(c) {
 
 /* Full credits list for the Sources page. */
 function photoCreditsHTML() {
-  const ids = Object.keys(PHOTOS).filter((id) => cellById[id]);
+  const ids = Object.keys(PHOTOS).filter((id) => cellById[id] && !PHOTOS[id].alias);
   return `<h2 style="margin-top:22px">Photo credits</h2>
 <p>Photomicrographs are from Wikimedia Commons, used under the licence shown. Photos marked “cropped” or “resized” were cut to one cell and scaled for the app; that is the only change. CC BY-SA photos, in their adapted form here, are shared under the same licence.</p>
 <ol class="credits">${ids.map((id) => { const p = PHOTOS[id]; return `<li><b>${esc(cellById[id].name)}</b>: “${esc(p.title)}”. ${creditHTML(p)}</li>`; }).join("")}</ol>`;

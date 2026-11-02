@@ -19,7 +19,8 @@ const MODULES = [
   { id: "m1", n: 1, title: "Normal blood and marrow cells", sub: "Histology and physiology", ready: true },
   { id: "m2", n: 2, title: "Red cell disorders", sub: "Anaemia workup, morphology, haemolysis", ready: false },
   { id: "m3", n: 3, title: "White cell disorders and leukaemia", sub: "Immunophenotyping, WHO 5th edition and ICC 2022", ready: false },
-  { id: "m4", n: 4, title: "Haemostasis", sub: "Platelets, coagulation, thrombosis workup", ready: false }
+  { id: "m4", n: 4, title: "Haemostasis", sub: "Platelets, coagulation, thrombosis workup", ready: false },
+  { id: "m5", n: 5, title: "Practical laboratory haematology", sub: "Dacie and Lewis methods, simulators and quality control", ready: false }
 ];
 
 const LESSONS = [
