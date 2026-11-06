@@ -3717,6 +3717,7 @@ Object.assign(SOURCES, {
   isthla: "Devreese et al., ISTH SSC guidance on lupus anticoagulant detection (J Thromb Haemost 2020)",
   vwd21: "ASH ISTH NHF WFH 2021 guidelines on the diagnosis of von Willebrand disease (Blood Adv 2021)",
   isthlta: "Cattaneo et al., ISTH SSC recommendations for light transmission aggregometry (J Thromb Haemost 2013)",
+  ph: "Perry DJ, Practical-Haemostasis.com: a free online guide to haemostasis laboratory tests (Cambridge, UK)",
   coagnotes2: "Coagulation lecture notes (project library): evaluation of haemostasis, platelet and factor disorders, thrombophilia"
 });
 
@@ -4238,6 +4239,23 @@ const M6_LESSONS = [
   ]
 }
 ];
+
+/* Free online further reading (link only; content stays on the author's site). */
+const PH_BASE = "https://practical-haemostasis.com/";
+const M6_LINKS = {
+  "m6-pre": [["Pre-analytical variables", "Quality%20Assurance/pre_analytical_variables.html"]],
+  "m6-screen": [["Prothrombin time", "Screening%20Tests/pt.html"], ["APTT", "Screening%20Tests/aptt.html"], ["Thrombin time", "Screening%20Tests/thrombin_time.html"], ["Reptilase time", "Miscellaneous/reptilase_time.html"], ["Fibrinogen", "Screening%20Tests/fibrinogen.html"], ["ISI and INR", "Miscellaneous/isi_and_inr.html"]],
+  "m6-mix": [["Inhibitor assays (mixing, Bethesda)", "Inhibitor%20Assays/inhibitor_assays.html"]],
+  "m6-factors": [["Factor assays: introduction", "Factor%20Assays/factor_assays_introduction.html"], ["One-stage APTT-based assays", "Factor%20Assays/1_stage_aptt_factor_assay.html"], ["Chromogenic factor assays", "Factor%20Assays/chromogenic_factor_assays.html"], ["Factor XIII assays", "Factor%20Assays/factor_XIII_assays.html"], ["EHL products and novel agents", "Factor%20Assays/EHL_products_novel_agents.html"]],
+  "m6-la": [["Antiphospholipid antibodies", "Thromobophilia/APS/apl_introduction.html"], ["dRVVT", "Thromobophilia/APS/drvvt.html"], ["Taipan venom time", "Thromobophilia/APS/taipan_venom_time.html"], ["aCL and anti-β2GPI", "Thromobophilia/APS/acl_b2gp.html"]],
+  "m6-vwf": [["VWF assays: introduction", "Factor%20Assays/vwf/vwf_assays_introduction.html"], ["VWF:RCo", "Factor%20Assays/vwf/VWF%20Functional%20Assays/vwf_rco_assay.html"], ["RIPA", "Factor%20Assays/vwf/VWF%20Functional%20Assays/ripa_test.html"], ["VWF multimers", "Factor%20Assays/vwf/vwf_multimer_assays.html"], ["FVIII binding assay (2N)", "Factor%20Assays/vwf/factor_viii_binding_assay.html"], ["VWF propeptide", "Factor%20Assays/vwf/vwfpp_assays.html"]],
+  "m6-plt": [["Platelet function testing", "Platelets/platelet_function_testing_introduction.html"], ["Light transmission aggregometry", "Platelets/platelet_function_testing_lta.html"], ["PFA-100", "Platelets/pfa.html"], ["Flow cytometry", "Platelets/platelet_function_testing_flow_cytometry.html"]],
+  "m6-anticoag": [["Anti-Xa assays", "Miscellaneous/anti_xa_assays.html"], ["DOACs", "Useful%20information/doacs.html"], ["Ecarin clotting time", "Miscellaneous/ecarin_ct.html"], ["HIT assays", "Miscellaneous/hit_assays.html"]],
+  "m6-fib": [["Fibrinolysis", "Fibrinolysis/fibrinolysis_introduction.html"], ["D-dimers", "Fibrinolysis/d_dimers.html"], ["TEG and ROTEM", "Miscellaneous/Global%20Assays/teg_rotem.html"]],
+  "m6-thrombo": [["Thrombophilia testing", "Thromobophilia/thrombophilia_testing_introduction.html"], ["Antithrombin", "Thromobophilia/at_assays.html"], ["Protein C", "Thromobophilia/pc_assays.html"], ["Protein S", "Thromobophilia/ps_assays.html"], ["APC resistance", "Thromobophilia/apcr_assays.html"], ["Factor V Leiden", "Genetics/fv_leiden.html"]],
+  "m6-qa": [["Quality assurance", "Quality%20Assurance/introduction_to_quality_assurance.html"]]
+};
+M6_LESSONS.forEach((l) => { if (M6_LINKS[l.id]) l.links = M6_LINKS[l.id].map(([t, u]) => [t, PH_BASE + u]); });
 
 /* Atlas: the film findings the coagulation laboratory checks, re-using the platelet and red cell drawings. */
 const M6_CELL_SPECS = [
@@ -6677,6 +6695,7 @@ function viewLearn() {
       <button class="btn ${state.done.has(L.id) ? "" : "primary"}" data-complete="${L.id}">${state.done.has(L.id) ? "✓ Completed" : "Mark lesson complete"}</button>
     </div>
     <div class="sources"><b>Read more in</b><ul>${L.sources.map((s) => `<li>${esc(SOURCES[s])}</li>`).join("")}</ul></div>
+    ${L.links ? `<div class="sources"><b>Read online at Practical-Haemostasis.com</b> <span class="muted">(free, internet needed; by Dr David Perry)</span><ul>${L.links.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul></div>` : ""}
     <div class="pager">
       ${i > 0 ? `<button class="btn" data-go-lesson="${MOD.lessons[i - 1].id}">← ${esc(MOD.lessons[i - 1].title)}</button>` : "<span></span>"}
       ${i < MOD.lessons.length - 1 ? `<button class="btn" data-go-lesson="${MOD.lessons[i + 1].id}">${esc(MOD.lessons[i + 1].title)} →</button>` : `<a class="btn primary" href="#practice">Test yourself →</a>`}
