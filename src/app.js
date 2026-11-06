@@ -1,8 +1,8 @@
-/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, m4-data.js, m5-data.js, m5-ui.js, photos.js, photos-ui.js, cells.js, rbc.js and plt.js. */
+/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, m4-data.js, m5-data.js, m5-ui.js, m6-data.js, m6-ui.js, photos.js, photos-ui.js, cells.js, rbc.js and plt.js. */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const cellById = Object.fromEntries(CELLS.concat(M2_CELLS, M2_NUCLEATED, M3_CELLS, M4_CELLS, M5_CELLS).map((c) => [c.id, c]));
+const cellById = Object.fromEntries(CELLS.concat(M2_CELLS, M2_NUCLEATED, M3_CELLS, M4_CELLS, M5_CELLS, M6_CELLS).map((c) => [c.id, c]));
 const svgCache = {};
 const renderCell = (c) => (c.plt ? drawPlt(c) : c.kind || c.perls ? drawMorph(c) : drawCell(c));
 const cellSVG = (id) => (svgCache[id] ||= renderCell(cellById[id]));
@@ -94,7 +94,7 @@ const CALCS = {
       return `Monocytes ${pct.toFixed(0)}% of WBC: criterion met${cm < 1 ? " (0.5–0.9 × 10⁹/L: also needs clonality and dysplasia)" : ""}<br><b>${type}, ${grade}</b><br><span class="muted">Needs persistence, exclusion of reactive causes, and ideally a clonal marker or dysplasia.</span>`;
     } }
 };
-Object.assign(CALCS, M5_CALCS);
+Object.assign(CALCS, M5_CALCS, M6_CALCS);
 
 const MODS = {
   m1: { id: "m1", n: 1, lessons: LESSONS, lessonCells: M1_LESSON_CELLS, cells: CELLS, facts: FACTS, quiz: QUIZ, cases: CASES,
@@ -119,9 +119,13 @@ const MODS = {
   m5: { id: "m5", n: 5, lessons: M5_LESSONS, lessonCells: M5_LESSON_CELLS, cells: M5_CELLS, facts: M5_FACTS, quiz: M5_QUIZ, cases: M5_CASES,
     hero: ["m5-retic", "m5-malaria", "m5-auer"], tagline: "Dacie and Lewis at the bench: from the sample tube to quality control",
     trees: M5_TREES, checklist: M5_CHECKLIST,
-    calcs: ["indices", "chamber", "retic", "inr", "fmh", "para"], anims: [["hcyt", "Haemocytometer count"], ["qc", "Westgard QC trainer"], ["esr", "ESR simulator"]] }
+    calcs: ["indices", "chamber", "retic", "inr", "fmh", "para"], anims: [["hcyt", "Haemocytometer count"], ["qc", "Westgard QC trainer"], ["esr", "ESR simulator"]] },
+  m6: { id: "m6", n: 6, lessons: M6_LESSONS, lessonCells: M6_LESSON_CELLS, cells: M6_CELLS, facts: M6_FACTS, quiz: M6_QUIZ, cases: M6_CASES,
+    hero: ["m6-giant", "m6-clump", "m6-schisto"], tagline: "The haemostasis bench: from the citrate tube to LA, VWF and platelet function",
+    trees: M6_TREES, checklist: M6_CHECKLIST,
+    calcs: ["citrate", "rosner", "bethesda", "lanr", "vwfr", "lmwh", "ddimer", "inr"], anims: [["coag", "Virtual coagulometer"], ["lta", "Platelet aggregometry"], ["rotem", "Viscoelastic testing"]] }
 };
-["m2", "m3", "m4", "m5"].forEach((id) => (MODULES.find((m) => m.id === id).ready = true));
+["m2", "m3", "m4", "m5", "m6"].forEach((id) => (MODULES.find((m) => m.id === id).ready = true));
 
 /* Per-viewer progress, kept in this browser only. */
 const store = {
@@ -224,7 +228,7 @@ ${MODULES.map((m) => `
 <div class="section-h"><h2>Module ${MOD.n} at a glance</h2></div>
 <div class="quick">
   <a href="#learn"><b>${MOD.lessons.length} lessons</b><span>${esc(MOD.tagline)}</span></a>
-  <a href="#atlas"><b>${MOD.cells.length} images in the atlas</b><span>${MOD.id === "m1" ? "Features, sizes and look-alikes" : MOD.id === "m2" ? "Red cell shapes, inclusions and marrow clues" : MOD.id === "m3" ? "Blasts, Auer rods, lymphoma, plasma and T cells" : MOD.id === "m5" ? "Special stains, parasites and analyser artefacts" : "Platelet size, clumps, satellitism and fragments"}</span></a>
+  <a href="#atlas"><b>${MOD.cells.length} images in the atlas</b><span>${MOD.id === "m1" ? "Features, sizes and look-alikes" : MOD.id === "m2" ? "Red cell shapes, inclusions and marrow clues" : MOD.id === "m3" ? "Blasts, Auer rods, lymphoma, plasma and T cells" : MOD.id === "m5" ? "Special stains, parasites and analyser artefacts" : MOD.id === "m6" ? "Film checks before coagulation and platelet function tests" : "Platelet size, clumps, satellitism and fragments"}</span></a>
   <a href="#practice"><b>${cardTotal} flashcards</b><span>${cardPct}% marked as known</span></a>
   <a href="#practice" data-tab="quiz"><b>${MOD.quiz.length} MCQs</b><span>${state.quizBest == null ? "Not attempted yet" : `Best score ${state.quizBest} of ${MOD.quiz.length}`}</span></a>
   <a href="#cases"><b>${MOD.cases.length} case studies</b><span>${casesHere} completed</span></a>
@@ -270,8 +274,8 @@ function viewAtlas() {
   const groups = ["All", ...new Set(MOD.cells.map(lineageOf))];
   const list = MOD.cells.filter((c) => state.atlasFilter === "All" || lineageOf(c) === state.atlasFilter);
   return `
-<h1>${{ m1: "Cell atlas", m2: "Red cell morphology atlas", m3: "White cell and leukaemia atlas", m4: "Platelet atlas", m5: "Laboratory methods atlas" }[MOD.id]}</h1>
-<p class="muted" style="max-width:66ch">${MOD.id === "m5" ? "What the special stains and laboratory artefacts look like, with the method that shows each one: supravital stains, iron and cytochemical stains, parasites, and the analyser and storage artefacts behind spurious results. Tap a picture for what it is, where it is seen, and the bench tip." : MOD.id === "m1" ? "Openly licensed photomicrographs and original to-scale drawings of Romanowsky-stained cells against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : MOD.id === "m4" ? "Original schematic drawings of platelets on the blood film: normal and low counts, clumps and satellitism, large, giant and grey platelets, with the marrow and red cell clues that go with platelet disorders. Tap a picture for what it is, where it is seen, and a reporting tip." : MOD.id === "m3" ? "Openly licensed photomicrographs and original drawings of reactive, dysplastic and neoplastic white cells: blasts, Auer rods, APL, lymphoma cells, plasma cells and T cells. Tap a picture for what it is, where it is seen, and a reporting tip." : "Openly licensed photomicrographs and original drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
+<h1>${{ m1: "Cell atlas", m2: "Red cell morphology atlas", m3: "White cell and leukaemia atlas", m4: "Platelet atlas", m5: "Laboratory methods atlas", m6: "Haemostasis bench atlas" }[MOD.id]}</h1>
+<p class="muted" style="max-width:66ch">${MOD.id === "m6" ? "What the haemostasis laboratory checks on the blood film before it trusts a clotting or platelet function result: clumps and satellitism, platelet number, size and granules, and red cell fragments. Original drawings. Tap a picture for what it means at the bench." : MOD.id === "m5" ? "What the special stains and laboratory artefacts look like, with the method that shows each one: supravital stains, iron and cytochemical stains, parasites, and the analyser and storage artefacts behind spurious results. Tap a picture for what it is, where it is seen, and the bench tip." : MOD.id === "m1" ? "Openly licensed photomicrographs and original to-scale drawings of Romanowsky-stained cells against the red cells around them. Tap a cell for its features, normal numbers and look-alikes." : MOD.id === "m4" ? "Original schematic drawings of platelets on the blood film: normal and low counts, clumps and satellitism, large, giant and grey platelets, with the marrow and red cell clues that go with platelet disorders. Tap a picture for what it is, where it is seen, and a reporting tip." : MOD.id === "m3" ? "Openly licensed photomicrographs and original drawings of reactive, dysplastic and neoplastic white cells: blasts, Auer rods, APL, lymphoma cells, plasma cells and T cells. Tap a picture for what it is, where it is seen, and a reporting tip." : "Openly licensed photomicrographs and original drawings of the red cell changes you report on a film, with the marrow and white cell clues that go with them. Tap a picture for what it is, where it is seen, and a reporting tip."}</p>
 <div class="filters">${groups.map((g) => `<button class="chip" data-filter="${g}" aria-pressed="${g === state.atlasFilter}">${g}</button>`).join("")}</div>
 <div class="atlas">${list.map((c) => `<button data-cell="${c.id}"><div class="figure">${cellPic(c.id)}</div><b>${esc(c.name)}</b><small>${esc(lineageOf(c))}${c.size ? " · " + esc(c.size) : ""}</small></button>`).join("")}</div>
 <p class="note" style="margin-top:18px">${ATLAS_PHOTO_NOTE}</p>
@@ -616,6 +620,9 @@ function viewAnimations() {
   if (state.animTab === "hcyt") body = `<div class="anim" id="m5sim">${hcytHTML()}</div>`;
   if (state.animTab === "qc") body = `<div class="anim" id="m5sim">${qcHTML()}</div>`;
   if (state.animTab === "esr") body = `<div class="anim">${esrHTML()}</div>`;
+  if (state.animTab === "coag") body = `<div class="anim" id="m6sim">${coagHTML()}</div>`;
+  if (state.animTab === "lta") body = `<div class="anim" id="m6sim">${ltaHTML()}</div>`;
+  if (state.animTab === "rotem") body = `<div class="anim" id="m6sim">${veHTML()}</div>`;
   return `<h1>Animations</h1>
 <div class="seg" role="group" aria-label="Animation" style="margin:14px 0 18px">${tabs.map(([k, t]) => `<button data-atab="${k}" aria-pressed="${state.animTab === k}">${t}</button>`).join("")}</div>${body}`;
 }
@@ -742,7 +749,7 @@ function viewAbout() {
 ${photoCreditsHTML()}
 ${MODULES.some((m) => !m.ready) ? `<h2 style="margin-top:22px">Coming next</h2>
 <ul>${MODULES.filter((m) => !m.ready).map((m) => `<li><b>Module ${m.n}: ${esc(m.title)}.</b> ${esc(m.sub)}.</li>`).join("")}</ul>` : ""}
-<p class="footer-note">Interactive Diagnostic Haematology · Modules 1 to 5 · For education only, not for clinical decision-making.</p></div>`;
+<p class="footer-note">Interactive Diagnostic Haematology · Modules 1 to 6 · For education only, not for clinical decision-making.</p></div>`;
 }
 
 function viewMore() {

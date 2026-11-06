@@ -20,7 +20,8 @@ const MODULES = [
   { id: "m2", n: 2, title: "Red cell disorders", sub: "Anaemia workup, morphology, haemolysis", ready: false },
   { id: "m3", n: 3, title: "White cell disorders and leukaemia", sub: "Immunophenotyping, WHO 5th edition and ICC 2022", ready: false },
   { id: "m4", n: 4, title: "Haemostasis", sub: "Platelets, coagulation, thrombosis workup", ready: false },
-  { id: "m5", n: 5, title: "Practical laboratory haematology", sub: "Dacie and Lewis methods, simulators and quality control", ready: false }
+  { id: "m5", n: 5, title: "Practical laboratory haematology", sub: "Dacie and Lewis methods, simulators and quality control", ready: false },
+  { id: "m6", n: 6, title: "Practical haemostasis laboratory", sub: "Coagulation, LA, VWF and platelet function testing at the bench", ready: false }
 ];
 
 const LESSONS = [

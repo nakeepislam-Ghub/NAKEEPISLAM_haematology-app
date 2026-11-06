@@ -41,6 +41,7 @@ function photoFigure(id) {
 
 /* Which library textbooks to read for more photos of each kind of cell. */
 function readingFor(c) {
+  if (c.id.startsWith("m6-")) return ["labhaem", "colman", "bc"];
   if (c.id.startsWith("m5-")) return ["dl", "bc", "bmd"];
   if (c.id.startsWith("m3-")) return c.group === "Marrow" ? ["bmd", "hp", "bmp"] : ["bc", "hp", "bmd"];
   if (c.id.startsWith("m2-")) {
