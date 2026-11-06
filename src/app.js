@@ -262,6 +262,7 @@ function viewLearn() {
       <button class="btn ${state.done.has(L.id) ? "" : "primary"}" data-complete="${L.id}">${state.done.has(L.id) ? "✓ Completed" : "Mark lesson complete"}</button>
     </div>
     <div class="sources"><b>Read more in</b><ul>${L.sources.map((s) => `<li>${esc(SOURCES[s])}</li>`).join("")}</ul></div>
+    ${L.links ? `<div class="sources"><b>Read online at Practical-Haemostasis.com</b> <span class="muted">(free, internet needed; by Dr David Perry)</span><ul>${L.links.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join("")}</ul></div>` : ""}
     <div class="pager">
       ${i > 0 ? `<button class="btn" data-go-lesson="${MOD.lessons[i - 1].id}">← ${esc(MOD.lessons[i - 1].title)}</button>` : "<span></span>"}
       ${i < MOD.lessons.length - 1 ? `<button class="btn" data-go-lesson="${MOD.lessons[i + 1].id}">${esc(MOD.lessons[i + 1].title)} →</button>` : `<a class="btn primary" href="#practice">Test yourself →</a>`}
