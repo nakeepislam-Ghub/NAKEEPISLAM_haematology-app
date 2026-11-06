@@ -2,11 +2,11 @@
 
 An interactive learning app for Clinical Pathology postgraduate students (MSc and MD). It works in any browser, installs on phones from the link, and works offline after the first visit.
 
-Four modules (normal blood and marrow cells, red cell disorders, white cell disorders and leukaemia, haemostasis and thrombosis), each with lessons, an atlas, flashcards, an MCQ quiz, case studies, diagnostic workups and calculators, animations and slide decks.
+Six modules (normal blood and marrow cells, red cell disorders, white cell disorders and leukaemia, haemostasis and thrombosis, practical laboratory haematology, and the practical haemostasis laboratory), each with lessons, an atlas, flashcards, an MCQ quiz, case studies, diagnostic workups and calculators, animations and slide decks.
 
 ## Layout
 
-- `src/` holds the source: `data.js` and `m2-data.js` to `m4-data.js` (teaching content), `myimages.js` (the My images feature), `cells.js` (the cell illustrations), `app.js` (the app) and `shell.html` (layout and styles).
+- `src/` holds the source: `data.js` and `m2-data.js` to `m6-data.js` (teaching content), `m5-ui.js` and `m6-ui.js` (the Module 5 and 6 simulators and calculators), `myimages.js` (the My images feature), `cells.js` (the cell illustrations), `app.js` (the app) and `shell.html` (layout and styles).
 - `build.py` combines the source into one self-contained `docs/index.html`, plus the web manifest and the offline service worker.
 - `docs/` is the published site, served by GitHub Pages.
 
