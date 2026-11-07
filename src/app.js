@@ -1,4 +1,4 @@
-/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, m4-data.js, m5-data.js, m5-ui.js, m6-data.js, m6-ui.js, photos.js, photos-ui.js, cells.js, rbc.js and plt.js. */
+/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, m4-data.js, m5-data.js, m5-ui.js, m6-data.js, m6-ui.js, m6-3d.js, photos.js, photos-ui.js, cells.js, rbc.js and plt.js. */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -123,7 +123,7 @@ const MODS = {
   m6: { id: "m6", n: 6, lessons: M6_LESSONS, lessonCells: M6_LESSON_CELLS, cells: M6_CELLS, facts: M6_FACTS, quiz: M6_QUIZ, cases: M6_CASES,
     hero: ["m6-giant", "m6-clump", "m6-schisto"], tagline: "The haemostasis bench: from the citrate tube to LA, VWF and platelet function",
     trees: M6_TREES, checklist: M6_CHECKLIST,
-    calcs: ["citrate", "rosner", "bethesda", "lanr", "vwfr", "lmwh", "ddimer", "inr"], anims: [["coag", "Virtual coagulometer"], ["lta", "Platelet aggregometry"], ["rotem", "Viscoelastic testing"]] }
+    calcs: ["citrate", "rosner", "bethesda", "lanr", "vwfr", "lmwh", "ddimer", "inr"], anims: [["coag", "Virtual coagulometer"], ["lta", "Platelet aggregometry"], ["rotem", "Viscoelastic testing"], ["3dcf", "3D: centrifuge"], ["3dcl", "3D: clot detection"], ["3dag", "3D: aggregometer"]] }
 };
 ["m2", "m3", "m4", "m5", "m6"].forEach((id) => (MODULES.find((m) => m.id === id).ready = true));
 
@@ -624,6 +624,7 @@ function viewAnimations() {
   if (state.animTab === "coag") body = `<div class="anim" id="m6sim">${coagHTML()}</div>`;
   if (state.animTab === "lta") body = `<div class="anim" id="m6sim">${ltaHTML()}</div>`;
   if (state.animTab === "rotem") body = `<div class="anim" id="m6sim">${veHTML()}</div>`;
+  if (state.animTab.startsWith("3d")) body = view3D(state.animTab);
   return `<h1>Animations</h1>
 <div class="seg" role="group" aria-label="Animation" style="margin:14px 0 18px">${tabs.map(([k, t]) => `<button data-atab="${k}" aria-pressed="${state.animTab === k}">${t}</button>`).join("")}</div>${body}`;
 }
@@ -777,6 +778,7 @@ function render(keepScroll) {
   $("#view").innerHTML = VIEWS[route]();
   if (route === "workups" && state.workTab === "calc") runCalcs();
   if (route === "animations" && state.animTab === "odc") drawODC();
+  if (route === "animations" && state.animTab.startsWith("3d")) start3D(state.animTab);
   if (route === "animations" && state.animTab === "globin") drawGlobin();
   window.scrollTo(0, keepScroll ? y : 0);
 }
