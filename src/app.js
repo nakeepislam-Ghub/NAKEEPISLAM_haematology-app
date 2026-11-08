@@ -1,4 +1,4 @@
-/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, m4-data.js, m5-data.js, m5-ui.js, m6-data.js, m6-ui.js, m6-3d.js, photos.js, photos-ui.js, cells.js, rbc.js and plt.js. */
+/* App logic: routing, views and interactivity. Depends on data.js, m2-data.js, m3-data.js, m4-data.js, m5-data.js, m5-ui.js, m6-data.js, m6-ui.js, m6-3d.js, count.js, photos.js, photos-ui.js, cells.js, rbc.js and plt.js. */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -173,20 +173,21 @@ const ICONS = {
   cases: '<path d="M9 4h6v3H9z"/><rect x="4" y="6" width="16" height="15" rx="2"/><path d="M8 12h8M8 16h5"/>',
   workups: '<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 7v10M8 5h3a4 4 0 0 1 4 4v1M8 19h3a4 4 0 0 0 4-4v-1"/>',
   animations: '<polygon points="7,4 20,12 7,20"/>',
+  count: '<circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="2"/><circle cx="15" cy="14" r="2.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>',
   mine: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/>',
   slides: '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M12 16v4M8 20h8"/>',
   about: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'
 };
 const ROUTES = [
   ["home", "Home"], ["learn", "Lessons"], ["atlas", "Atlas"], ["practice", "Flashcards & quiz"], ["cases", "Case studies"],
-  ["workups", "Workups"], ["animations", "Animations"], ["slides", "Slides"], ["mine", "My images"], ["about", "Sources & install"]
+  ["workups", "Workups"], ["count", "Count trainer"], ["animations", "Animations"], ["slides", "Slides"], ["mine", "My images"], ["about", "Sources & install"]
 ];
 const MOBILE = [["home", "Home"], ["learn", "Learn"], ["atlas", "Atlas"], ["practice", "Practise"], ["more", "More"]];
 const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k] || ICONS.about}</svg>`;
 
 function renderNav(route) {
   $("#nav").innerHTML = ROUTES.map(([r, t]) => `<a href="#${r}" ${r === route ? 'aria-current="page"' : ""}>${icon(r)}${t}</a>`).join("");
-  const moreRoutes = ["cases", "workups", "animations", "slides", "mine", "about", "more"];
+  const moreRoutes = ["cases", "workups", "count", "animations", "slides", "mine", "about", "more"];
   $("#tabs").innerHTML = MOBILE.map(([r, t]) => {
     const cur = r === route || (r === "more" && moreRoutes.includes(route));
     return `<a href="#${r}" ${cur ? 'aria-current="page"' : ""}>${icon(r === "more" ? "workups" : r)}${t}</a>`;
@@ -233,6 +234,7 @@ ${MODULES.map((m) => `
   <a href="#practice" data-tab="quiz"><b>${MOD.quiz.length} MCQs</b><span>${state.quizBest == null ? "Not attempted yet" : `Best score ${state.quizBest} of ${MOD.quiz.length}`}</span></a>
   <a href="#cases"><b>${MOD.cases.length} case studies</b><span>${casesHere} completed</span></a>
   <a href="#workups"><b>Workups and calculators</b><span>${esc(MOD.trees.map((t) => t.title).concat(MOD.checklist.title).join(", "))}</span></a>
+  <a href="#count"><b>Differential count trainer</b><span>Count a blood film or marrow at the microscope, then check your count</span></a>
   <a href="#animations"><b>${MOD.anims.length} animations</b><span>${esc(MOD.anims.map((a) => a[1]).join(", "))}</span></a>
   <a href="#slides"><b>Slide decks</b><span>Every lesson as a presentation</span></a>
 </div>`;
@@ -758,6 +760,7 @@ function viewMore() {
   return `<h1>More</h1><div class="quick" style="margin-top:16px">
   <a href="#cases"><b>Case studies</b><span>${MOD.cases.length} stepwise cases</span></a>
   <a href="#workups"><b>Workups</b><span>Decision tree, marrow checklist, calculators</span></a>
+  <a href="#count"><b>Count trainer</b><span>100-cell blood and 500-cell marrow differentials</span></a>
   <a href="#animations"><b>Animations</b><span>${esc(MOD.anims.map((a) => a[1]).join(", "))}</span></a>
   <a href="#slides"><b>Slides</b><span>Present any lesson</span></a>
   <a href="#mine"><b>My images</b><span>${mineCount() ? mineCount() + " of your own pictures" : "Add your own textbook figures"}</span></a>
@@ -765,7 +768,7 @@ function viewMore() {
 </div>`;
 }
 
-const VIEWS = { home: viewHome, learn: viewLearn, atlas: viewAtlas, practice: viewPractice, cases: viewCases, workups: viewWorkups, animations: viewAnimations, slides: viewSlides, mine: viewMine, about: viewAbout, more: viewMore };
+const VIEWS = { home: viewHome, learn: viewLearn, atlas: viewAtlas, practice: viewPractice, cases: viewCases, workups: viewWorkups, count: viewCount, animations: viewAnimations, slides: viewSlides, mine: viewMine, about: viewAbout, more: viewMore };
 const TITLES = Object.fromEntries(ROUTES.concat([["more", "More"]]));
 
 function render(keepScroll) {
@@ -780,6 +783,7 @@ function render(keepScroll) {
   if (route === "animations" && state.animTab === "odc") drawODC();
   if (route === "animations" && state.animTab.startsWith("3d")) start3D(state.animTab);
   if (route === "animations" && state.animTab === "globin") drawGlobin();
+  if (route === "count") dcMount();
   window.scrollTo(0, keepScroll ? y : 0);
 }
 
